@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OT·ED | Iniciar Sesión</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-900 h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-red-700 tracking-widest">OT·ED</h1>
+            <p class="text-gray-500 mt-2">Acceso Administrativo</p>
+        </div>
+        
+        <form id="login-form">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico</label>
+                <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" placeholder="admin@oted.com">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
+                <input type="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" placeholder="********">
+            </div>
+            <div id="login-error" class="text-red-500 text-sm mb-4 hidden text-center font-semibold"></div>
+            <button type="submit" id="login-btn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-4 rounded-lg transition">
+                Ingresar al Sistema
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // ⚠️ CONFIGURACIÓN DE SUPABASE
+        const SUPABASE_URL = 'TU_PROJECT_URL_AQUI'; 
+        const SUPABASE_KEY = 'TU_PUBLISHABLE_KEY_AQUI';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const loginBtn = document.getElementById('login-btn');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            loginBtn.innerText = "Verificando...";
+            loginBtn.disabled = true;
+            loginError.classList.add('hidden');
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                loginError.innerText = "Error: Correo o contraseña incorrectos.";
+                loginError.classList.remove('hidden');
+                loginBtn.innerText = "Ingresar al Sistema";
+                loginBtn.disabled = false;
+            } else {
+                // GUARDAMOS LA SESIÓN EN EL NAVEGADOR
+                localStorage.setItem('oted_session', JSON.stringify(data.session));
+                // REDIRIGIMOS AL DASHBOARD
+                window.location.href = 'dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>
