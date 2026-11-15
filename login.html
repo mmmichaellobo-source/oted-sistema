@@ -85,11 +85,10 @@
     <script>
         // ⚠️ CONFIGURACIÓN DE SUPABASE (REVISA QUE NO HAYA ESPACIOS NI BARRAS AL FINAL)
         const SUPABASE_URL = 'https://himmqcgvhfdqlkslbfej.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L'; // <-- Reemplaza esto con tu llave completa (sb_publishable_...)
+        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L'; 
         
         let supabaseClient;
 
-        // Validación para que no falle si la URL está mal
         try {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         } catch (e) {
