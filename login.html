@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OT·ED | Iniciar Sesión</title>
+    <title>OT·ED | Sistema Interno</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,37 +11,63 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
     </style>
 </head>
-<body class="bg-gray-900 h-screen flex items-center justify-center">
+<body class="h-screen flex items-center justify-center">
 
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-red-700 tracking-widest">OT·ED</h1>
-            <p class="text-gray-500 mt-2">Acceso Administrativo</p>
-        </div>
+    <!-- Tarjeta de Login -->
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100">
         
-        <form id="login-form">
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico</label>
-                <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" placeholder="admin@oted.com">
+        <!-- Línea superior azul decorativa (como en la foto) -->
+        <div class="h-2 w-full bg-blue-600"></div>
+
+        <div class="p-8">
+            <!-- Logo y Título -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">OT·ED</h1>
+                <p class="text-sm text-gray-500 mt-1">Sistema Interno de Reportes</p>
             </div>
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
-                <input type="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" placeholder="********">
+
+            <!-- Pestañas (Visuales por ahora) -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button class="flex-1 pb-3 text-blue-600 font-semibold border-b-2 border-blue-600">Iniciar Sesión</button>
+                <button class="flex-1 pb-3 text-gray-400 font-medium hover:text-gray-600">Crear Cuenta</button>
             </div>
-            <div id="login-error" class="text-red-500 text-sm mb-4 hidden text-center font-semibold"></div>
-            <button type="submit" id="login-btn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-4 rounded-lg transition">
-                Ingresar al Sistema
-            </button>
-        </form>
+            
+            <!-- Formulario -->
+            <form id="login-form">
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+                    <input type="email" id="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="admin@oted.com">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                    <input type="password" id="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="••••••••">
+                </div>
+                
+                <div id="login-error" class="text-red-500 text-sm mb-4 hidden text-center font-medium"></div>
+                
+                <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md">
+                    Ingresar al Sistema
+                </button>
+                
+                <div class="text-center mt-4">
+                    <a href="#" class="text-sm text-blue-500 hover:underline">¿Olvidaste tu contraseña?</a>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- Scripts -->
     <script>
-        // ⚠️ CONFIGURACIÓN DE SUPABASE
+        // ⚠️ CONFIGURACIÓN DE SUPABASE (Asegúrate de que estén tus datos)
         const SUPABASE_URL = 'TU_PROJECT_URL_AQUI'; 
         const SUPABASE_KEY = 'TU_PUBLISHABLE_KEY_AQUI';
+        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const loginForm = document.getElementById('login-form');
@@ -64,14 +90,13 @@
             });
 
             if (error) {
-                loginError.innerText = "Error: Correo o contraseña incorrectos.";
+                loginError.innerText = "Credenciales incorrectas. Intenta de nuevo.";
                 loginError.classList.remove('hidden');
                 loginBtn.innerText = "Ingresar al Sistema";
                 loginBtn.disabled = false;
             } else {
-                // GUARDAMOS LA SESIÓN EN EL NAVEGADOR
+                // Login exitoso, guardamos sesión y redirigimos
                 localStorage.setItem('oted_session', JSON.stringify(data.session));
-                // REDIRIGIMOS AL DASHBOARD
                 window.location.href = 'dashboard.html';
             }
         });
