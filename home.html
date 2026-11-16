@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OT·ED | Menú Principal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <!-- Sidebar (Menú Lateral) -->
+    <aside class="w-64 bg-gray-900 text-white flex-shrink-0 flex flex-col hidden md:flex">
+        <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <div class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-widest uppercase">OT·ED</h1>
+                <p class="text-[10px] text-gray-400 tracking-wider">SISTEMA INTERNO</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 py-4">
+            <a href="home.html" class="flex items-center px-6 py-3 bg-red-600 border-l-4 border-red-400">
+                <span class="font-semibold text-sm">Inicio</span>
+            </a>
+            <a href="dashboard.html" class="flex items-center px-6 py-3 text-gray-400 hover:text-white hover:bg-gray-800 transition">
+                <span class="font-semibold text-sm">Dashboard</span>
+            </a>
+        </nav>
+
+        <div class="p-4">
+            <button onclick="logout()" class="w-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 flex flex-col">
+        <header class="h-16 bg-white shadow-sm flex items-center px-8 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">Resumen General</h2>
+        </header>
+
+        <div class="flex-1 p-8 overflow-y-auto">
+            <div class="max-w-4xl mx-auto">
+                <!-- Saludo -->
+                <div class="text-center mb-12 mt-4">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">¡Hola de nuevo! 👋</h2>
+                    <p class="text-gray-500">¿Qué módulo deseas abrir hoy?</p>
+                </div>
+
+                <!-- Tarjetas de Módulos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <!-- Tarjeta 1: Dashboard -->
+                    <a href="dashboard.html" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group text-center flex flex-col items-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 uppercase tracking-wide">Dashboard</h3>
+                        <p class="text-sm text-gray-500 mb-6">Visualiza los gráficos, KPIs y tendencias de tus compras semanales.</p>
+                        <span class="text-red-600 font-semibold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Ingresar al módulo &rarr;</span>
+                    </a>
+
+                    <!-- Tarjeta 2: Subir Excel -->
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group text-center flex flex-col items-center opacity-70 cursor-not-allowed">
+                        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 uppercase tracking-wide">Subir Excel</h3>
+                        <p class="text-sm text-gray-500 mb-6">Carga las planillas semanales para actualizar la base de datos (Próximamente).</p>
+                        <span class="text-gray-400 font-semibold text-sm">En desarrollo</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://himmqcgvhfdqlkslbfej.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Verificar sesión
+        const session = localStorage.getItem('oted_session');
+        if (!session) {
+            window.location.href = 'login.html';
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            localStorage.removeItem('oted_session');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
