@@ -1,5 +1,6 @@
-import * as XLSX from 'xlsx';
-import { createClient } from '@supabase/supabase-js';
+// Usamos ESM (CDN) para evitar problemas de instalación en Cloudflare Pages
+import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 export async function onRequestPost(context) {
   try {
@@ -14,7 +15,8 @@ export async function onRequestPost(context) {
     const arrayBuffer = await file.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const filas = XLSX.utils.sheet_to_json(sheet, { defval: null, range: 8 }); // Empezamos desde la fila 9 (índice 8) donde están los datos reales
+    // Empezamos desde la fila 9 (índice 8) donde están los datos reales
+    const filas = XLSX.utils.sheet_to_json(sheet, { defval: null, range: 8 }); 
 
     if (filas.length === 0) {
       return new Response(JSON.stringify({ error: 'El Excel está vacío o no tiene el formato correcto' }), { status: 400 });
@@ -26,7 +28,6 @@ export async function onRequestPost(context) {
 
     if (tipoExcel === 'consolidado') {
       tablaDestino = 'consolidado_repuestos';
-      // El código del consolidado de 41 columnas (mantenlo igual al que ya tenías)
       datosParaGuardar = filas.map(fila => {
         const codigoPersona = String(fila['PERSONA_LINEA_PRODUCCION'] || '');
         return {
@@ -42,7 +43,6 @@ export async function onRequestPost(context) {
           "PRECIO_BS": fila["PRECIO_BS"], "PRECIO_US": fila["PRECIO_US"], "ID_DIVISION": fila["ID_DIVISION"], "NOMBRE_DIVISION": fila["NOMBRE_DIVISION"],
           "ID_MARKETING": fila["ID_MARKETING"], "NOMBRE_MARKETING": fila["NOMBRE_MARKETING"], "ID_VENDEDOR": fila["ID_VENDEDOR"], "VENDEDOR": fila["VENDEDOR"],
           "FORMA_PAGO": fila["FORMA_PAGO"], "VENCIMIENTO": fila["VENCIMIENTO"], "OBSERVACION": fila["OBSERVACION"],
-          // El cruce con vendedores se mantiene
           "DIVISION_MAESTRA": 'PENDIENTE', "SEMANA": "Semana Actual"
         };
       });
@@ -50,10 +50,7 @@ export async function onRequestPost(context) {
     } else if (tipoExcel === 'caja_chica') {
       tablaDestino = 'caja_chica';
       datosParaGuardar = filas.map(fila => {
-        // 1. Obtenemos la unidad de negocio
         const unidadNegocio = String(fila["UNIDAD NEGOCIO"] || '').toUpperCase();
-        
-        // 2. Aplicamos la regla: Si NO es POST VENTA, es FABRICA
         let clasificacionFinal = "FABRICA";
         if (unidadNegocio.includes("POST VENTA")) {
           clasificacionFinal = "POST VENTA";
@@ -62,7 +59,7 @@ export async function onRequestPost(context) {
         return {
           "N": String(fila["N"] || ''),
           "FECHA": fila["FECHA"] ? new Date(fila["FECHA"]).toISOString().split('T')[0] : null,
-          "UNIDAD_NEGOCIO": clasificacionFinal, // Guardamos la clasificación ya procesada
+          "UNIDAD_NEGOCIO": clasificacionFinal,
           "REPUESTO_SERVICIO": fila["REPUESTO SERVICIO"] || fila["REPUESTO_SERVICIO"],
           "PROVEEDOR": fila["PROVEEDOR"],
           "CONCEPTO": fila["CONCEPTO"],
