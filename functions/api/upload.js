@@ -26,6 +26,22 @@ export async function onRequestPost(context) {
     let tablaDestino = '';
     let datosParaGuardar = [];
 
+    // FUNCIÓN MAESTRA PARA FORMATEAR FECHAS
+    const procesarFecha = (fechaVal) => {
+      if (!fechaVal) return null;
+      // Si Excel envía un número de serie (ej. 46323)
+      if (typeof fechaVal === 'number') {
+        const date = new Date((fechaVal - 25569) * 86400 * 1000);
+        // Forzamos formato DD/MM/YYYY
+        const dia = String(date.getUTCDate()).padStart(2, '0');
+        const mes = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const anio = date.getUTCFullYear();
+        return `${dia}/${mes}/${anio}`;
+      }
+      // Si viene como texto, cortamos la hora (00:00:00)
+      return String(fechaVal).split(' ')[0];
+    };
+
     if (tipoExcel === 'consolidado') {
       tablaDestino = 'consolidado_repuestos';
       datosParaGuardar = filas.map(fila => {
@@ -33,8 +49,7 @@ export async function onRequestPost(context) {
         return {
           "ID_ALMACEN": fila["ID_ALMACEN"], 
           "NOMBRE_ALMACEN": fila["NOMBRE_ALMACEN"], 
-          // MAGIA AQUÍ: Convierte a texto y corta en el primer espacio para quitar la hora
-          "FECHA": fila["FECHA"] ? String(fila["FECHA"]).split(' ')[0] : null, 
+          "FECHA": procesarFecha(fila["FECHA"]),
           "TIPO_MOVIMIENTO": fila["TIPO_MOVIMIENTO"], 
           "GESTION": fila["GESTION"], 
           "TIPO_DOCTO": fila["TIPO_DOCTO"], 
@@ -90,8 +105,7 @@ export async function onRequestPost(context) {
 
         return {
           "N": String(fila["N"] || ''),
-          // MAGIA AQUÍ TAMBIÉN
-          "FECHA": fila["FECHA"] ? String(fila["FECHA"]).split(' ')[0] : null,
+          "FECHA": procesarFecha(fila["FECHA"]),
           "UNIDAD_NEGOCIO": clasificacionFinal,
           "REPUESTO_SERVICIO": fila["REPUESTO SERVICIO"] || fila["REPUESTO_SERVICIO"],
           "PROVEEDOR": fila["PROVEEDOR"],
