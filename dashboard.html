@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GALVAL | Dashboard</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
@@ -17,12 +16,12 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
-    <!-- Header Oscuro -->
+    <!-- Header -->
     <header class="bg-gray-900 text-white shadow-md z-20">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700">
-                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <h1 class="text-red-500 font-black">G</h1>
                 </div>
                 <div>
                     <h1 class="text-xl font-black tracking-widest uppercase">GALVAL</h1>
@@ -31,72 +30,96 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <!-- Inputs ocultos para los archivos -->
                 <input type="file" id="excelConsolidado" accept=".xlsx, .xls" class="hidden">
                 <input type="file" id="excelCajaChica" accept=".xlsx, .xls" class="hidden">
 
-                <!-- Botón Consolidado -->
-                <button onclick="document.getElementById('excelConsolidado').click()" class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded transition shadow-lg flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                <button onclick="document.getElementById('excelConsolidado').click()" class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded transition flex items-center gap-2">
                     Subir Consolidado
                 </button>
-                
-                <!-- Botón Caja Chica -->
                 <button onclick="document.getElementById('excelCajaChica').click()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded transition shadow-lg shadow-red-900/50 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     Subir Caja Chica
                 </button>
-                
-                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition ml-2">
-                    Salir
-                </button>
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold ml-2">Salir</button>
             </div>
         </div>
     </header>
 
-    <!-- Contenido Principal -->
+    <!-- Contenido -->
     <main class="flex-1 overflow-y-auto bg-gray-100">
         
-        <!-- Barra de Pestañas -->
+        <!-- Pestañas -->
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="max-w-7xl mx-auto flex px-4">
-                <button onclick="openTab('resumen')" id="btn-resumen" class="tab-btn active px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Resumen</button>
-                <button onclick="openTab('detalle')" id="btn-detalle" class="tab-btn px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Detalle</button>
+                <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Compras</button>
+                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Cobranza y Utilidad</button>
             </div>
         </div>
 
         <div class="max-w-7xl mx-auto p-4 md:p-6">
             
-            <!-- PESTAÑA RESUMEN -->
-            <div id="tab-resumen" class="block">
-                <!-- KPIs -->
+            <!-- PESTAÑA 1: COMPRAS -->
+            <div id="tab-compras" class="block">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Compras</p>
-                        <p class="text-3xl font-black text-gray-800">$ 0.00</p>
-                    </div>
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Ítems Fábrica</p>
-                        <p class="text-3xl font-black text-gray-800">0</p>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Compras (Caja Chica)</p>
+                        <p id="kpi-total" class="text-3xl font-black text-gray-800">Cargando...</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-600">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Fábrica</p>
+                        <p id="kpi-fabrica" class="text-3xl font-black text-gray-800">Cargando...</p>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Post-Venta</p>
-                        <p class="text-3xl font-black text-gray-800">$ 0.00</p>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Post-Venta</p>
+                        <p id="kpi-postventa" class="text-3xl font-black text-gray-800">Cargando...</p>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-10 text-center border-2 border-dashed border-gray-300">
-                    <h2 class="text-xl font-bold text-gray-700 mb-2">Área de Gráficos</h2>
-                    <p class="text-gray-500">Aquí irán los gráficos de barras y tortas cuando procesemos los datos.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">Distribución</h2>
+                        <div class="h-64 flex justify-center"><canvas id="graficoDona"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">Top 5 Proveedores</h2>
+                        <div class="h-64"><canvas id="graficoBarras"></canvas></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- PESTAÑA DETALLE -->
-            <div id="tab-detalle" class="hidden">
+            <!-- PESTAÑA 2: COBRANZA Y UTILIDAD -->
+            <div id="tab-cobranza" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-gray-600">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Costo Total</p>
+                        <p id="kpi-costo" class="text-3xl font-black text-gray-800">Cargando...</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Venta Total</p>
+                        <p id="kpi-venta" class="text-3xl font-black text-gray-800">Cargando...</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-600">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Utilidad Total</p>
+                        <p id="kpi-utilidad" class="text-3xl font-black text-green-600">Cargando...</p>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4">Detalle de Movimientos</h2>
-                    <div class="bg-gray-50 p-10 text-center rounded-lg border border-gray-200">
-                        <p class="text-gray-500">Aquí aparecerá la tabla con los datos de tus Excel.</p>
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Detalle de Ventas (Consolidado)</h2>
+                    <div class="overflow-x-auto h-96">
+                        <table class="min-w-full bg-white text-sm">
+                            <thead class="bg-gray-100 text-gray-600 uppercase text-xs sticky top-0">
+                                <tr>
+                                    <th class="py-3 px-4 text-left">Documento</th>
+                                    <th class="py-3 px-4 text-left">Producto</th>
+                                    <th class="py-3 px-4 text-right">Costo (+)</th>
+                                    <th class="py-3 px-4 text-right">Precio Venta</th>
+                                    <th class="py-3 px-4 text-right">Utilidad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-cobranza-body" class="text-gray-700 divide-y divide-gray-100">
+                                <!-- Aquí se llenará la tabla -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -104,93 +127,144 @@
         </div>
     </main>
 
-    <!-- Contenedor para mostrar alertas flotantes -->
     <div id="mensaje-alerta" class="hidden fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 text-white font-semibold text-sm transition-all duration-300"></div>
 
-    <!-- Scripts -->
     <script>
-        // ⚠️ CONFIGURACIÓN DE SUPABASE (Revisa que tus llaves estén bien)
         const SUPABASE_URL = 'https://himmqcgvhfdqlkslbfej.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L'; // <-- Cambia esto por tu llave publishable real
-        
+        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. VERIFICACIÓN DE SEGURIDAD
         const session = localStorage.getItem('oted_session');
-        if (!session) {
-            window.location.href = 'login.html';
-        }
+        if (!session) { window.location.href = 'login.html'; }
 
-        // 2. CERRAR SESIÓN
         async function logout() {
             await supabaseClient.auth.signOut();
             localStorage.removeItem('oted_session');
             window.location.href = 'login.html';
         }
 
-        // 3. PESTAÑAS
         function openTab(tabName) {
-            document.getElementById('tab-resumen').classList.add('hidden');
-            document.getElementById('tab-detalle').classList.add('hidden');
-            document.getElementById('btn-resumen').classList.remove('active');
-            document.getElementById('btn-detalle').classList.remove('active');
+            document.getElementById('tab-compras').classList.add('hidden');
+            document.getElementById('tab-cobranza').classList.add('hidden');
+            document.getElementById('btn-compras').classList.remove('active');
+            document.getElementById('btn-cobranza').classList.remove('active');
             document.getElementById('tab-' + tabName).classList.remove('hidden');
             document.getElementById('btn-' + tabName).classList.add('active');
         }
 
-        // 4. LÓGICA DE SUBIDA DE ARCHIVOS
+        // --- LÓGICA DE SUBIDA ---
         async function subirArchivo(file, tipoExcel) {
             const formData = new FormData();
             formData.append('excelFile', file);
             formData.append('tipoExcel', tipoExcel);
 
             const alerta = document.getElementById('mensaje-alerta');
-            
-            // Mostrar estado de carga
-            alerta.innerText = "Subiendo y procesando archivo...";
+            alerta.innerText = "Subiendo y procesando...";
             alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-blue-600 text-white font-semibold text-sm block";
             
             try {
-                // Enviamos el archivo a la función de Cloudflare
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch('/api/upload', { method: 'POST', body: formData });
                 const result = await response.json();
-                
                 if (response.ok) {
-                    alerta.innerText = result.mensaje || "¡Archivo procesado correctamente!";
+                    alerta.innerText = result.mensaje;
                     alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-green-600 text-white font-semibold text-sm block";
+                    cargarDatosDashboard();
                 } else {
-                    alerta.innerText = "Error: " + (result.error || "Desconocido");
+                    alerta.innerText = "Error: " + result.error;
                     alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
                 }
             } catch (error) {
-                alerta.innerText = "Error de conexión con el servidor.";
+                alerta.innerText = "Error de conexión.";
                 alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
             }
-
-            // Ocultar alerta después de 4 segundos
-            setTimeout(() => { 
-                alerta.classList.add('hidden'); 
-            }, 4000);
+            setTimeout(() => { alerta.classList.add('hidden'); }, 4000);
         }
 
-        // Eventos de los inputs de archivo
         document.getElementById('excelConsolidado').addEventListener('change', function(e) {
-            if (e.target.files[0]) {
-                subirArchivo(e.target.files[0], 'consolidado');
-                e.target.value = ''; // Limpiar input
-            }
+            if (e.target.files[0]) { subirArchivo(e.target.files[0], 'consolidado'); e.target.value = ''; }
+        });
+        document.getElementById('excelCajaChica').addEventListener('change', function(e) {
+            if (e.target.files[0]) { subirArchivo(e.target.files[0], 'caja_chica'); e.target.value = ''; }
         });
 
-        document.getElementById('excelCajaChica').addEventListener('change', function(e) {
-            if (e.target.files[0]) {
-                subirArchivo(e.target.files[0], 'caja_chica');
-                e.target.value = ''; // Limpiar input
+        // --- LÓGICA DE DATOS Y GRÁFICOS ---
+        let chartDona = null;
+        let chartBarras = null;
+
+        async function cargarDatosDashboard() {
+            // 1. Datos de Caja Chica (Compras)
+            const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
+            if (cajaChica) {
+                let total = 0, fabrica = 0, postVenta = 0;
+                const proveedores = {};
+
+                cajaChica.forEach(item => {
+                    const monto = Number(item.IMPORTE) || 0;
+                    total += monto;
+                    if (item.UNIDAD_NEGOCIO === 'FABRICA') fabrica += monto;
+                    if (item.UNIDAD_NEGOCIO === 'POST VENTA') postVenta += monto;
+                    if (item.PROVEEDOR) proveedores[item.PROVEEDOR] = (proveedores[item.PROVEEDOR] || 0) + monto;
+                });
+
+                document.getElementById('kpi-total').innerText = '$ ' + total.toLocaleString('es-BO');
+                document.getElementById('kpi-fabrica').innerText = '$ ' + fabrica.toLocaleString('es-BO');
+                document.getElementById('kpi-postventa').innerText = '$ ' + postVenta.toLocaleString('es-BO');
+
+                if (chartDona) chartDona.destroy();
+                chartDona = new Chart(document.getElementById('graficoDona'), {
+                    type: 'doughnut',
+                    data: { labels: ['Fábrica', 'Post-Venta'], datasets: [{ data: [fabrica, postVenta], backgroundColor: ['#2563eb', '#16a34a'], borderWidth: 0 }] },
+                    options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+                });
+
+                const topProveedores = Object.entries(proveedores).sort(([,a], [,b]) => b - a).slice(0, 5);
+                if (chartBarras) chartBarras.destroy();
+                chartBarras = new Chart(document.getElementById('graficoBarras'), {
+                    type: 'bar',
+                    data: { labels: topProveedores.map(p => p[0].substring(0, 15) + '...'), datasets: [{ label: 'Monto ($)', data: topProveedores.map(p => p[1]), backgroundColor: '#dc2626', borderRadius: 4 }] },
+                    options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+                });
             }
-        });
+
+            // 2. Datos del Consolidado (Cobranza y Utilidad)
+            const { data: consolidado } = await supabaseClient.from('consolidado_repuestos').select('*');
+            if (consolidado) {
+                let costoTotal = 0, ventaTotal = 0, utilidadTotal = 0;
+                const tablaBody = document.getElementById('tabla-cobranza-body');
+                tablaBody.innerHTML = ''; // Limpiar tabla
+
+                consolidado.forEach(item => {
+                    // El costo en Excel viene negativo, lo hacemos positivo con Math.abs
+                    const costo = Math.abs(Number(item.COSTO) || 0); 
+                    const precioVenta = Number(item.PRECIO_BS) || 0;
+                    const utilidad = precioVenta - costo;
+
+                    costoTotal += costo;
+                    ventaTotal += precioVenta;
+                    utilidadTotal += utilidad;
+
+                    // Solo mostramos en la tabla los que tienen algún valor
+                    if (costo > 0 || precioVenta > 0) {
+                        tablaBody.innerHTML += `
+                            <tr class="hover:bg-gray-50">
+                                <td class="py-2 px-4 border-b">${item.NRO_DOC_FTE_CA || 'S/N'}</td>
+                                <td class="py-2 px-4 border-b">${item.NOMBRE_PRODUCTO || item.NOMBRE_LINEA || 'S/N'}</td>
+                                <td class="py-2 px-4 border-b text-right text-red-500">$ ${costo.toFixed(2)}</td>
+                                <td class="py-2 px-4 border-b text-right">$ ${precioVenta.toFixed(2)}</td>
+                                <td class="py-2 px-4 border-b text-right font-bold ${utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">$ ${utilidad.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                document.getElementById('kpi-costo').innerText = '$ ' + costoTotal.toLocaleString('es-BO');
+                document.getElementById('kpi-venta').innerText = '$ ' + ventaTotal.toLocaleString('es-BO');
+                document.getElementById('kpi-utilidad').innerText = '$ ' + utilidadTotal.toLocaleString('es-BO');
+            }
+        }
+
+        // Cargar al iniciar la página
+        cargarDatosDashboard();
     </script>
 </body>
 </html>
