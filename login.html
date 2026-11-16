@@ -83,7 +83,7 @@
     </div>
 
     <script>
-        // ⚠️ CONFIGURACIÓN DE SUPABASE (REVISA QUE NO HAYA ESPACIOS NI BARRAS AL FINAL)
+        // ⚠️ CONFIGURACIÓN DE SUPABASE
         const SUPABASE_URL = 'https://himmqcgvhfdqlkslbfej.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L'; 
         
@@ -92,7 +92,7 @@
         try {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         } catch (e) {
-            console.error("Error al conectar con Supabase. Revisa tu URL y tu Key.", e);
+            console.error("Error al conectar con Supabase.", e);
         }
 
         function switchTab(tab) {
@@ -116,7 +116,7 @@
             e.preventDefault();
             
             if (!supabaseClient) {
-                alert("Error de configuración: Revisa la URL y la Key en el código.");
+                alert("Error de configuración.");
                 return;
             }
 
@@ -136,7 +136,8 @@
                     btn.innerText = "Ingresar al Sistema"; btn.disabled = false;
                 } else {
                     localStorage.setItem('oted_session', JSON.stringify(data.session));
-                    window.location.href = 'dashboard.html';
+                    // AQUÍ SE REDIRIGE AL NUEVO MENÚ PRINCIPAL
+                    window.location.href = 'home.html'; 
                 }
             } catch (err) {
                 errorDiv.innerText = "Error de conexión. Revisa la consola (F12).";
