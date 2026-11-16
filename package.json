@@ -1,0 +1,8 @@
+{
+  "name": "oted-system",
+  "version": "1.0.0",
+  "dependencies": {
+    "xlsx": "^0.18.5",
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
