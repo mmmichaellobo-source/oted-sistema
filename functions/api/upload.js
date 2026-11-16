@@ -1,4 +1,3 @@
-// Usamos ESM (CDN) para evitar problemas de instalación en Cloudflare Pages
 import * as XLSX from 'xlsx';
 import { createClient } from '@supabase/supabase-js';
 
@@ -12,11 +11,13 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ error: 'No se envió archivo' }), { status: 400 });
     }
 
+    // 1. Leer el Excel
     const arrayBuffer = await file.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    // Empezamos desde la fila 9 (índice 8) donde están los datos reales
-    const filas = XLSX.utils.sheet_to_json(sheet, { defval: null, range: 8 }); 
+    
+    // Leemos desde la fila 1 por defecto
+    const filas = XLSX.utils.sheet_to_json(sheet, { defval: null }); 
 
     if (filas.length === 0) {
       return new Response(JSON.stringify({ error: 'El Excel está vacío o no tiene el formato correcto' }), { status: 400 });
@@ -49,7 +50,10 @@ export async function onRequestPost(context) {
 
     } else if (tipoExcel === 'caja_chica') {
       tablaDestino = 'caja_chica';
-      datosParaGuardar = filas.map(fila => {
+      // Para caja chica, saltamos las primeras 8 filas (encabezados de la planilla)
+      const filasCajaChica = XLSX.utils.sheet_to_json(sheet, { defval: null, range: 8 });
+      
+      datosParaGuardar = filasCajaChica.map(fila => {
         const unidadNegocio = String(fila["UNIDAD NEGOCIO"] || '').toUpperCase();
         let clasificacionFinal = "FABRICA";
         if (unidadNegocio.includes("POST VENTA")) {
@@ -73,7 +77,7 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      mensaje: `Se procesaron ${filas.length} filas en la tabla ${tablaDestino}.` 
+      mensaje: `Se procesaron ${datosParaGuardar.length} filas en la tabla ${tablaDestino}.` 
     }), { headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
