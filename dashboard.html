@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OT·ED | Dashboard</title>
+    <title>GALVAL | Dashboard</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -109,9 +109,10 @@
 
     <!-- Scripts -->
     <script>
-        // ⚠️ CONFIGURACIÓN DE SUPABASE
+        // ⚠️ CONFIGURACIÓN DE SUPABASE (Revisa que tus llaves estén bien)
         const SUPABASE_URL = 'https://himmqcgvhfdqlkslbfej.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L';
+        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L'; // <-- Cambia esto por tu llave publishable real
+        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // 1. VERIFICACIÓN DE SEGURIDAD
@@ -150,6 +151,7 @@
             alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-blue-600 text-white font-semibold text-sm block";
             
             try {
+                // Enviamos el archivo a la función de Cloudflare
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData
@@ -175,18 +177,18 @@
             }, 4000);
         }
 
-        // Eventos de los inputs
+        // Eventos de los inputs de archivo
         document.getElementById('excelConsolidado').addEventListener('change', function(e) {
             if (e.target.files[0]) {
                 subirArchivo(e.target.files[0], 'consolidado');
-                e.target.value = ''; // Limpiar el input para permitir subir el mismo archivo otra vez
+                e.target.value = ''; // Limpiar input
             }
         });
 
         document.getElementById('excelCajaChica').addEventListener('change', function(e) {
             if (e.target.files[0]) {
                 subirArchivo(e.target.files[0], 'caja_chica');
-                e.target.value = ''; 
+                e.target.value = ''; // Limpiar input
             }
         });
     </script>
