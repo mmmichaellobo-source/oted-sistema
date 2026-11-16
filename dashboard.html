@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OT·ED | Dashboard</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -23,18 +25,29 @@
                     <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black tracking-widest uppercase">OT·ED</h1>
+                    <h1 class="text-xl font-black tracking-widest uppercase">GALVAL</h1>
                     <p class="text-xs text-gray-400">Control de Operaciones</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-4">
-                <button class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded transition shadow-lg shadow-red-900/50 flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <!-- Inputs ocultos para los archivos -->
+                <input type="file" id="excelConsolidado" accept=".xlsx, .xls" class="hidden">
+                <input type="file" id="excelCajaChica" accept=".xlsx, .xls" class="hidden">
+
+                <!-- Botón Consolidado -->
+                <button onclick="document.getElementById('excelConsolidado').click()" class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded transition shadow-lg flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                    Subir Excel
+                    Subir Consolidado
                 </button>
                 
-                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition">
+                <!-- Botón Caja Chica -->
+                <button onclick="document.getElementById('excelCajaChica').click()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded transition shadow-lg shadow-red-900/50 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Subir Caja Chica
+                </button>
+                
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition ml-2">
                     Salir
                 </button>
             </div>
@@ -60,30 +73,30 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-600">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Compras</p>
-                        <p class="text-3xl font-black text-gray-800">$ 7,737.00</p>
+                        <p class="text-3xl font-black text-gray-800">$ 0.00</p>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Ítems Fábrica</p>
-                        <p class="text-3xl font-black text-gray-800">187</p>
+                        <p class="text-3xl font-black text-gray-800">0</p>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-600">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Post-Venta</p>
-                        <p class="text-3xl font-black text-gray-800">$ 586.00</p>
+                        <p class="text-3xl font-black text-gray-800">$ 0.00</p>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm p-10 text-center border-2 border-dashed border-gray-300">
                     <h2 class="text-xl font-bold text-gray-700 mb-2">Área de Gráficos</h2>
-                    <p class="text-gray-500">Aquí irán los gráficos de barras y tortas.</p>
+                    <p class="text-gray-500">Aquí irán los gráficos de barras y tortas cuando procesemos los datos.</p>
                 </div>
             </div>
 
             <!-- PESTAÑA DETALLE -->
             <div id="tab-detalle" class="hidden">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4">Detalle de Compras</h2>
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Detalle de Movimientos</h2>
                     <div class="bg-gray-50 p-10 text-center rounded-lg border border-gray-200">
-                        <p class="text-gray-500">Aquí aparecerá la tabla con los datos.</p>
+                        <p class="text-gray-500">Aquí aparecerá la tabla con los datos de tus Excel.</p>
                     </div>
                 </div>
             </div>
@@ -91,23 +104,30 @@
         </div>
     </main>
 
+    <!-- Contenedor para mostrar alertas flotantes -->
+    <div id="mensaje-alerta" class="hidden fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 text-white font-semibold text-sm transition-all duration-300"></div>
+
+    <!-- Scripts -->
     <script>
+        // ⚠️ CONFIGURACIÓN DE SUPABASE
         const SUPABASE_URL = 'https://himmqcgvhfdqlkslbfej.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Verificación de seguridad
+        // 1. VERIFICACIÓN DE SEGURIDAD
         const session = localStorage.getItem('oted_session');
         if (!session) {
             window.location.href = 'login.html';
         }
 
+        // 2. CERRAR SESIÓN
         async function logout() {
             await supabaseClient.auth.signOut();
             localStorage.removeItem('oted_session');
             window.location.href = 'login.html';
         }
 
+        // 3. PESTAÑAS
         function openTab(tabName) {
             document.getElementById('tab-resumen').classList.add('hidden');
             document.getElementById('tab-detalle').classList.add('hidden');
@@ -116,6 +136,59 @@
             document.getElementById('tab-' + tabName).classList.remove('hidden');
             document.getElementById('btn-' + tabName).classList.add('active');
         }
+
+        // 4. LÓGICA DE SUBIDA DE ARCHIVOS
+        async function subirArchivo(file, tipoExcel) {
+            const formData = new FormData();
+            formData.append('excelFile', file);
+            formData.append('tipoExcel', tipoExcel);
+
+            const alerta = document.getElementById('mensaje-alerta');
+            
+            // Mostrar estado de carga
+            alerta.innerText = "Subiendo y procesando archivo...";
+            alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-blue-600 text-white font-semibold text-sm block";
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alerta.innerText = result.mensaje || "¡Archivo procesado correctamente!";
+                    alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-green-600 text-white font-semibold text-sm block";
+                } else {
+                    alerta.innerText = "Error: " + (result.error || "Desconocido");
+                    alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
+                }
+            } catch (error) {
+                alerta.innerText = "Error de conexión con el servidor.";
+                alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
+            }
+
+            // Ocultar alerta después de 4 segundos
+            setTimeout(() => { 
+                alerta.classList.add('hidden'); 
+            }, 4000);
+        }
+
+        // Eventos de los inputs
+        document.getElementById('excelConsolidado').addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                subirArchivo(e.target.files[0], 'consolidado');
+                e.target.value = ''; // Limpiar el input para permitir subir el mismo archivo otra vez
+            }
+        });
+
+        document.getElementById('excelCajaChica').addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                subirArchivo(e.target.files[0], 'caja_chica');
+                e.target.value = ''; 
+            }
+        });
     </script>
 </body>
 </html>
