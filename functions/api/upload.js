@@ -1,6 +1,6 @@
 // Usamos ESM (CDN) para evitar problemas de instalación en Cloudflare Pages
-import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import * as XLSX from 'xlsx';
+import { createClient } from '@supabase/supabase-js';
 
 export async function onRequestPost(context) {
   try {
