@@ -51,7 +51,7 @@
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="max-w-7xl mx-auto flex px-4">
                 <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Compras</button>
-                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Cobranza y Utilidad</button>
+                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Garantías y Utilidad</button>
             </div>
         </div>
 
@@ -86,34 +86,25 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA 2: COBRANZA Y UTILIDAD -->
+            <!-- PESTAÑA 2: GARANTÍAS Y UTILIDAD -->
             <div id="tab-cobranza" class="hidden">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-gray-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Costo Total</p>
-                        <p id="kpi-costo" class="text-3xl font-black text-gray-800">Cargando...</p>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Venta Total</p>
-                        <p id="kpi-venta" class="text-3xl font-black text-gray-800">Cargando...</p>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Utilidad Total</p>
-                        <p id="kpi-utilidad" class="text-3xl font-black text-green-600">Cargando...</p>
-                    </div>
-                </div>
-
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4">Detalle de Ventas (Consolidado)</h2>
-                    <div class="overflow-x-auto h-96">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">Detalle de Notas de Remisión (Dentro de Garantía)</h2>
+                    </div>
+                    
+                    <div class="overflow-x-auto h-[600px]">
                         <table class="min-w-full bg-white text-sm">
-                            <thead class="bg-gray-100 text-gray-600 uppercase text-xs sticky top-0">
+                            <thead class="bg-gray-100 text-gray-600 uppercase text-xs sticky top-0 z-10">
                                 <tr>
-                                    <th class="py-3 px-4 text-left">Documento</th>
-                                    <th class="py-3 px-4 text-left">Producto</th>
+                                    <th class="py-3 px-4 text-left">Fecha</th>
+                                    <th class="py-3 px-4 text-left">Nombre Docto</th>
+                                    <th class="py-3 px-4 text-left">Código Persona</th>
+                                    <th class="py-3 px-4 text-left">Nombre Descripción</th>
+                                    <th class="py-3 px-4 text-left">División</th>
                                     <th class="py-3 px-4 text-right">Costo (+)</th>
-                                    <th class="py-3 px-4 text-right">Precio Venta</th>
-                                    <th class="py-3 px-4 text-right">Utilidad</th>
+                                    <th class="py-3 px-4 text-right">Precio BS</th>
+                                    <th class="py-3 px-4 text-right">Utilidad BS</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-cobranza-body" class="text-gray-700 divide-y divide-gray-100">
@@ -159,7 +150,7 @@
             formData.append('tipoExcel', tipoExcel);
 
             const alerta = document.getElementById('mensaje-alerta');
-            alerta.innerText = "Subiendo y procesando...";
+            alerta.innerText = "Subiendo...";
             alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-blue-600 text-white font-semibold text-sm block";
             
             try {
@@ -226,40 +217,49 @@
                 });
             }
 
-            // 2. Datos del Consolidado (Cobranza y Utilidad)
-            const { data: consolidado } = await supabaseClient.from('consolidado_repuestos').select('*');
-            if (consolidado) {
-                let costoTotal = 0, ventaTotal = 0, utilidadTotal = 0;
+            // 2. Datos del Consolidado cruzados con Vendedores_Division
+            // Hacemos una consulta relacional (JOIN) usando el cliente de Supabase
+            const { data: consolidado, error } = await supabaseClient
+                .from('consolidado_repuestos')
+                .select(`
+                    *,
+                    vendedores_division!inner(DIVISION)
+                `);
+
+            if (consolidado && !error) {
                 const tablaBody = document.getElementById('tabla-cobranza-body');
-                tablaBody.innerHTML = ''; // Limpiar tabla
+                tablaBody.innerHTML = ''; 
 
                 consolidado.forEach(item => {
-                    // El costo en Excel viene negativo, lo hacemos positivo con Math.abs
-                    const costo = Math.abs(Number(item.COSTO) || 0); 
-                    const precioVenta = Number(item.PRECIO_BS) || 0;
-                    const utilidad = precioVenta - costo;
+                    // 1. Filtrar por NOMBRE_DOCTO (que diga "Nota Entrega" o similar)
+                    const esNotaRemision = item.NOMBRE_DOCTO && item.NOMBRE_DOCTO.toUpperCase().includes('NOTA DE ENTREGA');
+                    
+                    // 2. Obtener la división desde el cruce relacional
+                    const divisionCruzada = item.vendedores_division?.DIVISION || '';
+                    
+                    // 3. Filtrar por División (DENTRO DE GARANTIA)
+                    const esGarantia = divisionCruzada.toUpperCase().includes('DENTRO DE GARANTIA');
 
-                    costoTotal += costo;
-                    ventaTotal += precioVenta;
-                    utilidadTotal += utilidad;
+                    if (esNotaRemision && esGarantia) {
+                        const costoOriginal = Number(item.COSTO) || 0;
+                        const costoPositivo = Math.abs(costoOriginal); // Lo pasamos a positivo
+                        const precioVenta = Number(item.PRECIO_BS) || 0;
+                        const utilidad = precioVenta - costoPositivo;
 
-                    // Solo mostramos en la tabla los que tienen algún valor
-                    if (costo > 0 || precioVenta > 0) {
                         tablaBody.innerHTML += `
                             <tr class="hover:bg-gray-50">
-                                <td class="py-2 px-4 border-b">${item.NRO_DOC_FTE_CA || 'S/N'}</td>
-                                <td class="py-2 px-4 border-b">${item.NOMBRE_PRODUCTO || item.NOMBRE_LINEA || 'S/N'}</td>
-                                <td class="py-2 px-4 border-b text-right text-red-500">$ ${costo.toFixed(2)}</td>
+                                <td class="py-2 px-4 border-b">${item.FECHA || ''}</td>
+                                <td class="py-2 px-4 border-b">${item.NOMBRE_DOCTO || ''}</td>
+                                <td class="py-2 px-4 border-b">${item.PERSONA_LINEA_PRODUCCION || ''}</td>
+                                <td class="py-2 px-4 border-b">${item.NOMBRE_DESCRIPCION || ''}</td>
+                                <td class="py-2 px-4 border-b">${divisionCruzada}</td>
+                                <td class="py-2 px-4 border-b text-right text-gray-500">$ ${costoPositivo.toFixed(2)}</td>
                                 <td class="py-2 px-4 border-b text-right">$ ${precioVenta.toFixed(2)}</td>
                                 <td class="py-2 px-4 border-b text-right font-bold ${utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">$ ${utilidad.toFixed(2)}</td>
                             </tr>
                         `;
                     }
                 });
-
-                document.getElementById('kpi-costo').innerText = '$ ' + costoTotal.toLocaleString('es-BO');
-                document.getElementById('kpi-venta').innerText = '$ ' + ventaTotal.toLocaleString('es-BO');
-                document.getElementById('kpi-utilidad').innerText = '$ ' + utilidadTotal.toLocaleString('es-BO');
             }
         }
 
