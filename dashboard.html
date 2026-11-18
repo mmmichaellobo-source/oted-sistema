@@ -90,7 +90,8 @@
             <div id="tab-cobranza" class="hidden">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold text-gray-800">Detalle de Notas de Remisión (Dentro de Garantía)</h2>
+                        <h2 class="text-lg font-bold text-gray-800">Detalle de Notas (Dentro de Garantía)</h2>
+                        <p id="loading-cobranza" class="text-sm text-gray-500 hidden">Cargando datos pesados...</p>
                     </div>
                     
                     <div class="overflow-x-auto h-[600px]">
@@ -141,9 +142,13 @@
             document.getElementById('btn-cobranza').classList.remove('active');
             document.getElementById('tab-' + tabName).classList.remove('hidden');
             document.getElementById('btn-' + tabName).classList.add('active');
+            
+            // Si entra a cobranza, cargar los datos pesados
+            if(tabName === 'cobranza') {
+                cargarCobranza();
+            }
         }
 
-        // --- LÓGICA DE SUBIDA ---
         async function subirArchivo(file, tipoExcel) {
             const formData = new FormData();
             formData.append('excelFile', file);
@@ -159,7 +164,7 @@
                 if (response.ok) {
                     alerta.innerText = result.mensaje;
                     alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-green-600 text-white font-semibold text-sm block";
-                    cargarDatosDashboard();
+                    cargarCompras();
                 } else {
                     alerta.innerText = "Error: " + result.error;
                     alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
@@ -178,12 +183,11 @@
             if (e.target.files[0]) { subirArchivo(e.target.files[0], 'caja_chica'); e.target.value = ''; }
         });
 
-        // --- LÓGICA DE DATOS Y GRÁFICOS ---
         let chartDona = null;
         let chartBarras = null;
 
-        async function cargarDatosDashboard() {
-            // 1. Datos de Caja Chica (Compras)
+        // --- CARGA DE COMPRAS (RÁPIDO) ---
+        async function cargarCompras() {
             const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
             if (cajaChica) {
                 let total = 0, fabrica = 0, postVenta = 0;
@@ -216,35 +220,45 @@
                     options: { indexAxis: 'y', plugins: { legend: { display: false } } }
                 });
             }
+        }
 
-            // 2. Datos del Consolidado cruzados con Vendedores_Division
-            // Hacemos una consulta relacional (JOIN) usando el cliente de Supabase
+        // --- CARGA DE COBRANZA (SOLO AL HACER CLIC EN LA PESTAÑA) ---
+        async function cargarCobranza() {
+            const loading = document.getElementById('loading-cobranza');
+            const tablaBody = document.getElementById('tabla-cobranza-body');
+            loading.classList.remove('hidden');
+            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Cruzando datos, por favor espera...</td></tr>';
+
+            // Consulta optimizada en el servidor de Supabase
             const { data: consolidado, error } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select(`
-                    *,
-                    vendedores_division!inner(DIVISION)
-                `);
+                    FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS,
+                    vendedores_division (DIVISION)
+                `)
+                .ilike('NOMBRE_DOCTO', '%NOTA%'); // Filtro directo en la base de datos
 
-            if (consolidado && !error) {
-                const tablaBody = document.getElementById('tabla-cobranza-body');
-                tablaBody.innerHTML = ''; 
+            loading.classList.add('hidden');
+            tablaBody.innerHTML = '';
 
+            if (error) {
+                console.error("Error en la consulta:", error);
+                tablaBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Error al cargar: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (consolidado) {
+                let contador = 0;
                 consolidado.forEach(item => {
-                    // 1. Filtrar por NOMBRE_DOCTO (que diga "Nota Entrega" o similar)
-                    const esNotaRemision = item.NOMBRE_DOCTO && item.NOMBRE_DOCTO.toUpperCase().includes('NOTA DE ENTREGA');
-                    
-                    // 2. Obtener la división desde el cruce relacional
                     const divisionCruzada = item.vendedores_division?.DIVISION || '';
                     
-                    // 3. Filtrar por División (DENTRO DE GARANTIA)
-                    const esGarantia = divisionCruzada.toUpperCase().includes('DENTRO DE GARANTIA');
-
-                    if (esNotaRemision && esGarantia) {
+                    // Filtro estricto en JS
+                    if (divisionCruzada.toUpperCase().includes('DENTRO DE GARANTIA')) {
                         const costoOriginal = Number(item.COSTO) || 0;
-                        const costoPositivo = Math.abs(costoOriginal); // Lo pasamos a positivo
+                        const costoPositivo = Math.abs(costoOriginal); 
                         const precioVenta = Number(item.PRECIO_BS) || 0;
                         const utilidad = precioVenta - costoPositivo;
+                        contador++;
 
                         tablaBody.innerHTML += `
                             <tr class="hover:bg-gray-50">
@@ -260,11 +274,15 @@
                         `;
                     }
                 });
+
+                if (contador === 0) {
+                    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No se encontraron registros con "DENTRO DE GARANTIA" en Notas.</td></tr>';
+                }
             }
         }
 
-        // Cargar al iniciar la página
-        cargarDatosDashboard();
+        // Cargar Compras al iniciar, Cobranza se carga al hacer clic
+        cargarCompras();
     </script>
 </body>
 </html>
