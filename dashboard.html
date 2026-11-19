@@ -11,10 +11,30 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jQuery y DataTables (Para filtros, ordenamiento y descarga) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
         .tab-btn.active { background-color: white; color: #dc2626; font-weight: bold; border-bottom: 2px solid #dc2626; }
+        
+        /* Estilos para DataTables */
+        .dataTables_wrapper .dataTables_filter input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem 0.5rem; outline: none; margin-left: 0.5rem;}
+        .dataTables_wrapper .dataTables_length select { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem; outline: none; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: #dc2626 !important; color: white !important; border: none; border-radius: 4px; }
+        .dt-buttons button.dt-button { background-color: #059669; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.875rem; margin-bottom: 10px; cursor: pointer; font-weight: 600; }
+        .dt-buttons button.dt-button:hover { background-color: #047857; }
+        table.dataTable thead th { background-color: #f3f4f6; font-size: 0.75rem; color: #4b5563; padding: 12px 8px; }
+        table.dataTable tbody td { font-size: 0.875rem; padding: 10px 8px; }
+        /* Fila de totales */
+        tfoot th { background-color: #f9fafb; font-weight: bold; border-top: 2px solid #e5e7eb; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -62,6 +82,7 @@
             
             <!-- PESTAÑA 1: COMPRAS -->
             <div id="tab-compras" class="block">
+                <!-- ... (los KPIs y gráficos de compras se mantienen igual) ... -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Compras (Caja Chica)</p>
@@ -97,23 +118,31 @@
                         <p id="loading-cobranza" class="text-sm text-blue-600 font-semibold hidden">Cruzando datos, por favor espera...</p>
                     </div>
                     
-                    <div class="overflow-x-auto h-[600px]">
-                        <table class="min-w-full bg-white text-sm">
-                            <thead class="bg-gray-100 text-gray-600 uppercase text-xs sticky top-0 z-10">
+                    <div class="w-full">
+                        <table id="tablaCobranza" class="w-full text-left border-collapse display">
+                            <thead>
                                 <tr>
-                                    <th class="py-3 px-4 text-left">Fecha</th>
-                                    <th class="py-3 px-4 text-left">Nombre Docto</th>
-                                    <th class="py-3 px-4 text-left">Código Persona</th>
-                                    <th class="py-3 px-4 text-left">Nombre Descripción</th>
-                                    <th class="py-3 px-4 text-left">División</th>
-                                    <th class="py-3 px-4 text-right">Costo (+)</th>
-                                    <th class="py-3 px-4 text-right">Precio BS</th>
-                                    <th class="py-3 px-4 text-right">Utilidad BS</th>
+                                    <th>Fecha</th>
+                                    <th>Nombre Docto</th>
+                                    <th>Código Persona</th>
+                                    <th>Nombre Descripción</th>
+                                    <th>División</th>
+                                    <th class="text-right">Costo (+)</th>
+                                    <th class="text-right">Precio BS</th>
+                                    <th class="text-right">Utilidad BS</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-cobranza-body" class="text-gray-700 divide-y divide-gray-100">
+                            <tbody id="tabla-cobranza-body">
                                 <!-- Aquí se llenará la tabla -->
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="5" class="text-right py-3 px-2">TOTALES:</th>
+                                    <th id="total-costo" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
+                                    <th id="total-venta" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
+                                    <th id="total-utilidad" class="text-right py-3 px-2 text-green-700">Bs 0.00</th>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -152,21 +181,20 @@
         }
 
         async function subirArchivo(file, tipoExcel) {
+            // ... (Función de subida se mantiene igual) ...
             const formData = new FormData();
             formData.append('excelFile', file);
             formData.append('tipoExcel', tipoExcel);
-
             const alerta = document.getElementById('mensaje-alerta');
-            alerta.innerText = "Subiendo y procesando archivo...";
+            alerta.innerText = "Subiendo...";
             alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-blue-600 text-white font-semibold text-sm block";
-            
             try {
                 const response = await fetch('/api/upload', { method: 'POST', body: formData });
                 const result = await response.json();
                 if (response.ok) {
                     alerta.innerText = result.mensaje;
                     alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-green-600 text-white font-semibold text-sm block";
-                    cargarCompras(); 
+                    cargarCompras();
                 } else {
                     alerta.innerText = "Error: " + result.error;
                     alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
@@ -187,13 +215,13 @@
 
         let chartDona = null;
         let chartBarras = null;
+        let dataTableInstance = null; // Variable para guardar la tabla y no duplicarla
 
         async function cargarCompras() {
             const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
             if (cajaChica) {
                 let total = 0, fabrica = 0, postVenta = 0;
                 const proveedores = {};
-
                 cajaChica.forEach(item => {
                     const monto = Number(item.IMPORTE) || 0;
                     total += monto;
@@ -201,8 +229,6 @@
                     if (item.UNIDAD_NEGOCIO === 'POST VENTA') postVenta += monto;
                     if (item.PROVEEDOR) proveedores[item.PROVEEDOR] = (proveedores[item.PROVEEDOR] || 0) + monto;
                 });
-
-                // Cambiado a Bs
                 document.getElementById('kpi-total').innerText = 'Bs ' + total.toLocaleString('es-BO');
                 document.getElementById('kpi-fabrica').innerText = 'Bs ' + fabrica.toLocaleString('es-BO');
                 document.getElementById('kpi-postventa').innerText = 'Bs ' + postVenta.toLocaleString('es-BO');
@@ -213,7 +239,6 @@
                     data: { labels: ['Fábrica', 'Post-Venta'], datasets: [{ data: [fabrica, postVenta], backgroundColor: ['#2563eb', '#16a34a'], borderWidth: 0 }] },
                     options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
                 });
-
                 const topProveedores = Object.entries(proveedores).sort(([,a], [,b]) => b - a).slice(0, 5);
                 if (chartBarras) chartBarras.destroy();
                 chartBarras = new Chart(document.getElementById('graficoBarras'), {
@@ -228,7 +253,7 @@
             const loading = document.getElementById('loading-cobranza');
             const tablaBody = document.getElementById('tabla-cobranza-body');
             loading.classList.remove('hidden');
-            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Cruzando datos, por favor espera...</td></tr>';
+            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Cruzando datos...</td></tr>';
 
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
@@ -257,6 +282,10 @@
                 });
             }
 
+            let totalCosto = 0;
+            let totalVenta = 0;
+            let totalUtilidad = 0;
+
             if (consolidado) {
                 let contador = 0;
                 consolidado.forEach(item => {
@@ -268,9 +297,13 @@
                         const costoPositivo = Math.abs(costoOriginal); 
                         const precioVenta = Number(item.PRECIO_BS) || 0;
                         const utilidad = precioVenta - costoPositivo;
+                        
+                        // Sumar a los totales
+                        totalCosto += costoPositivo;
+                        totalVenta += precioVenta;
+                        totalUtilidad += utilidad;
                         contador++;
 
-                        // Cambiado a Bs en la tabla
                         tablaBody.innerHTML += `
                             <tr class="hover:bg-gray-50">
                                 <td class="py-2 px-4 border-b">${item.FECHA || ''}</td>
@@ -286,9 +319,44 @@
                     }
                 });
 
+                // Actualizar los totales en el pie de la tabla
+                document.getElementById('total-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('total-venta').innerText = 'Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('total-utilidad').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
                 if (contador === 0) {
-                    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No se encontraron registros de Notas de Remisión con "DENTRO DE GARANTIA".</td></tr>';
+                    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No se encontraron registros.</td></tr>';
                 }
+
+                // Inicializar DataTables (Filtros y Botón de Excel)
+                if (dataTableInstance) {
+                    dataTableInstance.destroy();
+                }
+                
+                // Timeout para asegurar que el HTML se haya pintado antes de aplicar DataTables
+                setTimeout(() => {
+                    dataTableInstance = $('#tablaCobranza').DataTable({
+                        dom: 'Bfrtip',
+                        buttons: [
+                            {
+                                extend: 'excelHtml5',
+                                text: '⬇️ Descargar Excel',
+                                title: 'Garantias_Utilidad'
+                            }
+                        ],
+                        "pageLength": 10,
+                        "lengthMenu": [10, 25, 50, 100],
+                        "language": {
+                            "search": "Buscar:",
+                            "lengthMenu": "Mostrar _MENU_ registros",
+                            "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                            "paginate": {
+                                "first": "Primero", "last": "Último", "next": "Siguiente", "previous": "Anterior"
+                            }
+                        },
+                        "order": [[ 0, "desc" ]] // Ordenar por Fecha descendente por defecto
+                    });
+                }, 100);
             }
         }
 
