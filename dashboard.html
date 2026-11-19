@@ -12,7 +12,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- jQuery y DataTables (Para filtros, ordenamiento y descarga) -->
+    <!-- jQuery y DataTables -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -25,22 +25,21 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
         .tab-btn.active { background-color: white; color: #dc2626; font-weight: bold; border-bottom: 2px solid #dc2626; }
         
-        /* Estilos para DataTables */
+        /* Estilos DataTables */
         .dataTables_wrapper .dataTables_filter input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem 0.5rem; outline: none; margin-left: 0.5rem;}
         .dataTables_wrapper .dataTables_length select { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem; outline: none; }
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: #dc2626 !important; color: white !important; border: none; border-radius: 4px; }
-        .dt-buttons button.dt-button { background-color: #059669; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.875rem; margin-bottom: 10px; cursor: pointer; font-weight: 600; }
-        .dt-buttons button.dt-button:hover { background-color: #047857; }
-        table.dataTable thead th { background-color: #f3f4f6; font-size: 0.75rem; color: #4b5563; padding: 12px 8px; }
-        table.dataTable tbody td { font-size: 0.875rem; padding: 10px 8px; }
-        /* Fila de totales */
-        tfoot th { background-color: #f9fafb; font-weight: bold; border-top: 2px solid #e5e7eb; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: #2563eb !important; color: white !important; border: none; border-radius: 4px; }
+        .dt-buttons button.dt-button { background-color: #10b981; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.875rem; margin-bottom: 10px; cursor: pointer; font-weight: 600; }
+        .dt-buttons button.dt-button:hover { background-color: #059669; }
+        table.dataTable thead th { background-color: #f8fafc; font-size: 0.75rem; color: #64748b; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; }
+        table.dataTable tbody td { font-size: 0.875rem; padding: 10px 8px; color: #334155; }
+        tfoot th { background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0; color: #1e293b; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
-    <!-- Header -->
-    <header class="bg-gray-900 text-white shadow-md z-20">
+    <!-- Header Oscuro -->
+    <header class="bg-[#0f172a] text-white shadow-md z-20">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700">
@@ -48,7 +47,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-black tracking-widest uppercase">GALVAL</h1>
-                    <p class="text-xs text-gray-400">Control de Operaciones</p>
+                    <p class="text-xs text-slate-400">Control de Operaciones</p>
                 </div>
             </div>
             
@@ -56,31 +55,31 @@
                 <input type="file" id="excelConsolidado" accept=".xlsx, .xls" class="hidden">
                 <input type="file" id="excelCajaChica" accept=".xlsx, .xls" class="hidden">
 
-                <button onclick="document.getElementById('excelConsolidado').click()" class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded transition flex items-center gap-2">
+                <button onclick="document.getElementById('excelConsolidado').click()" class="bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold py-2 px-4 rounded transition flex items-center gap-2">
                     Subir Consolidado
                 </button>
                 <button onclick="document.getElementById('excelCajaChica').click()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded transition shadow-lg shadow-red-900/50 flex items-center gap-2">
                     Subir Caja Chica
                 </button>
-                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold ml-2">Salir</button>
+                <button onclick="logout()" class="text-slate-400 hover:text-white text-sm font-semibold ml-2">Salir</button>
             </div>
         </div>
     </header>
 
     <!-- Contenido -->
-    <main class="flex-1 overflow-y-auto bg-gray-100">
+    <main class="flex-1 overflow-y-auto bg-[#f8fafc]">
         
         <!-- Pestañas -->
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="max-w-7xl mx-auto flex px-4">
-                <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Compras</button>
-                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-gray-500 hover:text-red-600 transition">Garantías y Utilidad</button>
+                <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition">Compras</button>
+                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition">Garantías y Utilidad</button>
             </div>
         </div>
 
         <div class="max-w-7xl mx-auto p-4 md:p-6">
             
-            <!-- PESTAÑA 1: COMPRAS -->
+            <!-- PESTAÑA 1: COMPRAS (Se mantiene igual) -->
             <div id="tab-compras" class="block">
                 <!-- ... (los KPIs y gráficos de compras se mantienen igual) ... -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -97,7 +96,6 @@
                         <p id="kpi-postventa" class="text-3xl font-black text-gray-800">Cargando...</p>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <h2 class="text-lg font-bold text-gray-800 mb-4">Distribución</h2>
@@ -110,15 +108,56 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA 2: GARANTÍAS Y UTILIDAD -->
+            <!-- PESTAÑA 2: GARANTÍAS Y UTILIDAD (NUEVO DISEÑO) -->
             <div id="tab-cobranza" class="hidden">
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold text-gray-800">Detalle de Notas de Remisión (Dentro de Garantía)</h2>
-                        <p id="loading-cobranza" class="text-sm text-blue-600 font-semibold hidden">Cruzando datos, por favor espera...</p>
+                
+                <!-- FILTROS GLOBALES -->
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Filtrar por Fecha</label>
+                        <input type="date" id="filtro-fecha" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
                     </div>
-                    
-                    <div class="w-full">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Filtrar por Descripción</label>
+                        <input type="text" id="filtro-descripcion" placeholder="Buscar producto..." class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <button onclick="limpiarFiltros()" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Limpiar todo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPIs Y GRÁFICO -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- KPIs Izquierda -->
+                    <div class="flex flex-col gap-4">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Total (Bs)</p>
+                            <p id="kpi-utilidad-total" class="text-3xl font-black text-green-600">Cargando...</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros (Notas de Remisión)</p>
+                            <p id="kpi-registros" class="text-3xl font-black text-blue-600">0</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-slate-400">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
+                            <p id="kpi-actualizacion" class="text-xl font-bold text-slate-700">--/--/----</p>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Derecha -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
+                        <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TOP PRODUCTOS CON MAYOR UTILIDAD</h2>
+                        <div class="h-64"><canvas id="graficoUtilidad"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- TABLA DETALLADA -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4">Detalle de Operaciones</h2>
+                    <div class="w-full overflow-x-auto">
                         <table id="tablaCobranza" class="w-full text-left border-collapse display">
                             <thead>
                                 <tr>
@@ -133,19 +172,20 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-cobranza-body">
-                                <!-- Aquí se llenará la tabla -->
+                                <!-- Se llena por JS -->
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <th colspan="5" class="text-right py-3 px-2">TOTALES:</th>
-                                    <th id="total-costo" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
-                                    <th id="total-venta" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
-                                    <th id="total-utilidad" class="text-right py-3 px-2 text-green-700">Bs 0.00</th>
+                                    <th id="total-costo" class="text-right py-3 px-2">Bs 0.00</th>
+                                    <th id="total-venta" class="text-right py-3 px-2">Bs 0.00</th>
+                                    <th id="total-utilidad" class="text-right py-3 px-2 text-green-600">Bs 0.00</th>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
                 </div>
+
             </div>
 
         </div>
@@ -181,7 +221,7 @@
         }
 
         async function subirArchivo(file, tipoExcel) {
-            // ... (Función de subida se mantiene igual) ...
+            // ... (Misma función de subida) ...
             const formData = new FormData();
             formData.append('excelFile', file);
             formData.append('tipoExcel', tipoExcel);
@@ -215,9 +255,12 @@
 
         let chartDona = null;
         let chartBarras = null;
-        let dataTableInstance = null; // Variable para guardar la tabla y no duplicarla
+        let chartUtilidad = null;
+        let dataTableInstance = null;
+        let datosGlobales = []; // Para guardar los datos y poder filtrar
 
         async function cargarCompras() {
+            // ... (Misma lógica de carga de compras) ...
             const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
             if (cajaChica) {
                 let total = 0, fabrica = 0, postVenta = 0;
@@ -253,41 +296,37 @@
             const loading = document.getElementById('loading-cobranza');
             const tablaBody = document.getElementById('tabla-cobranza-body');
             loading.classList.remove('hidden');
-            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Cruzando datos...</td></tr>';
 
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
-                .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`);
+                .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`)
+                .order('FECHA', { ascending: false }); // Ordenar por fecha reciente
 
             const { data: divisiones, error: err2 } = await supabaseClient
                 .from('vendedores_division')
                 .select('PERSONA_LINEA_PRODUCCION, DIVISION');
 
             loading.classList.add('hidden');
-            tablaBody.innerHTML = '';
-
+            
             if (err1 || err2) {
                 console.error(err1 || err2);
-                tablaBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Error al cargar datos.</td></tr>`;
                 return;
             }
 
             const mapaDivisiones = {};
             if (divisiones) {
                 divisiones.forEach(d => {
-                    if (d.PERSONA_LINEA_PRODUCCION) {
-                        mapaDivisiones[String(d.PERSONA_LINEA_PRODUCCION)] = d.DIVISION;
-                    }
+                    if (d.PERSONA_LINEA_PRODUCCION) mapaDivisiones[String(d.PERSONA_LINEA_PRODUCCION)] = d.DIVISION;
                 });
             }
 
-            let totalCosto = 0;
-            let totalVenta = 0;
-            let totalUtilidad = 0;
+            datosGlobales = []; // Limpiar array global
+            let ultimaFecha = '--/--/----';
 
-            if (consolidado) {
-                let contador = 0;
+            if (consolidado && consolidado.length > 0) {
+                ultimaFecha = consolidado[0].FECHA || ultimaFecha; // La primera fila es la más reciente por el .order()
+
                 consolidado.forEach(item => {
                     const codigo = String(item.PERSONA_LINEA_PRODUCCION || '');
                     const divisionCruzada = mapaDivisiones[codigo] || '';
@@ -297,67 +336,148 @@
                         const costoPositivo = Math.abs(costoOriginal); 
                         const precioVenta = Number(item.PRECIO_BS) || 0;
                         const utilidad = precioVenta - costoPositivo;
-                        
-                        // Sumar a los totales
-                        totalCosto += costoPositivo;
-                        totalVenta += precioVenta;
-                        totalUtilidad += utilidad;
-                        contador++;
 
-                        tablaBody.innerHTML += `
-                            <tr class="hover:bg-gray-50">
-                                <td class="py-2 px-4 border-b">${item.FECHA || ''}</td>
-                                <td class="py-2 px-4 border-b">${item.NOMBRE_DOCTO || ''}</td>
-                                <td class="py-2 px-4 border-b">${codigo}</td>
-                                <td class="py-2 px-4 border-b">${item.NOMBRE_DESCRIPCION || ''}</td>
-                                <td class="py-2 px-4 border-b">${divisionCruzada}</td>
-                                <td class="py-2 px-4 border-b text-right text-gray-500">Bs ${costoPositivo.toFixed(2)}</td>
-                                <td class="py-2 px-4 border-b text-right">Bs ${precioVenta.toFixed(2)}</td>
-                                <td class="py-2 px-4 border-b text-right font-bold ${utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${utilidad.toFixed(2)}</td>
-                            </tr>
-                        `;
+                        datosGlobales.push({
+                            fecha: item.FECHA || '',
+                            docto: item.NOMBRE_DOCTO || '',
+                            codigo: codigo,
+                            descripcion: item.NOMBRE_DESCRIPCION || '',
+                            division: divisionCruzada,
+                            costo: costoPositivo,
+                            venta: precioVenta,
+                            utilidad: utilidad
+                        });
                     }
                 });
-
-                // Actualizar los totales en el pie de la tabla
-                document.getElementById('total-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                document.getElementById('total-venta').innerText = 'Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                document.getElementById('total-utilidad').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-
-                if (contador === 0) {
-                    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No se encontraron registros.</td></tr>';
-                }
-
-                // Inicializar DataTables (Filtros y Botón de Excel)
-                if (dataTableInstance) {
-                    dataTableInstance.destroy();
-                }
-                
-                // Timeout para asegurar que el HTML se haya pintado antes de aplicar DataTables
-                setTimeout(() => {
-                    dataTableInstance = $('#tablaCobranza').DataTable({
-                        dom: 'Bfrtip',
-                        buttons: [
-                            {
-                                extend: 'excelHtml5',
-                                text: '⬇️ Descargar Excel',
-                                title: 'Garantias_Utilidad'
-                            }
-                        ],
-                        "pageLength": 10,
-                        "lengthMenu": [10, 25, 50, 100],
-                        "language": {
-                            "search": "Buscar:",
-                            "lengthMenu": "Mostrar _MENU_ registros",
-                            "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                            "paginate": {
-                                "first": "Primero", "last": "Último", "next": "Siguiente", "previous": "Anterior"
-                            }
-                        },
-                        "order": [[ 0, "desc" ]] // Ordenar por Fecha descendente por defecto
-                    });
-                }, 100);
             }
+
+            // Actualizar KPIs
+            document.getElementById('kpi-registros').innerText = datosGlobales.length;
+            document.getElementById('kpi-actualizacion').innerText = ultimaFecha;
+
+            // Renderizar la tabla inicial y el gráfico
+            renderizarTablaYGrafico(datosGlobales);
+        }
+
+        function renderizarTablaYGrafico(datos) {
+            const tablaBody = document.getElementById('tabla-cobranza-body');
+            tablaBody.innerHTML = '';
+            
+            let totalCosto = 0, totalVenta = 0, totalUtilidad = 0;
+            let utilidadPorProducto = {};
+
+            datos.forEach(item => {
+                totalCosto += item.costo;
+                totalVenta += item.venta;
+                totalUtilidad += item.utilidad;
+
+                // Agrupar para el gráfico
+                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
+
+                tablaBody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-2 px-4">${item.fecha}</td>
+                        <td class="py-2 px-4 font-medium">${item.docto}</td>
+                        <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
+                        <td class="py-2 px-4">${item.descripcion}</td>
+                        <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
+                        <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
+                        <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
+                        <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            if (datos.length === 0) {
+                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos con los filtros actuales.</td></tr>';
+            }
+
+            // Actualizar totales del pie
+            document.getElementById('total-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-venta').innerText = 'Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-utilidad').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('kpi-utilidad-total').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Inicializar/Actualizar DataTable
+            if (dataTableInstance) dataTableInstance.destroy();
+            setTimeout(() => {
+                dataTableInstance = $('#tablaCobranza').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [{ extend: 'excelHtml5', text: '⬇️ Descargar Excel', title: 'Reporte_Garantias' }],
+                    "pageLength": 10,
+                    "lengthMenu": [10, 25, 50, 100],
+                    "language": { "search": "Buscar:", "lengthMenu": "Mostrar _MENU_ registros", "info": "Mostrando _START_ a _END_ de _TOTAL_", "paginate": { "next": "Siguiente", "previous": "Anterior" } }
+                });
+            }, 100);
+
+            // Actualizar Gráfico (Top 8 Productos con más utilidad)
+            const topProductos = Object.entries(utilidadPorProducto)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 8);
+
+            if (chartUtilidad) chartUtilidad.destroy();
+            chartUtilidad = new Chart(document.getElementById('graficoUtilidad'), {
+                type: 'bar',
+                data: {
+                    labels: topProductos.map(p => p[0].length > 25 ? p[0].substring(0, 25) + '...' : p[0]),
+                    datasets: [{
+                        label: 'Utilidad (Bs)',
+                        data: topProductos.map(p => p[1]),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4,
+                        barThickness: 15
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, border: {display: false} },
+                        y: { grid: { display: false }, border: {display: false}, ticks: { font: {size: 10} } }
+                    }
+                }
+            });
+        }
+
+        // --- LÓGICA DE FILTROS GLOBALES ---
+        document.getElementById('filtro-fecha').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro-descripcion').addEventListener('input', aplicarFiltros);
+
+        function aplicarFiltros() {
+            const fechaFiltro = document.getElementById('filtro-fecha').value; // YYYY-MM-DD
+            const descFiltro = document.getElementById('filtro-descripcion').value.toLowerCase();
+
+            const datosFiltrados = datosGlobales.filter(item => {
+                let cumpleFecha = true;
+                let cumpleDesc = true;
+
+                if (fechaFiltro) {
+                    // Convertir la fecha del item (29/10/2026) a YYYY-MM-DD para comparar
+                    if(item.fecha && item.fecha.includes('/')) {
+                        const partes = item.fecha.split('/'); // ["29", "10", "2026"]
+                        const fechaItemFormateada = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                        cumpleFecha = fechaItemFormateada === fechaFiltro;
+                    } else {
+                        cumpleFecha = false;
+                    }
+                }
+
+                if (descFiltro) {
+                    cumpleDesc = item.descripcion.toLowerCase().includes(descFiltro);
+                }
+
+                return cumpleFecha && cumpleDesc;
+            });
+
+            renderizarTablaYGrafico(datosFiltrados);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filtro-fecha').value = '';
+            document.getElementById('filtro-descripcion').value = '';
+            renderizarTablaYGrafico(datosGlobales);
         }
 
         cargarCompras();
