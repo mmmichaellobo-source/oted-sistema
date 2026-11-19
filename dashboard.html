@@ -202,9 +202,10 @@
                     if (item.PROVEEDOR) proveedores[item.PROVEEDOR] = (proveedores[item.PROVEEDOR] || 0) + monto;
                 });
 
-                document.getElementById('kpi-total').innerText = '$ ' + total.toLocaleString('es-BO');
-                document.getElementById('kpi-fabrica').innerText = '$ ' + fabrica.toLocaleString('es-BO');
-                document.getElementById('kpi-postventa').innerText = '$ ' + postVenta.toLocaleString('es-BO');
+                // Cambiado a Bs
+                document.getElementById('kpi-total').innerText = 'Bs ' + total.toLocaleString('es-BO');
+                document.getElementById('kpi-fabrica').innerText = 'Bs ' + fabrica.toLocaleString('es-BO');
+                document.getElementById('kpi-postventa').innerText = 'Bs ' + postVenta.toLocaleString('es-BO');
 
                 if (chartDona) chartDona.destroy();
                 chartDona = new Chart(document.getElementById('graficoDona'), {
@@ -217,7 +218,7 @@
                 if (chartBarras) chartBarras.destroy();
                 chartBarras = new Chart(document.getElementById('graficoBarras'), {
                     type: 'bar',
-                    data: { labels: topProveedores.map(p => p[0].substring(0, 15) + '...'), datasets: [{ label: 'Monto ($)', data: topProveedores.map(p => p[1]), backgroundColor: '#dc2626', borderRadius: 4 }] },
+                    data: { labels: topProveedores.map(p => p[0].substring(0, 15) + '...'), datasets: [{ label: 'Monto (Bs)', data: topProveedores.map(p => p[1]), backgroundColor: '#dc2626', borderRadius: 4 }] },
                     options: { indexAxis: 'y', plugins: { legend: { display: false } } }
                 });
             }
@@ -229,7 +230,6 @@
             loading.classList.remove('hidden');
             tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Cruzando datos, por favor espera...</td></tr>';
 
-            // FILTRO CORREGIDO: Atrapa "Remision" y "Remisión"
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
@@ -270,6 +270,7 @@
                         const utilidad = precioVenta - costoPositivo;
                         contador++;
 
+                        // Cambiado a Bs en la tabla
                         tablaBody.innerHTML += `
                             <tr class="hover:bg-gray-50">
                                 <td class="py-2 px-4 border-b">${item.FECHA || ''}</td>
@@ -277,9 +278,9 @@
                                 <td class="py-2 px-4 border-b">${codigo}</td>
                                 <td class="py-2 px-4 border-b">${item.NOMBRE_DESCRIPCION || ''}</td>
                                 <td class="py-2 px-4 border-b">${divisionCruzada}</td>
-                                <td class="py-2 px-4 border-b text-right text-gray-500">$ ${costoPositivo.toFixed(2)}</td>
-                                <td class="py-2 px-4 border-b text-right">$ ${precioVenta.toFixed(2)}</td>
-                                <td class="py-2 px-4 border-b text-right font-bold ${utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">$ ${utilidad.toFixed(2)}</td>
+                                <td class="py-2 px-4 border-b text-right text-gray-500">Bs ${costoPositivo.toFixed(2)}</td>
+                                <td class="py-2 px-4 border-b text-right">Bs ${precioVenta.toFixed(2)}</td>
+                                <td class="py-2 px-4 border-b text-right font-bold ${utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${utilidad.toFixed(2)}</td>
                             </tr>
                         `;
                     }
