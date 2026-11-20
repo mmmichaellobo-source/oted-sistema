@@ -20,6 +20,8 @@
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <!-- Iconos (FontAwesome para la lupa y el excel) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
@@ -29,8 +31,23 @@
         .dataTables_wrapper .dataTables_filter input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem 0.5rem; outline: none; margin-left: 0.5rem;}
         .dataTables_wrapper .dataTables_length select { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem; outline: none; }
         .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: #2563eb !important; color: white !important; border: none; border-radius: 4px; }
-        .dt-buttons button.dt-button { background-color: #10b981; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.875rem; margin-bottom: 10px; cursor: pointer; font-weight: 600; }
-        .dt-buttons button.dt-button:hover { background-color: #059669; }
+        
+        /* Botón de Excel Corporativo */
+        .dt-buttons button.dt-button { 
+            background-color: #0f766e; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            padding: 8px 16px; 
+            font-size: 0.875rem; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        .dt-buttons button.dt-button:hover { background-color: #115e59; }
+        
         table.dataTable thead th { background-color: #f8fafc; font-size: 0.75rem; color: #64748b; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; }
         table.dataTable tbody td { font-size: 0.875rem; padding: 10px 8px; color: #334155; }
         tfoot th { background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0; color: #1e293b; }
@@ -73,7 +90,8 @@
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="max-w-7xl mx-auto flex px-4">
                 <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition">Compras</button>
-                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition">Garantías y Utilidad</button>
+                <!-- CAMBIO AQUÍ: Nombre de la pestaña -->
+                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition">Cobranzas</button>
             </div>
         </div>
 
@@ -107,37 +125,46 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA 2: GARANTÍAS Y UTILIDAD -->
+            <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
                 
                 <!-- FILTROS GLOBALES -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Filtrar por Fecha</label>
-                        <input type="date" id="filtro-fecha" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                        <input type="date" id="filtro-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                        <input type="date" id="filtro-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                     <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Filtrar por Descripción</label>
-                        <input type="text" id="filtro-descripcion" placeholder="Buscar producto..." class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Descripción (Producto)</label>
+                        <select id="filtro-descripcion" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            <option value="">Todos los productos...</option>
+                            <!-- Se llena dinámicamente -->
+                        </select>
                     </div>
-                    <div>
-                        <button onclick="limpiarFiltros()" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            Limpiar todo
+                    
+                    <div class="flex gap-2">
+                        <button onclick="aplicarFiltros()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <button onclick="limpiarFiltros()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                            <i class="fas fa-eraser"></i> Limpiar
                         </button>
                     </div>
                 </div>
 
                 <!-- KPIs Y GRÁFICO -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <!-- KPIs Izquierda -->
                     <div class="flex flex-col gap-4">
                         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Total (Bs)</p>
                             <p id="kpi-utilidad-total" class="text-3xl font-black text-green-600">Bs 0.00</p>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros (Notas de Remisión)</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
                             <p id="kpi-registros" class="text-3xl font-black text-blue-600">0</p>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-slate-400">
@@ -146,7 +173,6 @@
                         </div>
                     </div>
 
-                    <!-- Gráfico Derecha -->
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
                         <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TOP PRODUCTOS CON MAYOR UTILIDAD</h2>
                         <div class="h-64"><canvas id="graficoUtilidad"></canvas></div>
@@ -155,7 +181,8 @@
 
                 <!-- TABLA DETALLADA -->
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <h2 class="text-lg font-bold text-slate-800 mb-4">Detalle de Operaciones</h2>
+                    <!-- CAMBIO AQUÍ: Título de la tabla -->
+                    <h2 class="text-lg font-bold text-slate-800 mb-4">Detalle de Cobranzas (Garantías)</h2>
                     <div class="w-full overflow-x-auto">
                         <table id="tablaCobranza" class="w-full text-left border-collapse display">
                             <thead>
@@ -186,7 +213,6 @@
                 </div>
 
             </div>
-
         </div>
     </main>
 
@@ -219,6 +245,7 @@
             }
         }
 
+        // --- SUBIDA DE ARCHIVOS ---
         async function subirArchivo(file, tipoExcel) {
             const formData = new FormData();
             formData.append('excelFile', file);
@@ -257,6 +284,7 @@
         let dataTableInstance = null;
         let datosGlobales = []; 
 
+        // --- CARGA DE DATOS ---
         async function cargarCompras() {
             const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
             if (cajaChica) {
@@ -304,10 +332,7 @@
 
             if(loading) loading.classList.add('hidden');
             
-            if (err1 || err2) {
-                console.error(err1 || err2);
-                return;
-            }
+            if (err1 || err2) { console.error(err1 || err2); return; }
 
             const mapaDivisiones = {};
             if (divisiones) {
@@ -320,7 +345,6 @@
             let ultimaFecha = '--/--/----';
 
             if (consolidado && consolidado.length > 0) {
-                // Ordenar por fecha
                 consolidado.sort((a, b) => {
                     if(!a.FECHA || !b.FECHA) return 0;
                     const dateA = new Date(a.FECHA.split('/').reverse().join('-'));
@@ -354,11 +378,17 @@
                 });
             }
 
-            // Actualizar KPIs
             document.getElementById('kpi-registros').innerText = datosGlobales.length;
             document.getElementById('kpi-actualizacion').innerText = ultimaFecha;
 
-            // Renderizar la tabla inicial y el gráfico
+            // Llenar el select de descripciones únicas
+            const selectDesc = document.getElementById('filtro-descripcion');
+            const descripcionesUnicas = [...new Set(datosGlobales.map(item => item.descripcion))].sort();
+            selectDesc.innerHTML = '<option value="">Todos los productos...</option>';
+            descripcionesUnicas.forEach(desc => {
+                selectDesc.innerHTML += `<option value="${desc}">${desc}</option>`;
+            });
+
             renderizarTablaYGrafico(datosGlobales);
         }
 
@@ -403,66 +433,64 @@
             setTimeout(() => {
                 dataTableInstance = $('#tablaCobranza').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ extend: 'excelHtml5', text: '⬇️ Descargar Excel', title: 'Reporte_Garantias' }],
+                    buttons: [{ 
+                        extend: 'excelHtml5', 
+                        text: '<i class="fas fa-file-excel"></i> Descargar Reporte Excel', 
+                        title: 'Reporte_Cobranzas',
+                        className: 'dt-button' 
+                    }],
                     "pageLength": 10,
                     "lengthMenu": [10, 25, 50, 100],
-                    "language": { "search": "Buscar:", "lengthMenu": "Mostrar _MENU_ registros", "info": "Mostrando _START_ a _END_ de _TOTAL_", "paginate": { "next": "Siguiente", "previous": "Anterior" } }
+                    "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros", "info": "Mostrando _START_ a _END_ de _TOTAL_", "paginate": { "next": "Siguiente", "previous": "Anterior" } }
                 });
             }, 100);
 
-            const topProductos = Object.entries(utilidadPorProducto)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 8);
+            const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 8);
 
             if (chartUtilidad) chartUtilidad.destroy();
             chartUtilidad = new Chart(document.getElementById('graficoUtilidad'), {
                 type: 'bar',
                 data: {
                     labels: topProductos.map(p => p[0].length > 25 ? p[0].substring(0, 25) + '...' : p[0]),
-                    datasets: [{
-                        label: 'Utilidad (Bs)',
-                        data: topProductos.map(p => p[1]),
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 4,
-                        barThickness: 15
-                    }]
+                    datasets: [{ label: 'Utilidad (Bs)', data: topProductos.map(p => p[1]), backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 15 }]
                 },
                 options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, border: {display: false} },
-                        y: { grid: { display: false }, border: {display: false}, ticks: { font: {size: 10} } }
-                    }
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false } }, y: { grid: { display: false }, ticks: { font: {size: 10} } } }
                 }
             });
         }
 
-        document.getElementById('filtro-fecha').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtro-descripcion').addEventListener('input', aplicarFiltros);
-
+        // --- APLICAR FILTROS CON EL BOTÓN BUSCAR ---
         function aplicarFiltros() {
-            const fechaFiltro = document.getElementById('filtro-fecha').value; 
-            const descFiltro = document.getElementById('filtro-descripcion').value.toLowerCase();
+            const fechaIni = document.getElementById('filtro-fecha-ini').value; 
+            const fechaFin = document.getElementById('filtro-fecha-fin').value; 
+            const descFiltro = document.getElementById('filtro-descripcion').value;
 
             const datosFiltrados = datosGlobales.filter(item => {
                 let cumpleFecha = true;
                 let cumpleDesc = true;
 
-                if (fechaFiltro) {
+                if (fechaIni || fechaFin) {
                     if(item.fecha && item.fecha.includes('/')) {
                         const partes = item.fecha.split('/'); 
-                        const fechaItemFormateada = `${partes[2]}-${partes[1]}-${partes[0]}`;
-                        cumpleFecha = fechaItemFormateada === fechaFiltro;
+                        const fechaItem = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+                        
+                        if (fechaIni) {
+                            const dIni = new Date(fechaIni);
+                            if (fechaItem < dIni) cumpleFecha = false;
+                        }
+                        if (fechaFin) {
+                            const dFin = new Date(fechaFin);
+                            if (fechaItem > dFin) cumpleFecha = false;
+                        }
                     } else {
                         cumpleFecha = false;
                     }
                 }
 
                 if (descFiltro) {
-                    cumpleDesc = item.descripcion.toLowerCase().includes(descFiltro);
+                    cumpleDesc = item.descripcion === descFiltro;
                 }
 
                 return cumpleFecha && cumpleDesc;
@@ -472,7 +500,8 @@
         }
 
         function limpiarFiltros() {
-            document.getElementById('filtro-fecha').value = '';
+            document.getElementById('filtro-fecha-ini').value = '';
+            document.getElementById('filtro-fecha-fin').value = '';
             document.getElementById('filtro-descripcion').value = '';
             renderizarTablaYGrafico(datosGlobales);
         }
