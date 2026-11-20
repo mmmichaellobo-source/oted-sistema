@@ -135,10 +135,10 @@
                     </div>
                     
                     <div class="flex gap-2">
-                        <button onclick="aplicarFiltros()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                        <button onclick="aplicarFiltrosGlobales()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
                             <i class="fas fa-search"></i> Buscar
                         </button>
-                        <button onclick="limpiarFiltros()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                        <button onclick="limpiarFiltrosGlobales()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
                             <i class="fas fa-eraser"></i> Limpiar
                         </button>
                     </div>
@@ -170,15 +170,22 @@
                 <!-- TABLA DETALLADA -->
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     
-                    <!-- NUEVOS FILTROS LOCALES (SOLO PARA LA TABLA) -->
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <!-- FILTROS LOCALES (SOLO PARA LA TABLA) -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Cobranzas (Garantías)</h2>
                         
-                        <div class="flex items-center gap-2 text-sm">
-                            <label class="font-semibold text-slate-600">Filtrar Tabla:</label>
-                            <input type="date" id="filtro-tabla-fecha-ini" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
+                        <div class="flex flex-wrap items-center gap-2 text-sm bg-slate-50 p-2 rounded-lg border border-slate-200">
+                            <label class="font-semibold text-slate-600 ml-2">Filtrar Tabla:</label>
+                            <input type="date" id="filtro-tabla-fecha-ini" class="bg-white border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
                             <span class="text-slate-400">-</span>
-                            <input type="date" id="filtro-tabla-fecha-fin" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
+                            <input type="date" id="filtro-tabla-fecha-fin" class="bg-white border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
+                            
+                            <button onclick="aplicarFiltroTabla()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded transition text-xs flex items-center gap-1 shadow-sm ml-2">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            <button onclick="limpiarFiltroTabla()" class="bg-white text-slate-600 border border-slate-300 hover:bg-slate-100 font-semibold py-1 px-3 rounded transition text-xs flex items-center gap-1">
+                                <i class="fas fa-eraser"></i> Limpiar
+                            </button>
                         </div>
                     </div>
 
@@ -455,8 +462,8 @@
             });
         }
 
-        // --- FILTROS GLOBALES (AFECTAN TODO) ---
-        function aplicarFiltros() {
+        // --- FILTROS GLOBALES ---
+        function aplicarFiltrosGlobales() {
             const fechaIni = document.getElementById('filtro-fecha-ini').value; 
             const fechaFin = document.getElementById('filtro-fecha-fin').value; 
             const descFiltro = document.getElementById('filtro-descripcion').value;
@@ -493,51 +500,55 @@
             renderizarTablaYGrafico(datosFiltrados);
         }
 
-        function limpiarFiltros() {
+        function limpiarFiltrosGlobales() {
             document.getElementById('filtro-fecha-ini').value = '';
             document.getElementById('filtro-fecha-fin').value = '';
             document.getElementById('filtro-descripcion').value = '';
-            document.getElementById('filtro-tabla-fecha-ini').value = '';
-            document.getElementById('filtro-tabla-fecha-fin').value = '';
             renderizarTablaYGrafico(datosGlobales);
+            limpiarFiltroTabla(); // También limpiamos los de la tabla
         }
 
-        // --- FILTRO LOCAL (SOLO PARA LA TABLA) ---
-        // Esta función se ejecuta cuando cambias las fechas de la tabla
-        $(document).ready(function() {
-            $('#filtro-tabla-fecha-ini, #filtro-tabla-fecha-fin').on('change', function() {
-                if (!dataTableInstance) return;
-                
-                const fIni = $('#filtro-tabla-fecha-ini').val();
-                const fFin = $('#filtro-tabla-fecha-fin').val();
+        // --- FILTROS LOCALES (SOLO PARA LA TABLA) ---
+        function aplicarFiltroTabla() {
+            if (!dataTableInstance) return;
+            
+            const fIni = $('#filtro-tabla-fecha-ini').val();
+            const fFin = $('#filtro-tabla-fecha-fin').val();
 
-                // Función personalizada para buscar en la columna Fecha (índice 0)
-                $.fn.dataTable.ext.search.push(
-                    function(settings, data, dataIndex) {
-                        if (settings.nTable.id !== 'tablaCobranza') return true; // Solo aplicar a esta tabla
+            // Función personalizada para buscar en la columna Fecha (índice 0)
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'tablaCobranza') return true; // Solo aplicar a esta tabla
 
-                        const fechaTabla = data[0]; // La fecha está en la columna 0 (dd/mm/aaaa)
-                        if (!fechaTabla || !fechaTabla.includes('/')) return true; // Si no hay fecha válida, mostrar
+                    const fechaTabla = data[0]; // La fecha está en la columna 0 (dd/mm/aaaa)
+                    if (!fechaTabla || !fechaTabla.includes('/')) return true; // Si no hay fecha válida, mostrar
 
-                        const partes = fechaTabla.split('/');
-                        const fechaObj = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+                    const partes = fechaTabla.split('/');
+                    const fechaObj = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
 
-                        let cumple = true;
-                        if (fIni) {
-                            if (fechaObj < new Date(fIni)) cumple = false;
-                        }
-                        if (fFin) {
-                            if (fechaObj > new Date(fFin)) cumple = false;
-                        }
-                        return cumple;
+                    let cumple = true;
+                    if (fIni) {
+                        if (fechaObj < new Date(fIni)) cumple = false;
                     }
-                );
+                    if (fFin) {
+                        if (fechaObj > new Date(fFin)) cumple = false;
+                    }
+                    return cumple;
+                }
+            );
 
-                dataTableInstance.draw();
-                // Limpiar el filtro después de dibujar para que no se acumule
-                $.fn.dataTable.ext.search.pop(); 
-            });
-        });
+            dataTableInstance.draw();
+            // Limpiar el filtro después de dibujar para que no se acumule
+            $.fn.dataTable.ext.search.pop(); 
+        }
+
+        function limpiarFiltroTabla() {
+            $('#filtro-tabla-fecha-ini').val('');
+            $('#filtro-tabla-fecha-fin').val('');
+            if (dataTableInstance) {
+                dataTableInstance.draw(); // Redibujar sin filtros
+            }
+        }
 
         cargarCompras();
     </script>
