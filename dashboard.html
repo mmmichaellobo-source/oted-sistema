@@ -20,7 +20,7 @@
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <!-- Iconos (FontAwesome para la lupa y el excel) -->
+    <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -34,17 +34,7 @@
         
         /* Botón de Excel Corporativo */
         .dt-buttons button.dt-button { 
-            background-color: #0f766e; 
-            color: white; 
-            border: none; 
-            border-radius: 6px; 
-            padding: 8px 16px; 
-            font-size: 0.875rem; 
-            font-weight: 600; 
-            margin-bottom: 15px; 
-            cursor: pointer; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
+            background-color: #0f766e; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.875rem; font-weight: 600; margin-bottom: 15px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s;
         }
         .dt-buttons button.dt-button:hover { background-color: #115e59; }
         
@@ -90,7 +80,6 @@
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="max-w-7xl mx-auto flex px-4">
                 <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition">Compras</button>
-                <!-- CAMBIO AQUÍ: Nombre de la pestaña -->
                 <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition">Cobranzas</button>
             </div>
         </div>
@@ -128,21 +117,20 @@
             <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
                 
-                <!-- FILTROS GLOBALES -->
+                <!-- FILTROS GLOBALES (AFECTAN A TODO) -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
                     <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial (Global)</label>
                         <input type="date" id="filtro-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final (Global)</label>
                         <input type="date" id="filtro-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                     <div class="flex-1 min-w-[200px]">
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Descripción (Producto)</label>
                         <select id="filtro-descripcion" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
                             <option value="">Todos los productos...</option>
-                            <!-- Se llena dinámicamente -->
                         </select>
                     </div>
                     
@@ -181,8 +169,19 @@
 
                 <!-- TABLA DETALLADA -->
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <!-- CAMBIO AQUÍ: Título de la tabla -->
-                    <h2 class="text-lg font-bold text-slate-800 mb-4">Detalle de Cobranzas (Garantías)</h2>
+                    
+                    <!-- NUEVOS FILTROS LOCALES (SOLO PARA LA TABLA) -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                        <h2 class="text-lg font-bold text-slate-800">Detalle de Cobranzas (Garantías)</h2>
+                        
+                        <div class="flex items-center gap-2 text-sm">
+                            <label class="font-semibold text-slate-600">Filtrar Tabla:</label>
+                            <input type="date" id="filtro-tabla-fecha-ini" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
+                            <span class="text-slate-400">-</span>
+                            <input type="date" id="filtro-tabla-fecha-fin" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
+                        </div>
+                    </div>
+
                     <div class="w-full overflow-x-auto">
                         <table id="tablaCobranza" class="w-full text-left border-collapse display">
                             <thead>
@@ -202,7 +201,7 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="5" class="text-right py-3 px-2">TOTALES:</th>
+                                    <th colspan="5" class="text-right py-3 px-2">TOTALES (Filtrados):</th>
                                     <th id="total-costo" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-venta" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-utilidad" class="text-right py-3 px-2 text-green-600">Bs 0.00</th>
@@ -318,9 +317,6 @@
         }
 
         async function cargarCobranza() {
-            const loading = document.getElementById('loading-cobranza');
-            if(loading) loading.classList.remove('hidden');
-
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
@@ -330,8 +326,6 @@
                 .from('vendedores_division')
                 .select('PERSONA_LINEA_PRODUCCION, DIVISION');
 
-            if(loading) loading.classList.add('hidden');
-            
             if (err1 || err2) { console.error(err1 || err2); return; }
 
             const mapaDivisiones = {};
@@ -461,7 +455,7 @@
             });
         }
 
-        // --- APLICAR FILTROS CON EL BOTÓN BUSCAR ---
+        // --- FILTROS GLOBALES (AFECTAN TODO) ---
         function aplicarFiltros() {
             const fechaIni = document.getElementById('filtro-fecha-ini').value; 
             const fechaFin = document.getElementById('filtro-fecha-fin').value; 
@@ -503,8 +497,47 @@
             document.getElementById('filtro-fecha-ini').value = '';
             document.getElementById('filtro-fecha-fin').value = '';
             document.getElementById('filtro-descripcion').value = '';
+            document.getElementById('filtro-tabla-fecha-ini').value = '';
+            document.getElementById('filtro-tabla-fecha-fin').value = '';
             renderizarTablaYGrafico(datosGlobales);
         }
+
+        // --- FILTRO LOCAL (SOLO PARA LA TABLA) ---
+        // Esta función se ejecuta cuando cambias las fechas de la tabla
+        $(document).ready(function() {
+            $('#filtro-tabla-fecha-ini, #filtro-tabla-fecha-fin').on('change', function() {
+                if (!dataTableInstance) return;
+                
+                const fIni = $('#filtro-tabla-fecha-ini').val();
+                const fFin = $('#filtro-tabla-fecha-fin').val();
+
+                // Función personalizada para buscar en la columna Fecha (índice 0)
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        if (settings.nTable.id !== 'tablaCobranza') return true; // Solo aplicar a esta tabla
+
+                        const fechaTabla = data[0]; // La fecha está en la columna 0 (dd/mm/aaaa)
+                        if (!fechaTabla || !fechaTabla.includes('/')) return true; // Si no hay fecha válida, mostrar
+
+                        const partes = fechaTabla.split('/');
+                        const fechaObj = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+
+                        let cumple = true;
+                        if (fIni) {
+                            if (fechaObj < new Date(fIni)) cumple = false;
+                        }
+                        if (fFin) {
+                            if (fechaObj > new Date(fFin)) cumple = false;
+                        }
+                        return cumple;
+                    }
+                );
+
+                dataTableInstance.draw();
+                // Limpiar el filtro después de dibujar para que no se acumule
+                $.fn.dataTable.ext.search.pop(); 
+            });
+        });
 
         cargarCompras();
     </script>
