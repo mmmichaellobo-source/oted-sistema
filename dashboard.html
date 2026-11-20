@@ -79,9 +79,8 @@
 
         <div class="max-w-7xl mx-auto p-4 md:p-6">
             
-            <!-- PESTAÑA 1: COMPRAS (Se mantiene igual) -->
+            <!-- PESTAÑA 1: COMPRAS -->
             <div id="tab-compras" class="block">
-                <!-- ... (los KPIs y gráficos de compras se mantienen igual) ... -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Compras (Caja Chica)</p>
@@ -108,7 +107,7 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA 2: GARANTÍAS Y UTILIDAD (NUEVO DISEÑO) -->
+            <!-- PESTAÑA 2: GARANTÍAS Y UTILIDAD -->
             <div id="tab-cobranza" class="hidden">
                 
                 <!-- FILTROS GLOBALES -->
@@ -135,7 +134,7 @@
                     <div class="flex flex-col gap-4">
                         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Total (Bs)</p>
-                            <p id="kpi-utilidad-total" class="text-3xl font-black text-green-600">Cargando...</p>
+                            <p id="kpi-utilidad-total" class="text-3xl font-black text-green-600">Bs 0.00</p>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros (Notas de Remisión)</p>
@@ -221,7 +220,6 @@
         }
 
         async function subirArchivo(file, tipoExcel) {
-            // ... (Misma función de subida) ...
             const formData = new FormData();
             formData.append('excelFile', file);
             formData.append('tipoExcel', tipoExcel);
@@ -257,10 +255,9 @@
         let chartBarras = null;
         let chartUtilidad = null;
         let dataTableInstance = null;
-        let datosGlobales = []; // Para guardar los datos y poder filtrar
+        let datosGlobales = []; 
 
         async function cargarCompras() {
-            // ... (Misma lógica de carga de compras) ...
             const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
             if (cajaChica) {
                 let total = 0, fabrica = 0, postVenta = 0;
@@ -294,20 +291,18 @@
 
         async function cargarCobranza() {
             const loading = document.getElementById('loading-cobranza');
-            const tablaBody = document.getElementById('tabla-cobranza-body');
-            loading.classList.remove('hidden');
+            if(loading) loading.classList.remove('hidden');
 
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
-                .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`)
-                .order('FECHA', { ascending: false }); // Ordenar por fecha reciente
+                .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`);
 
             const { data: divisiones, error: err2 } = await supabaseClient
                 .from('vendedores_division')
                 .select('PERSONA_LINEA_PRODUCCION, DIVISION');
 
-            loading.classList.add('hidden');
+            if(loading) loading.classList.add('hidden');
             
             if (err1 || err2) {
                 console.error(err1 || err2);
@@ -321,11 +316,19 @@
                 });
             }
 
-            datosGlobales = []; // Limpiar array global
+            datosGlobales = []; 
             let ultimaFecha = '--/--/----';
 
             if (consolidado && consolidado.length > 0) {
-                ultimaFecha = consolidado[0].FECHA || ultimaFecha; // La primera fila es la más reciente por el .order()
+                // Ordenar por fecha
+                consolidado.sort((a, b) => {
+                    if(!a.FECHA || !b.FECHA) return 0;
+                    const dateA = new Date(a.FECHA.split('/').reverse().join('-'));
+                    const dateB = new Date(b.FECHA.split('/').reverse().join('-'));
+                    return dateB - dateA;
+                });
+                
+                ultimaFecha = consolidado[0].FECHA || ultimaFecha;
 
                 consolidado.forEach(item => {
                     const codigo = String(item.PERSONA_LINEA_PRODUCCION || '');
@@ -371,7 +374,6 @@
                 totalVenta += item.venta;
                 totalUtilidad += item.utilidad;
 
-                // Agrupar para el gráfico
                 utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
 
                 tablaBody.innerHTML += `
@@ -392,13 +394,11 @@
                 tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos con los filtros actuales.</td></tr>';
             }
 
-            // Actualizar totales del pie
             document.getElementById('total-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('total-venta').innerText = 'Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('total-utilidad').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('kpi-utilidad-total').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-            // Inicializar/Actualizar DataTable
             if (dataTableInstance) dataTableInstance.destroy();
             setTimeout(() => {
                 dataTableInstance = $('#tablaCobranza').DataTable({
@@ -410,7 +410,6 @@
                 });
             }, 100);
 
-            // Actualizar Gráfico (Top 8 Productos con más utilidad)
             const topProductos = Object.entries(utilidadPorProducto)
                 .sort(([,a], [,b]) => b - a)
                 .slice(0, 8);
@@ -441,12 +440,11 @@
             });
         }
 
-        // --- LÓGICA DE FILTROS GLOBALES ---
         document.getElementById('filtro-fecha').addEventListener('change', aplicarFiltros);
         document.getElementById('filtro-descripcion').addEventListener('input', aplicarFiltros);
 
         function aplicarFiltros() {
-            const fechaFiltro = document.getElementById('filtro-fecha').value; // YYYY-MM-DD
+            const fechaFiltro = document.getElementById('filtro-fecha').value; 
             const descFiltro = document.getElementById('filtro-descripcion').value.toLowerCase();
 
             const datosFiltrados = datosGlobales.filter(item => {
@@ -454,9 +452,8 @@
                 let cumpleDesc = true;
 
                 if (fechaFiltro) {
-                    // Convertir la fecha del item (29/10/2026) a YYYY-MM-DD para comparar
                     if(item.fecha && item.fecha.includes('/')) {
-                        const partes = item.fecha.split('/'); // ["29", "10", "2026"]
+                        const partes = item.fecha.split('/'); 
                         const fechaItemFormateada = `${partes[2]}-${partes[1]}-${partes[0]}`;
                         cumpleFecha = fechaItemFormateada === fechaFiltro;
                     } else {
