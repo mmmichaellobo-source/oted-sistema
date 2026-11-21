@@ -568,10 +568,14 @@
                 let cF = true, cD = true;
                 if (fIni || fFin) {
                     if(item.fecha && item.fecha.includes('/')) {
-                        const p = item.fecha.split('/'); 
-                        const fItem = new Date(`${p[2]}-${p[1]}-${p[0]}`);
-                        if (fIni && fItem < new Date(fIni)) cF = false;
-                        if (fFin && fItem > new Date(fFin)) cF = false;
+                        // Limpiamos la hora si es que viene en el texto
+                        const fechaLimpia = item.fecha.split(' ')[0]; 
+                        const p = fechaLimpia.split('/'); 
+                        // Formateamos a YYYY-MM-DD con ceros a la izquierda
+                        const fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+
+                        if (fIni && fechaItemStr < fIni) cF = false;
+                        if (fFin && fechaItemStr > fFin) cF = false;
                     } else cF = false;
                 }
                 if (desc) cD = item.descripcion === desc;
@@ -598,11 +602,16 @@
                 if (settings.nTable.id !== 'tablaCobranza') return true;
                 const fechaTabla = data[0];
                 if (!fechaTabla || !fechaTabla.includes('/')) return true;
-                const p = fechaTabla.split('/');
-                const fObj = new Date(`${p[2]}-${p[1]}-${p[0]}`);
+                
+                // Limpiamos la hora
+                const fechaLimpia = fechaTabla.split(' ')[0];
+                const p = fechaLimpia.split('/');
+                // Formateamos a YYYY-MM-DD
+                const fObjStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                
                 let c = true;
-                if (fIni && fObj < new Date(fIni)) c = false;
-                if (fFin && fObj > new Date(fFin)) c = false;
+                if (fIni && fObjStr < fIni) c = false;
+                if (fFin && fObjStr > fFin) c = false;
                 return c;
             });
             dataTableCobranza.draw();
@@ -625,11 +634,16 @@
                 if (settings.nTable.id !== 'tablaEntrega') return true;
                 const fechaTabla = data[0];
                 if (!fechaTabla || !fechaTabla.includes('/')) return true;
-                const p = fechaTabla.split('/');
-                const fObj = new Date(`${p[2]}-${p[1]}-${p[0]}`);
+                
+                // Limpiamos la hora
+                const fechaLimpia = fechaTabla.split(' ')[0];
+                const p = fechaLimpia.split('/');
+                // Formateamos a YYYY-MM-DD
+                const fObjStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                
                 let c = true;
-                if (fIni && fObj < new Date(fIni)) c = false;
-                if (fFin && fObj > new Date(fFin)) c = false;
+                if (fIni && fObjStr < fIni) c = false;
+                if (fFin && fObjStr > fFin) c = false;
                 return c;
             });
             dataTableEntrega.draw();
