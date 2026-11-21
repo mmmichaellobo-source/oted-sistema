@@ -115,7 +115,7 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA 2: COBRANZAS (SE MANTIENE IGUAL) -->
+            <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
                     <div class="flex-1 min-w-[150px]">
@@ -157,9 +157,11 @@
                             <p id="kpi-actualizacion" class="text-xl font-bold text-slate-700">--/--/----</p>
                         </div>
                     </div>
+                    
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
                         <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TOP PRODUCTOS CON MAYOR UTILIDAD</h2>
-                        <div class="h-64"><canvas id="graficoUtilidad"></canvas></div>
+                        <!-- Contenedor responsivo para el gráfico -->
+                        <div class="relative w-full h-80 md:h-96"><canvas id="graficoUtilidad"></canvas></div>
                     </div>
                 </div>
 
@@ -207,10 +209,10 @@
                 </div>
             </div>
 
-            <!-- PESTAÑA 3: NOTA DE ENTREGA (MODIFICADA CON FILTRO POR DIVISIÓN) -->
+            <!-- PESTAÑA 3: NOTA DE ENTREGA -->
             <div id="tab-entrega" class="hidden">
                 
-                <!-- PANEL DE FILTROS GLOBALES (Fechas y División) -->
+                <!-- 1. PANEL DE FILTROS (Fechas y División) -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
                     <div class="flex-1 min-w-[150px]">
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
@@ -220,7 +222,6 @@
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
                         <input type="date" id="filtro-entrega-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
                     </div>
-                    <!-- FILTRO POR DIVISIÓN -->
                     <div class="flex-1 min-w-[200px]">
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">División</label>
                         <select id="filtro-entrega-division" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
@@ -237,6 +238,30 @@
                     </div>
                 </div>
 
+                <!-- 2. CUADROS Y GRÁFICO -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="flex flex-col gap-4">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-gray-700">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Total (Bs)</p>
+                            <p id="kpi-entrega-costo" class="text-3xl font-black text-gray-800">Bs 0.00</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
+                            <p id="kpi-entrega-registros" class="text-3xl font-black text-blue-600">0</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-slate-400">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
+                            <p id="kpi-entrega-actualizacion" class="text-xl font-bold text-slate-700">--/--/----</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
+                        <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TODAS LAS DIVISIONES POR COSTO</h2>
+                        <!-- Contenedor responsivo para el gráfico -->
+                        <div class="relative w-full h-80 md:h-96"><canvas id="graficoEntregaDivisiones"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- 3. TABLA DETALLE -->
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Almacén Repuestos TSG)</h2>
@@ -338,7 +363,7 @@
             if (e.target.files[0]) { subirArchivo(e.target.files[0], 'caja_chica'); e.target.value = ''; }
         });
 
-        let chartDona = null, chartBarras = null, chartUtilidad = null;
+        let chartDona = null, chartBarras = null, chartUtilidad = null, chartEntregaDivisiones = null;
         let dataTableCobranza = null, dataTableEntrega = null;
         let datosGlobales = [], datosEntrega = [];
 
@@ -470,16 +495,60 @@
                 });
             }, 100);
 
-            const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 8);
+            // --- GRÁFICO CORPORATIVO PARA COBRANZAS ---
+            const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 10);
             if (chartUtilidad) chartUtilidad.destroy();
+            
+            const bgColorsCobranza = topProductos.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)');
+            const borderColorsCobranza = topProductos.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 1)' : 'rgba(37, 99, 235, 1)');
+
             chartUtilidad = new Chart(document.getElementById('graficoUtilidad'), {
                 type: 'bar',
-                data: { labels: topProductos.map(p => p[0].substring(0, 25) + '...'), datasets: [{ data: topProductos.map(p => p[1]), backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 15 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false }, ticks: { font: {size: 10} } } } }
+                data: { 
+                    labels: topProductos.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : '')), 
+                    datasets: [{ 
+                        label: 'Utilidad (Bs)',
+                        data: topProductos.map(p => p[1]), 
+                        backgroundColor: bgColorsCobranza,
+                        borderColor: borderColorsCobranza,
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barThickness: 20
+                    }] 
+                },
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 13, family: 'Segoe UI' },
+                            bodyFont: { size: 14, weight: 'bold', family: 'Segoe UI' },
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Bs ' + context.raw.toLocaleString('es-BO', {minimumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    }, 
+                    scales: { 
+                        x: { 
+                            grid: { display: false },
+                            ticks: { font: {size: 11, family: 'Segoe UI'}, color: '#64748b' }
+                        }, 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { font: {size: 11, weight: '600', family: 'Segoe UI'}, color: '#334155' } 
+                        } 
+                    } 
+                }
             });
         }
 
-        // --- LÓGICA NOTA DE ENTREGA (CON FILTRO POR DIVISIÓN) ---
+        // --- LÓGICA NOTA DE ENTREGA ---
         async function cargarEntrega() {
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
@@ -534,7 +603,7 @@
                 });
             }
 
-            // LLENAMOS EL SELECT DE DIVISIONES PARA ENTREGA
+            // LLENAMOS EL SELECT DE DIVISIONES
             const selectDiv = document.getElementById('filtro-entrega-division');
             const divisionesUnicas = [...new Set(datosEntrega.map(item => item.division))].sort();
             selectDiv.innerHTML = '<option value="">Todas las divisiones...</option>';
@@ -546,11 +615,16 @@
         function renderizarTablaEntrega(datos) {
             const tablaBody = document.getElementById('tabla-entrega-body');
             tablaBody.innerHTML = '';
+            
+            let totalCosto = 0, costoPorDivision = {};
 
             if (datos.length === 0) {
                 tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega para este almacén.</td></tr>';
             } else {
                 datos.forEach(item => {
+                    totalCosto += item.costo;
+                    costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
+                    
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -564,6 +638,71 @@
                     `;
                 });
             }
+
+            // Actualizar KPI de Costo Total
+            document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-entrega-registros').innerText = datos.length;
+
+            // Obtener última fecha
+            let ultimaFecha = '--/--/----';
+            if (datos.length > 0) {
+                datos.sort((a, b) => new Date(b.fecha.split(' ')[0].split('/').reverse().join('-')) - new Date(a.fecha.split(' ')[0].split('/').reverse().join('-')));
+                ultimaFecha = datos[0].fecha || ultimaFecha;
+            }
+            document.getElementById('kpi-entrega-actualizacion').innerText = ultimaFecha;
+
+            // Renderizar Gráfico Corporativo de Divisiones
+            const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
+            
+            if (chartEntregaDivisiones) chartEntregaDivisiones.destroy();
+            
+            const bgColorsEntrega = topDivisiones.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)');
+            const borderColorsEntrega = topDivisiones.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 1)' : 'rgba(37, 99, 235, 1)');
+
+            chartEntregaDivisiones = new Chart(document.getElementById('graficoEntregaDivisiones'), {
+                type: 'bar',
+                data: { 
+                    labels: topDivisiones.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : '')), 
+                    datasets: [{ 
+                        label: 'Costo Total (Bs)', 
+                        data: topDivisiones.map(p => p[1]), 
+                        backgroundColor: bgColorsEntrega, 
+                        borderColor: borderColorsEntrega,
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barThickness: 20 
+                    }] 
+                },
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 13, family: 'Segoe UI' },
+                            bodyFont: { size: 14, weight: 'bold', family: 'Segoe UI' },
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Bs ' + context.raw.toLocaleString('es-BO', {minimumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    }, 
+                    scales: { 
+                        x: { 
+                            grid: { display: false },
+                            ticks: { font: {size: 11, family: 'Segoe UI'}, color: '#64748b' }
+                        }, 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { font: {size: 11, weight: '600', family: 'Segoe UI'}, color: '#334155' } 
+                        } 
+                    } 
+                }
+            });
 
             if (dataTableEntrega) dataTableEntrega.destroy();
             setTimeout(() => {
@@ -653,11 +792,11 @@
             if (dataTableCobranza) dataTableCobranza.draw();
         }
 
-        // --- FILTROS GLOBALES ENTREGA (Fechas y División) ---
+        // --- FILTROS GLOBALES ENTREGA ---
         function aplicarFiltrosGlobalesEntrega() {
             const fIni = document.getElementById('filtro-entrega-fecha-ini').value; 
             const fFin = document.getElementById('filtro-entrega-fecha-fin').value; 
-            const div = document.getElementById('filtro-entrega-division').value; // Filtro por División
+            const div = document.getElementById('filtro-entrega-division').value; 
 
             const filtrados = datosEntrega.filter(item => {
                 let cF = true, cD = true;
