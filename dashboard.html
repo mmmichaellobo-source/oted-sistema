@@ -263,6 +263,19 @@
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Almacén Repuestos TSG)</h2>
+                        <!-- NUEVO PANEL DE FILTRO INTERNO PARA LA TABLA DE ENTREGA -->
+                        <div class="flex flex-wrap items-center gap-2 text-sm bg-slate-50 p-2 rounded-lg border border-slate-200">
+                            <label class="font-semibold text-slate-600 ml-2">Filtrar Tabla:</label>
+                            <input type="date" id="filtro-tabla-entrega-ini" class="bg-white border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
+                            <span class="text-slate-400">-</span>
+                            <input type="date" id="filtro-tabla-entrega-fin" class="bg-white border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
+                            <button onclick="aplicarFiltroTablaEntrega()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded transition text-xs flex items-center gap-1 shadow-sm ml-2">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            <button onclick="limpiarFiltroTablaEntrega()" class="bg-white text-slate-600 border border-slate-300 hover:bg-slate-100 font-semibold py-1 px-3 rounded transition text-xs flex items-center gap-1">
+                                <i class="fas fa-eraser"></i> Limpiar
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="w-full overflow-x-auto">
@@ -404,7 +417,6 @@
 
         // --- CARGA COBRANZAS ---
         async function cargarCobranza() {
-            // Restaurar inputs si teníamos filtros guardados
             if (filtrosCobranza.fechaIni) document.getElementById('filtro-fecha-ini').value = filtrosCobranza.fechaIni;
             if (filtrosCobranza.fechaFin) document.getElementById('filtro-fecha-fin').value = filtrosCobranza.fechaFin;
 
@@ -457,10 +469,9 @@
             selectDesc.innerHTML = '<option value="">Todos los productos...</option>';
             descripcionesUnicas.forEach(desc => { selectDesc.innerHTML += `<option value="${desc}">${desc}</option>`; });
 
-            // Restauramos la descripción seleccionada
             if (filtrosCobranza.descripcion) {
                 selectDesc.value = filtrosCobranza.descripcion;
-                aplicarFiltrosGlobalesCobranza(); // Re-aplicar filtros
+                aplicarFiltrosGlobalesCobranza();
             } else {
                 renderizarTablaCobranza(datosGlobales);
             }
@@ -562,7 +573,6 @@
 
         // --- LÓGICA NOTA DE ENTREGA ---
         async function cargarEntrega() {
-            // Restaurar inputs si teníamos filtros guardados
             if (filtrosEntrega.fechaIni) document.getElementById('filtro-entrega-fecha-ini').value = filtrosEntrega.fechaIni;
             if (filtrosEntrega.fechaFin) document.getElementById('filtro-entrega-fecha-fin').value = filtrosEntrega.fechaFin;
 
@@ -619,13 +629,11 @@
                 });
             }
 
-            // LLENAMOS EL SELECT DE DIVISIONES
             const selectDiv = document.getElementById('filtro-entrega-division');
             const divisionesUnicas = [...new Set(datosEntrega.map(item => item.division))].sort();
             selectDiv.innerHTML = '<option value="">Todas las divisiones...</option>';
             divisionesUnicas.forEach(div => { selectDiv.innerHTML += `<option value="${div}">${div}</option>`; });
 
-            // Restauramos la división seleccionada
             if (filtrosEntrega.division) {
                 selectDiv.value = filtrosEntrega.division;
                 aplicarFiltrosGlobalesEntrega();
@@ -661,11 +669,9 @@
                 });
             }
 
-            // Actualizar KPI de Costo Total
             document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
             document.getElementById('kpi-entrega-registros').innerText = datos.length;
 
-            // Obtener última fecha
             let ultimaFecha = '--/--/----';
             if (datos.length > 0) {
                 datos.sort((a, b) => new Date(b.fecha.split(' ')[0].split('/').reverse().join('-')) - new Date(a.fecha.split(' ')[0].split('/').reverse().join('-')));
@@ -673,7 +679,6 @@
             }
             document.getElementById('kpi-entrega-actualizacion').innerText = ultimaFecha;
 
-            // Renderizar Gráfico Corporativo de Divisiones
             const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
             
             if (chartEntregaDivisiones) chartEntregaDivisiones.destroy();
@@ -758,7 +763,6 @@
             const fFin = document.getElementById('filtro-fecha-fin').value; 
             const desc = document.getElementById('filtro-descripcion').value; 
 
-            // Guardar estado de los filtros
             filtrosCobranza = { fechaIni: fIni, fechaFin: fFin, descripcion: desc };
 
             const filtrados = datosGlobales.filter(item => {
@@ -783,7 +787,7 @@
             document.getElementById('filtro-fecha-ini').value = '';
             document.getElementById('filtro-fecha-fin').value = '';
             document.getElementById('filtro-descripcion').value = '';
-            filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' }; // Limpiar memoria
+            filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' }; 
             renderizarTablaCobranza(datosGlobales);
             limpiarFiltroTablaCobranza();
         }
@@ -824,7 +828,6 @@
             const fFin = document.getElementById('filtro-entrega-fecha-fin').value; 
             const div = document.getElementById('filtro-entrega-division').value; 
 
-            // Guardar estado de los filtros
             filtrosEntrega = { fechaIni: fIni, fechaFin: fFin, division: div };
 
             const filtrados = datosEntrega.filter(item => {
@@ -849,8 +852,39 @@
             document.getElementById('filtro-entrega-fecha-ini').value = '';
             document.getElementById('filtro-entrega-fecha-fin').value = '';
             document.getElementById('filtro-entrega-division').value = '';
-            filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' }; // Limpiar memoria
+            filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' }; 
             renderizarTablaEntrega(datosEntrega);
+            limpiarFiltroTablaEntrega();
+        }
+
+        // --- FILTROS LOCALES TABLA ENTREGA ---
+        function aplicarFiltroTablaEntrega() {
+            if (!dataTableEntrega) return;
+            const fIni = $('#filtro-tabla-entrega-ini').val();
+            const fFin = $('#filtro-tabla-entrega-fin').val();
+
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                if (settings.nTable.id !== 'tablaEntrega') return true;
+                const fechaTabla = data[0];
+                if (!fechaTabla || !fechaTabla.includes('/')) return true;
+                
+                const fechaLimpia = fechaTabla.split(' ')[0];
+                const p = fechaLimpia.split('/');
+                const fObjStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                
+                let c = true;
+                if (fIni && fObjStr < fIni) c = false;
+                if (fFin && fObjStr > fFin) c = false;
+                return c;
+            });
+            dataTableEntrega.draw();
+            $.fn.dataTable.ext.search.pop(); 
+        }
+
+        function limpiarFiltroTablaEntrega() {
+            $('#filtro-tabla-entrega-ini').val('');
+            $('#filtro-tabla-entrega-fin').val('');
+            if (dataTableEntrega) dataTableEntrega.draw();
         }
 
         cargarCompras();
