@@ -512,11 +512,9 @@
                             format: {
                                 body: function ( data, row, column, node ) {
                                     let textoLimpio = data;
-                                    // Quitar etiquetas HTML (como el span azul) si existen
                                     if (textoLimpio.indexOf('<') !== -1) {
                                         textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
                                     }
-                                    // Si es columna de dinero (5, 6, 7), quitar "Bs"
                                     if (column === 5 || column === 6 || column === 7) {
                                         return textoLimpio.replace(/Bs\s?/g, '').trim();
                                     }
@@ -526,7 +524,7 @@
                         }
                     }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
-                    // --- CALCULA TOTALES EN BASE A LO FILTRADO (TODAS LAS PÁGINAS) ---
+                    // --- CALCULA TOTALES Y KPI EN BASE A LO FILTRADO ---
                     "drawCallback": function () {
                         var api = this.api();
                         var intVal = function ( i ) {
@@ -539,13 +537,15 @@
                         var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalRegistros = api.rows({ search: 'applied' }).count();
 
                         $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         
+                        // Actualizamos los cuadros de arriba
                         $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                        $('#kpi-registros').html(api.rows({ search: 'applied' }).count());
+                        $('#kpi-registros').html(totalRegistros);
                     }
                 });
             }, 100);
@@ -705,18 +705,7 @@
                 });
             }
 
-            // Los KPI de arriba se actualizan con el filtro global, no con el interno de la tabla
-            let totalCostoGlobal = datos.reduce((sum, item) => sum + item.costo, 0);
-            document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + totalCostoGlobal.toLocaleString('es-BO', {minimumFractionDigits: 2});
-            document.getElementById('kpi-entrega-registros').innerText = datos.length;
-
-            let ultimaFecha = '--/--/----';
-            if (datos.length > 0) {
-                datos.sort((a, b) => new Date(b.fecha.split(' ')[0].split('/').reverse().join('-')) - new Date(a.fecha.split(' ')[0].split('/').reverse().join('-')));
-                ultimaFecha = datos[0].fecha || ultimaFecha;
-            }
-            document.getElementById('kpi-entrega-actualizacion').innerText = ultimaFecha;
-
+            // Renderizar Gráfico Corporativo de Divisiones
             const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
             
             if (chartEntregaDivisiones) chartEntregaDivisiones.destroy();
@@ -782,11 +771,9 @@
                             format: {
                                 body: function ( data, row, column, node ) {
                                     let textoLimpio = data;
-                                    // Quitar etiquetas HTML (como el span azul) si existen
                                     if (textoLimpio.indexOf('<') !== -1) {
                                         textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
                                     }
-                                    // Si es columna de dinero (6), quitar "Bs"
                                     if (column === 6) {
                                         return textoLimpio.replace(/Bs\s?/g, '').trim();
                                     }
@@ -796,7 +783,7 @@
                         }
                     }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
-                    // --- CALCULA TOTALES EN BASE A LO FILTRADO (TODAS LAS PÁGINAS) ---
+                    // --- CALCULA TOTALES Y KPI EN BASE A LO FILTRADO ---
                     "drawCallback": function () {
                         var api = this.api();
                         var intVal = function ( i ) {
@@ -807,8 +794,37 @@
                         };
                         
                         var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
                         
                         $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
+                        
+                        // Actualizamos los cuadros de arriba
+                        $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
+
+                        // Lógica para la última fecha
+                        var datosVisibles = api.rows({ search: 'applied' }).data();
+                        if (datosVisibles.length > 0) {
+                            let fechas = [];
+                            for(let i=0; i<datosVisibles.length; i++) {
+                                let fechaStr = datosVisibles[i][0];
+                                if (fechaStr && fechaStr.includes('/')) {
+                                    let p = fechaStr.split(' ')[0].split('/');
+                                    if (p.length === 3) {
+                                        fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                                    }
+                                }
+                            }
+                            if (fechas.length > 0) {
+                                fechas.sort((a, b) => b - a);
+                                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                                $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
+                            } else {
+                                $('#kpi-entrega-actualizacion').html('--/--/----');
+                            }
+                        } else {
+                            $('#kpi-entrega-actualizacion').html('--/--/----');
+                        }
                     }
                 });
             }, 100);
