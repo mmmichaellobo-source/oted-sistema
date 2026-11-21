@@ -458,6 +458,7 @@
                 tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
             } else {
                 datos.forEach(item => {
+                    // AQUI AGREGAMOS data-order PARA QUE DATATABLES ENTIENDA LOS NUMEROS
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -465,9 +466,9 @@
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
                             <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                            <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
-                            <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
-                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right text-slate-500" data-order="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right" data-order="${item.venta}">Bs ${item.venta.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${item.utilidad}">Bs ${item.utilidad.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -500,19 +501,15 @@
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" }
                 });
 
-                // EVENTO MÁGICO QUE SE EJECUTA CADA VEZ QUE LA TABLA SE DIBUJA O FILTRA
                 dataTableCobranza.on('draw', function () {
                     var api = this.api();
-                    var intVal = function ( i ) {
-                        if (typeof i === 'string') {
-                            return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
-                        }
-                        return typeof i === 'number' ? i : 0;
-                    };
                     
-                    var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                    var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                    var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                    // Sumar usando data-order
+                    var totalCosto = api.column(5, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
+                    var totalVenta = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
+                    var totalUtilidad = api.column(7, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
+                    
+                    // Contar registros
                     var totalRegistros = api.rows({ search: 'applied' }).count();
 
                     $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
@@ -522,16 +519,17 @@
                     $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                     $('#kpi-registros').html(totalRegistros);
 
-                    var datosVisibles = api.rows({ search: 'applied' }).data();
-                    if (datosVisibles.length > 0) {
+                    // Buscar la última fecha en los datos visibles (usando las filas del DOM)
+                    var filasVisibles = api.rows({ search: 'applied' }).nodes();
+                    if (filasVisibles.length > 0) {
                         let fechas = [];
-                        for(let i=0; i<datosVisibles.length; i++) {
-                            let fechaStr = datosVisibles[i][0];
+                        $(filasVisibles).each(function() {
+                            let fechaStr = $(this).find('td').eq(0).text(); // La fecha está en la columna 0
                             if (fechaStr && fechaStr.includes('/')) {
                                 let p = fechaStr.split(' ')[0].split('/');
                                 if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
                             }
-                        }
+                        });
                         if (fechas.length > 0) {
                             fechas.sort((a, b) => b - a);
                             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
@@ -672,6 +670,7 @@
             } else {
                 datos.forEach(item => {
                     costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
+                    // AQUI AGREGAMOS data-order PARA QUE DATATABLES ENTIENDA LOS NUMEROS
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -680,7 +679,7 @@
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
                             <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                            <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700" data-order="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -758,17 +757,12 @@
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" }
                 });
 
-                // EVENTO MÁGICO QUE SE EJECUTA CADA VEZ QUE LA TABLA SE DIBUJA O FILTRA
                 dataTableEntrega.on('draw', function () {
                     var api = this.api();
-                    var intVal = function ( i ) {
-                        if (typeof i === 'string') {
-                            return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
-                        }
-                        return typeof i === 'number' ? i : 0;
-                    };
                     
-                    var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                    // Sumar usando data-order
+                    var totalCostoFiltrado = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
+                    // Contar registros
                     var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
                     
                     $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
@@ -776,16 +770,17 @@
                     $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                     $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
 
-                    var datosVisibles = api.rows({ search: 'applied' }).data();
-                    if (datosVisibles.length > 0) {
+                    // Buscar la última fecha en los datos visibles (usando las filas del DOM)
+                    var filasVisibles = api.rows({ search: 'applied' }).nodes();
+                    if (filasVisibles.length > 0) {
                         let fechas = [];
-                        for(let i=0; i<datosVisibles.length; i++) {
-                            let fechaStr = datosVisibles[i][0];
+                        $(filasVisibles).each(function() {
+                            let fechaStr = $(this).find('td').eq(0).text(); // La fecha está en la columna 0
                             if (fechaStr && fechaStr.includes('/')) {
                                 let p = fechaStr.split(' ')[0].split('/');
                                 if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
                             }
-                        }
+                        });
                         if (fechas.length > 0) {
                             fechas.sort((a, b) => b - a);
                             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
