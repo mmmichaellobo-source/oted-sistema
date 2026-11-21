@@ -511,16 +511,22 @@
                         exportOptions: {
                             format: {
                                 body: function ( data, row, column, node ) {
-                                    if (column === 5 || column === 6 || column === 7) {
-                                        return data.replace(/Bs\s?/g, '').replace(/,/g, '');
+                                    let textoLimpio = data;
+                                    // Quitar etiquetas HTML (como el span azul) si existen
+                                    if (textoLimpio.indexOf('<') !== -1) {
+                                        textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
                                     }
-                                    return data;
+                                    // Si es columna de dinero (5, 6, 7), quitar "Bs"
+                                    if (column === 5 || column === 6 || column === 7) {
+                                        return textoLimpio.replace(/Bs\s?/g, '').trim();
+                                    }
+                                    return textoLimpio.trim();
                                 }
                             }
                         }
                     }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
-                    // --- CALCULA TOTALES EN BASE A LO FILTRADO ---
+                    // --- CALCULA TOTALES EN BASE A LO FILTRADO (TODAS LAS PÁGINAS) ---
                     "drawCallback": function () {
                         var api = this.api();
                         var intVal = function ( i ) {
@@ -530,10 +536,9 @@
                             return typeof i === 'number' ? i : 0;
                         };
                         
-                        // Suma de la columna 5 (Costo), 6 (Precio), 7 (Utilidad)
-                        var totalCosto = api.column(5, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalVenta = api.column(6, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalUtilidad = api.column(7, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
 
                         $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
@@ -546,7 +551,6 @@
             }, 100);
 
             // --- GRÁFICO CORPORATIVO PARA COBRANZAS ---
-            // Lo calculamos antes de la tabla para que use todos los datos del filtro global
             let utilidadPorProducto = {};
             datos.forEach(item => {
                 utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
@@ -777,16 +781,22 @@
                         exportOptions: {
                             format: {
                                 body: function ( data, row, column, node ) {
-                                    if (column === 6) {
-                                        return data.replace(/Bs\s?/g, '').replace(/,/g, '');
+                                    let textoLimpio = data;
+                                    // Quitar etiquetas HTML (como el span azul) si existen
+                                    if (textoLimpio.indexOf('<') !== -1) {
+                                        textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
                                     }
-                                    return data;
+                                    // Si es columna de dinero (6), quitar "Bs"
+                                    if (column === 6) {
+                                        return textoLimpio.replace(/Bs\s?/g, '').trim();
+                                    }
+                                    return textoLimpio.trim();
                                 }
                             }
                         }
                     }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
-                    // --- CALCULA TOTALES EN BASE A LO FILTRADO ---
+                    // --- CALCULA TOTALES EN BASE A LO FILTRADO (TODAS LAS PÁGINAS) ---
                     "drawCallback": function () {
                         var api = this.api();
                         var intVal = function ( i ) {
@@ -796,7 +806,7 @@
                             return typeof i === 'number' ? i : 0;
                         };
                         
-                        var totalCostoFiltrado = api.column(6, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         
                         $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
                     }
