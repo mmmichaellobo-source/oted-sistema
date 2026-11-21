@@ -494,7 +494,6 @@
                         }
                     }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
-                    // SOLUCION DEFINITIVA: footerCallback
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
                         var intVal = function ( i ) {
@@ -751,7 +750,6 @@
                         }
                     }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
-                    // SOLUCION DEFINITIVA: footerCallback
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
                         var intVal = function ( i ) {
@@ -794,6 +792,7 @@
             }, 100);
         }
 
+        // --- AQUI ESTA LA MAGIA PARA QUE EL BOTON BUSCAR CONTROLE LA TABLA ---
         function aplicarFiltrosGlobalesCobranza() {
             const fIni = document.getElementById('filtro-fecha-ini').value; 
             const fFin = document.getElementById('filtro-fecha-fin').value; 
@@ -801,6 +800,39 @@
 
             filtrosCobranza = { fechaIni: fIni, fechaFin: fFin, descripcion: desc };
 
+            // Remover filtros anteriores para no acumular
+            $.fn.dataTable.ext.search.pop();
+
+            // Agregar el nuevo filtro a DataTables
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'tablaCobranza') return true;
+
+                    let cF = true, cD = true;
+                    let fechaStr = data[0]; // Columna 0 (Fecha)
+                    let descStr = data[3];  // Columna 3 (Descripción)
+
+                    if (fIni || fFin) {
+                        if (fechaStr && fechaStr.includes('/')) {
+                            let p = fechaStr.split(' ')[0].split('/');
+                            let fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                            if (fIni && fechaItemStr < fIni) cF = false;
+                            if (fFin && fechaItemStr > fFin) cF = false;
+                        } else {
+                            cF = false;
+                        }
+                    }
+                    if (desc && descStr !== desc) cD = false;
+                    return cF && cD;
+                }
+            );
+
+            // Forzar a DataTables a redibujarse (esto actualizará los totales por el footerCallback)
+            if (dataTableCobranza) {
+                dataTableCobranza.draw();
+            }
+            
+            // Actualizamos el gráfico manualmente con los datos filtrados
             const filtrados = datosGlobales.filter(item => {
                 let cF = true, cD = true;
                 if (fIni || fFin) {
@@ -808,7 +840,6 @@
                         const fechaLimpia = item.fecha.split(' ')[0]; 
                         const p = fechaLimpia.split('/'); 
                         const fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-
                         if (fIni && fechaItemStr < fIni) cF = false;
                         if (fFin && fechaItemStr > fFin) cF = false;
                     } else cF = false;
@@ -816,7 +847,18 @@
                 if (desc) cD = item.descripcion === desc;
                 return cF && cD;
             });
-            renderizarTablaCobranza(filtrados);
+            
+            let utilidadPorProducto = {};
+            filtrados.forEach(item => {
+                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
+            });
+            const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 10);
+            
+            if (chartUtilidad) {
+                chartUtilidad.data.labels = topProductos.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
+                chartUtilidad.data.datasets[0].data = topProductos.map(p => p[1]);
+                chartUtilidad.update();
+            }
         }
 
         function limpiarFiltrosGlobalesCobranza() {
@@ -824,7 +866,21 @@
             document.getElementById('filtro-fecha-fin').value = '';
             document.getElementById('filtro-descripcion').value = '';
             filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' }; 
-            renderizarTablaCobranza(datosGlobales);
+            
+            $.fn.dataTable.ext.search.pop(); // Quitar filtros
+            if (dataTableCobranza) dataTableCobranza.draw(); // Redibujar tabla completa
+            
+            // Regenerar gráfico completo
+            let utilidadPorProducto = {};
+            datosGlobales.forEach(item => {
+                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
+            });
+            const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 10);
+            if (chartUtilidad) {
+                chartUtilidad.data.labels = topProductos.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
+                chartUtilidad.data.datasets[0].data = topProductos.map(p => p[1]);
+                chartUtilidad.update();
+            }
         }
 
         function aplicarFiltrosGlobalesEntrega() {
@@ -834,6 +890,35 @@
 
             filtrosEntrega = { fechaIni: fIni, fechaFin: fFin, division: div };
 
+            $.fn.dataTable.ext.search.pop();
+
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'tablaEntrega') return true;
+
+                    let cF = true, cD = true;
+                    let fechaStr = data[0]; // Columna 0 (Fecha)
+                    let divStr = data[5];   // Columna 5 (División)
+
+                    if (fIni || fFin) {
+                        if (fechaStr && fechaStr.includes('/')) {
+                            let p = fechaStr.split(' ')[0].split('/');
+                            let fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                            if (fIni && fechaItemStr < fIni) cF = false;
+                            if (fFin && fechaItemStr > fFin) cF = false;
+                        } else {
+                            cF = false;
+                        }
+                    }
+                    if (div && divStr !== div) cD = false;
+                    return cF && cD;
+                }
+            );
+
+            if (dataTableEntrega) {
+                dataTableEntrega.draw();
+            }
+            
             const filtrados = datosEntrega.filter(item => {
                 let cF = true, cD = true;
                 if (fIni || fFin) {
@@ -841,7 +926,6 @@
                         const fechaLimpia = item.fecha.split(' ')[0]; 
                         const p = fechaLimpia.split('/'); 
                         const fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-
                         if (fIni && fechaItemStr < fIni) cF = false;
                         if (fFin && fechaItemStr > fFin) cF = false;
                     } else cF = false;
@@ -849,7 +933,18 @@
                 if (div) cD = item.division === div;
                 return cF && cD;
             });
-            renderizarTablaEntrega(filtrados);
+            
+            let costoPorDivision = {};
+            filtrados.forEach(item => {
+                costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
+            });
+            const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
+            
+            if (chartEntregaDivisiones) {
+                chartEntregaDivisiones.data.labels = topDivisiones.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
+                chartEntregaDivisiones.data.datasets[0].data = topDivisiones.map(p => p[1]);
+                chartEntregaDivisiones.update();
+            }
         }
 
         function limpiarFiltrosGlobalesEntrega() {
@@ -857,7 +952,20 @@
             document.getElementById('filtro-entrega-fecha-fin').value = '';
             document.getElementById('filtro-entrega-division').value = '';
             filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' }; 
-            renderizarTablaEntrega(datosEntrega);
+            
+            $.fn.dataTable.ext.search.pop();
+            if (dataTableEntrega) dataTableEntrega.draw();
+            
+            let costoPorDivision = {};
+            datosEntrega.forEach(item => {
+                costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
+            });
+            const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
+            if (chartEntregaDivisiones) {
+                chartEntregaDivisiones.data.labels = topDivisiones.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
+                chartEntregaDivisiones.data.datasets[0].data = topDivisiones.map(p => p[1]);
+                chartEntregaDivisiones.update();
+            }
         }
 
         cargarCompras();
