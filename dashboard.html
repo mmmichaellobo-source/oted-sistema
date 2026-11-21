@@ -454,7 +454,6 @@
                 tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
             } else {
                 datos.forEach(item => {
-                    // Guardamos el número puro en un atributo oculto para que DataTables lo lea sin fallar
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -462,9 +461,9 @@
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
                             <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                            <td class="py-2 px-4 text-right text-slate-500" data-sort="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
-                            <td class="py-2 px-4 text-right" data-sort="${item.venta}">Bs ${item.venta.toFixed(2)}</td>
-                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}" data-sort="${item.utilidad}">Bs ${item.utilidad.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -494,46 +493,54 @@
                             }
                         }
                     }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" }
-                });
-
-                dataTableCobranza.on('draw', function () {
-                    var api = this.api();
-                    
-                    // Leer el valor numérico desde el atributo data-sort
-                    var totalCosto = api.column(5, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
-                    var totalVenta = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
-                    var totalUtilidad = api.column(7, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
-                    
-                    var totalRegistros = api.rows({ search: 'applied' }).count();
-
-                    $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                    $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                    $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                    
-                    $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                    $('#kpi-registros').html(totalRegistros);
-
-                    // Obtener las fechas de las filas visibles
-                    var filasVisibles = api.rows({ search: 'applied' }).nodes();
-                    if (filasVisibles.length > 0) {
-                        let fechas = [];
-                        $(filasVisibles).each(function() {
-                            let fechaStr = $(this).find('td').eq(0).text();
-                            if (fechaStr && fechaStr.includes('/')) {
-                                let p = fechaStr.split(' ')[0].split('/');
-                                if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
+                    // SOLUCION DEFINITIVA: footerCallback
+                    "footerCallback": function ( row, data, start, end, display ) {
+                        var api = this.api();
+                        var intVal = function ( i ) {
+                            if (typeof i === 'string') {
+                                return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
                             }
-                        });
-                        if (fechas.length > 0) {
-                            fechas.sort((a, b) => b - a);
-                            const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                            $('#kpi-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
+                            return typeof i === 'number' ? i : 0;
+                        };
+
+                        // Sumar solo las filas filtradas
+                        var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        
+                        var totalRegistros = api.rows({ search: 'applied' }).count();
+
+                        // Actualizar la tabla (abajo)
+                        $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+
+                        // Actualizar los cuadros (arriba)
+                        $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#kpi-registros').html(totalRegistros);
+
+                        // Actualizar la fecha (leyendo los datos crudos)
+                        var datosVisibles = api.rows({ search: 'applied' }).data();
+                        if (datosVisibles.length > 0) {
+                            let fechas = [];
+                            for (let i = 0; i < datosVisibles.length; i++) {
+                                let fechaStr = datosVisibles[i][0]; // Columna 0
+                                if (fechaStr && fechaStr.includes('/')) {
+                                    let p = fechaStr.split(' ')[0].split('/');
+                                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                                }
+                            }
+                            if (fechas.length > 0) {
+                                fechas.sort((a, b) => b - a);
+                                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                                $('#kpi-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
+                            } else {
+                                $('#kpi-actualizacion').html('--/--/----');
+                            }
                         } else {
                             $('#kpi-actualizacion').html('--/--/----');
                         }
-                    } else {
-                        $('#kpi-actualizacion').html('--/--/----');
                     }
                 });
             }, 100);
@@ -664,7 +671,6 @@
                 datos.forEach(item => {
                     costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
                     
-                    // Guardamos el número puro en un atributo oculto para que DataTables lo lea sin fallar
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -673,7 +679,7 @@
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
                             <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                            <td class="py-2 px-4 text-right font-bold text-gray-700" data-sort="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -748,41 +754,48 @@
                             }
                         }
                     }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" }
-                });
-
-                dataTableEntrega.on('draw', function () {
-                    var api = this.api();
-                    
-                    // Leer el valor numérico desde el atributo data-sort
-                    var totalCostoFiltrado = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
-                    var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
-                    
-                    $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
-                    
-                    $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                    $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
-
-                    // Obtener las fechas de las filas visibles
-                    var filasVisibles = api.rows({ search: 'applied' }).nodes();
-                    if (filasVisibles.length > 0) {
-                        let fechas = [];
-                        $(filasVisibles).each(function() {
-                            let fechaStr = $(this).find('td').eq(0).text();
-                            if (fechaStr && fechaStr.includes('/')) {
-                                let p = fechaStr.split(' ')[0].split('/');
-                                if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
+                    // SOLUCION DEFINITIVA: footerCallback
+                    "footerCallback": function ( row, data, start, end, display ) {
+                        var api = this.api();
+                        var intVal = function ( i ) {
+                            if (typeof i === 'string') {
+                                return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
                             }
-                        });
-                        if (fechas.length > 0) {
-                            fechas.sort((a, b) => b - a);
-                            const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                            $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
+                            return typeof i === 'number' ? i : 0;
+                        };
+
+                        var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
+                        
+                        // Actualizar la tabla (abajo)
+                        $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
+                        
+                        // Actualizar los cuadros (arriba)
+                        $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
+
+                        // Actualizar la fecha (leyendo los datos crudos)
+                        var datosVisibles = api.rows({ search: 'applied' }).data();
+                        if (datosVisibles.length > 0) {
+                            let fechas = [];
+                            for (let i = 0; i < datosVisibles.length; i++) {
+                                let fechaStr = datosVisibles[i][0]; // Columna 0
+                                if (fechaStr && fechaStr.includes('/')) {
+                                    let p = fechaStr.split(' ')[0].split('/');
+                                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                                }
+                            }
+                            if (fechas.length > 0) {
+                                fechas.sort((a, b) => b - a);
+                                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                                $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
+                            } else {
+                                $('#kpi-entrega-actualizacion').html('--/--/----');
+                            }
                         } else {
                             $('#kpi-entrega-actualizacion').html('--/--/----');
                         }
-                    } else {
-                        $('#kpi-entrega-actualizacion').html('--/--/----');
                     }
                 });
             }, 100);
