@@ -231,7 +231,6 @@
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
-                                    <!-- NUEVA COLUMNA -->
                                     <th>Almacén</th> 
                                     <th>Nombre Docto</th>
                                     <th>Código Persona</th>
@@ -418,24 +417,26 @@
             tablaBody.innerHTML = '';
             let totalCosto = 0, totalVenta = 0, totalUtilidad = 0, utilidadPorProducto = {};
 
-            datos.forEach(item => {
-                totalCosto += item.costo; totalVenta += item.venta; totalUtilidad += item.utilidad;
-                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
-                tablaBody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-2 px-4">${item.fecha}</td>
-                        <td class="py-2 px-4 font-medium">${item.docto}</td>
-                        <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
-                        <td class="py-2 px-4">${item.descripcion}</td>
-                        <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                        <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
-                        <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
-                        <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            if (datos.length === 0) tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
+            if (datos.length === 0) {
+                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
+            } else {
+                datos.forEach(item => {
+                    totalCosto += item.costo; totalVenta += item.venta; totalUtilidad += item.utilidad;
+                    utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
+                    tablaBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="py-2 px-4">${item.fecha}</td>
+                            <td class="py-2 px-4 font-medium">${item.docto}</td>
+                            <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
+                            <td class="py-2 px-4">${item.descripcion}</td>
+                            <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
+                            <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
 
             document.getElementById('total-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
             document.getElementById('total-venta').innerText = 'Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2});
@@ -484,9 +485,8 @@
                     const divisionCruzada = mapaDivisiones[codigo] || 'SIN DIVISION';
                     const nombreAlmacen = item.NOMBRE_ALMACEN || '';
                     
-                    // FILTRO 1: Ignorar si es FABRICA
-                    // FILTRO 2: Solo mostrar si el almacén es "CEN - ALMACEN REPUESTOS TSG"
-                    if (!divisionCruzada.toUpperCase().includes('FABRICA') && nombreAlmacen.includes('CEN - ALMACEN REPUESTOS TSG')) {
+                    // Filtro flexible para el almacén
+                    if (!divisionCruzada.toUpperCase().includes('FABRICA') && nombreAlmacen.includes('ALMACEN REPUESTOS TSG')) {
                         const costoOriginal = Number(item.COSTO) || 0;
                         const costoPositivo = Math.abs(costoOriginal);
 
@@ -511,23 +511,25 @@
             tablaBody.innerHTML = '';
             let totalCosto = 0;
 
-            datos.forEach(item => {
-                totalCosto += item.costo;
-                tablaBody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-2 px-4">${item.fecha}</td>
-                        <!-- NUEVA COLUMNA AQUÍ -->
-                        <td class="py-2 px-4 text-slate-600 text-xs">${item.almacen}</td>
-                        <td class="py-2 px-4 font-medium">${item.docto}</td>
-                        <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
-                        <td class="py-2 px-4">${item.descripcion}</td>
-                        <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                        <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            if (datos.length === 0) tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega en ese almacén.</td></tr>';
+            if (datos.length === 0) {
+                // En lugar de colspan, creamos 7 celdas vacías para mantener el conteo
+                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega en ese almacén.</td></tr>';
+            } else {
+                datos.forEach(item => {
+                    totalCosto += item.costo;
+                    tablaBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="py-2 px-4">${item.fecha}</td>
+                            <td class="py-2 px-4 text-slate-600 text-xs">${item.almacen}</td>
+                            <td class="py-2 px-4 font-medium">${item.docto}</td>
+                            <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
+                            <td class="py-2 px-4">${item.descripcion}</td>
+                            <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
 
             document.getElementById('total-costo-entrega').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
 
