@@ -454,7 +454,7 @@
                 tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
             } else {
                 datos.forEach(item => {
-                    // data-order oculto con el valor NUMÉRICO PURO
+                    // Guardamos el número puro en un atributo oculto para que DataTables lo lea sin fallar
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -462,9 +462,9 @@
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
                             <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                            <td class="py-2 px-4 text-right text-slate-500" data-order="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
-                            <td class="py-2 px-4 text-right" data-order="${item.venta}">Bs ${item.venta.toFixed(2)}</td>
-                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${item.utilidad}">Bs ${item.utilidad.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right text-slate-500" data-sort="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right" data-sort="${item.venta}">Bs ${item.venta.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}" data-sort="${item.utilidad}">Bs ${item.utilidad.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -500,10 +500,10 @@
                 dataTableCobranza.on('draw', function () {
                     var api = this.api();
                     
-                    // Leer el atributo data-order en lugar del texto visible
-                    var totalCosto = api.column(5, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
-                    var totalVenta = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
-                    var totalUtilidad = api.column(7, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
+                    // Leer el valor numérico desde el atributo data-sort
+                    var totalCosto = api.column(5, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
+                    var totalVenta = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
+                    var totalUtilidad = api.column(7, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
                     
                     var totalRegistros = api.rows({ search: 'applied' }).count();
 
@@ -514,6 +514,7 @@
                     $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                     $('#kpi-registros').html(totalRegistros);
 
+                    // Obtener las fechas de las filas visibles
                     var filasVisibles = api.rows({ search: 'applied' }).nodes();
                     if (filasVisibles.length > 0) {
                         let fechas = [];
@@ -662,7 +663,8 @@
             } else {
                 datos.forEach(item => {
                     costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
-                    // data-order oculto con el valor NUMÉRICO PURO
+                    
+                    // Guardamos el número puro en un atributo oculto para que DataTables lo lea sin fallar
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -671,7 +673,7 @@
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
                             <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
-                            <td class="py-2 px-4 text-right font-bold text-gray-700" data-order="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700" data-sort="${item.costo}">Bs ${item.costo.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -752,9 +754,8 @@
                 dataTableEntrega.on('draw', function () {
                     var api = this.api();
                     
-                    // Leer el atributo data-order en lugar del texto visible
-                    var totalCostoFiltrado = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
-                    
+                    // Leer el valor numérico desde el atributo data-sort
+                    var totalCostoFiltrado = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-sort') || 0), 0);
                     var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
                     
                     $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
@@ -762,6 +763,7 @@
                     $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                     $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
 
+                    // Obtener las fechas de las filas visibles
                     var filasVisibles = api.rows({ search: 'applied' }).nodes();
                     if (filasVisibles.length > 0) {
                         let fechas = [];
