@@ -263,7 +263,6 @@
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Almacén Repuestos TSG)</h2>
-                        <!-- NUEVO PANEL DE FILTRO INTERNO PARA LA TABLA DE ENTREGA -->
                         <div class="flex flex-wrap items-center gap-2 text-sm bg-slate-50 p-2 rounded-lg border border-slate-200">
                             <label class="font-semibold text-slate-600 ml-2">Filtrar Tabla:</label>
                             <input type="date" id="filtro-tabla-entrega-ini" class="bg-white border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
@@ -480,14 +479,11 @@
         function renderizarTablaCobranza(datos) {
             const tablaBody = document.getElementById('tabla-cobranza-body');
             tablaBody.innerHTML = '';
-            let totalCosto = 0, totalVenta = 0, totalUtilidad = 0, utilidadPorProducto = {};
 
             if (datos.length === 0) {
                 tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
             } else {
                 datos.forEach(item => {
-                    totalCosto += item.costo; totalVenta += item.venta; totalUtilidad += item.utilidad;
-                    utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -503,22 +499,59 @@
                 });
             }
 
-            document.getElementById('total-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
-            document.getElementById('total-venta').innerText = 'Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2});
-            document.getElementById('total-utilidad').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2});
-            document.getElementById('kpi-utilidad-total').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2});
-            document.getElementById('kpi-registros').innerText = datos.length;
-
             if (dataTableCobranza) dataTableCobranza.destroy();
             setTimeout(() => {
                 dataTableCobranza = $('#tablaCobranza').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button' }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" }
+                    buttons: [{ 
+                        extend: 'excelHtml5', 
+                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
+                        title: 'Cobranzas', 
+                        className: 'dt-button',
+                        exportOptions: {
+                            format: {
+                                body: function ( data, row, column, node ) {
+                                    if (column === 5 || column === 6 || column === 7) {
+                                        return data.replace(/Bs\s?/g, '').replace(/,/g, '');
+                                    }
+                                    return data;
+                                }
+                            }
+                        }
+                    }],
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
+                    // --- CALCULA TOTALES EN BASE A LO FILTRADO ---
+                    "drawCallback": function () {
+                        var api = this.api();
+                        var intVal = function ( i ) {
+                            if (typeof i === 'string') {
+                                return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
+                            }
+                            return typeof i === 'number' ? i : 0;
+                        };
+                        
+                        // Suma de la columna 5 (Costo), 6 (Precio), 7 (Utilidad)
+                        var totalCosto = api.column(5, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalVenta = api.column(6, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalUtilidad = api.column(7, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+
+                        $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        
+                        $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        $('#kpi-registros').html(api.rows({ search: 'applied' }).count());
+                    }
                 });
             }, 100);
 
             // --- GRÁFICO CORPORATIVO PARA COBRANZAS ---
+            // Lo calculamos antes de la tabla para que use todos los datos del filtro global
+            let utilidadPorProducto = {};
+            datos.forEach(item => {
+                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
+            });
+
             const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 10);
             if (chartUtilidad) chartUtilidad.destroy();
             
@@ -646,13 +679,12 @@
             const tablaBody = document.getElementById('tabla-entrega-body');
             tablaBody.innerHTML = '';
             
-            let totalCosto = 0, costoPorDivision = {};
+            let costoPorDivision = {};
 
             if (datos.length === 0) {
                 tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega para este almacén.</td></tr>';
             } else {
                 datos.forEach(item => {
-                    totalCosto += item.costo;
                     costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
                     
                     tablaBody.innerHTML += `
@@ -669,7 +701,9 @@
                 });
             }
 
-            document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            // Los KPI de arriba se actualizan con el filtro global, no con el interno de la tabla
+            let totalCostoGlobal = datos.reduce((sum, item) => sum + item.costo, 0);
+            document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + totalCostoGlobal.toLocaleString('es-BO', {minimumFractionDigits: 2});
             document.getElementById('kpi-entrega-registros').innerText = datos.length;
 
             let ultimaFecha = '--/--/----';
@@ -735,23 +769,36 @@
             setTimeout(() => {
                 dataTableEntrega = $('#tablaEntrega').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Notas_Entrega', className: 'dt-button' }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
-                    "footerCallback": function ( row, data, start, end, display ) {
-                        var api = this.api(), data;
+                    buttons: [{ 
+                        extend: 'excelHtml5', 
+                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
+                        title: 'Notas_Entrega', 
+                        className: 'dt-button',
+                        exportOptions: {
+                            format: {
+                                body: function ( data, row, column, node ) {
+                                    if (column === 6) {
+                                        return data.replace(/Bs\s?/g, '').replace(/,/g, '');
+                                    }
+                                    return data;
+                                }
+                            }
+                        }
+                    }],
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
+                    // --- CALCULA TOTALES EN BASE A LO FILTRADO ---
+                    "drawCallback": function () {
+                        var api = this.api();
                         var intVal = function ( i ) {
                             if (typeof i === 'string') {
                                 return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
                             }
                             return typeof i === 'number' ? i : 0;
                         };
-                        var totalCosto = api
-                            .column( 6, { page: 'current'} )
-                            .data()
-                            .reduce( function (a, b) {
-                                return intVal(a) + intVal(b);
-                            }, 0 );
-                        $('#total-costo-entrega').html( 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
+                        
+                        var totalCostoFiltrado = api.column(6, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        
+                        $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
                     }
                 });
             }, 100);
