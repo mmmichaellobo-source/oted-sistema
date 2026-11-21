@@ -485,8 +485,8 @@
                     const divisionCruzada = mapaDivisiones[codigo] || 'SIN DIVISION';
                     const nombreAlmacen = item.NOMBRE_ALMACEN || '';
                     
-                    // Filtro flexible para el almacén
-                    if (!divisionCruzada.toUpperCase().includes('FABRICA') && nombreAlmacen.includes('ALMACEN REPUESTOS TSG')) {
+                    // Filtro corregido: Busca con tilde
+                    if (!divisionCruzada.toUpperCase().includes('FABRICA') && nombreAlmacen.includes('ALMACÉN REPUESTOS TSG')) {
                         const costoOriginal = Number(item.COSTO) || 0;
                         const costoPositivo = Math.abs(costoOriginal);
 
