@@ -504,28 +504,24 @@
                             return typeof i === 'number' ? i : 0;
                         };
 
-                        // Sumar solo las filas filtradas
                         var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         
                         var totalRegistros = api.rows({ search: 'applied' }).count();
 
-                        // Actualizar la tabla (abajo)
                         $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
 
-                        // Actualizar los cuadros (arriba)
                         $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#kpi-registros').html(totalRegistros);
 
-                        // Actualizar la fecha (leyendo los datos crudos)
                         var datosVisibles = api.rows({ search: 'applied' }).data();
                         if (datosVisibles.length > 0) {
                             let fechas = [];
                             for (let i = 0; i < datosVisibles.length; i++) {
-                                let fechaStr = datosVisibles[i][0]; // Columna 0
+                                let fechaStr = datosVisibles[i][0]; 
                                 if (fechaStr && fechaStr.includes('/')) {
                                     let p = fechaStr.split(' ')[0].split('/');
                                     if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
@@ -768,19 +764,16 @@
                         var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
                         
-                        // Actualizar la tabla (abajo)
                         $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
                         
-                        // Actualizar los cuadros (arriba)
                         $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
 
-                        // Actualizar la fecha (leyendo los datos crudos)
                         var datosVisibles = api.rows({ search: 'applied' }).data();
                         if (datosVisibles.length > 0) {
                             let fechas = [];
                             for (let i = 0; i < datosVisibles.length; i++) {
-                                let fechaStr = datosVisibles[i][0]; // Columna 0
+                                let fechaStr = datosVisibles[i][0]; 
                                 if (fechaStr && fechaStr.includes('/')) {
                                     let p = fechaStr.split(' ')[0].split('/');
                                     if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
