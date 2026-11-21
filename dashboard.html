@@ -81,7 +81,6 @@
             <div class="max-w-7xl mx-auto flex px-4 overflow-x-auto">
                 <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Compras</button>
                 <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Cobranzas</button>
-                <!-- NUEVA PESTAÑA -->
                 <button onclick="openTab('entrega')" id="btn-entrega" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Nota de Entrega</button>
             </div>
         </div>
@@ -212,7 +211,7 @@
             <div id="tab-entrega" class="hidden">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
-                        <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Sin Fábrica)</h2>
+                        <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Almacén Repuestos TSG)</h2>
                         <div class="flex flex-wrap items-center gap-2 text-sm bg-slate-50 p-2 rounded-lg border border-slate-200">
                             <label class="font-semibold text-slate-600 ml-2">Filtrar Tabla:</label>
                             <input type="date" id="filtro-tabla-entrega-ini" class="bg-white border border-slate-300 rounded px-2 py-1 outline-none text-slate-700">
@@ -232,6 +231,8 @@
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
+                                    <!-- NUEVA COLUMNA -->
+                                    <th>Almacén</th> 
                                     <th>Nombre Docto</th>
                                     <th>Código Persona</th>
                                     <th>Nombre Descripción</th>
@@ -242,7 +243,7 @@
                             <tbody id="tabla-entrega-body"></tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="5" class="text-right py-3 px-2">TOTAL COSTO:</th>
+                                    <th colspan="6" class="text-right py-3 px-2">TOTAL COSTO:</th>
                                     <th id="total-costo-entrega" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
                                 </tr>
                             </tfoot>
@@ -463,7 +464,7 @@
         async function cargarEntrega() {
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
-                .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO')
+                .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, NOMBRE_ALMACEN')
                 .or(`NOMBRE_DOCTO.ilike.%ENTREGA%`);
 
             const { data: divisiones, error: err2 } = await supabaseClient
@@ -481,14 +482,17 @@
                 consolidado.forEach(item => {
                     const codigo = String(item.PERSONA_LINEA_PRODUCCION || '');
                     const divisionCruzada = mapaDivisiones[codigo] || 'SIN DIVISION';
+                    const nombreAlmacen = item.NOMBRE_ALMACEN || '';
                     
-                    // FILTRO: Ignorar si es FABRICA
-                    if (!divisionCruzada.toUpperCase().includes('FABRICA')) {
+                    // FILTRO 1: Ignorar si es FABRICA
+                    // FILTRO 2: Solo mostrar si el almacén es "CEN - ALMACEN REPUESTOS TSG"
+                    if (!divisionCruzada.toUpperCase().includes('FABRICA') && nombreAlmacen.includes('CEN - ALMACEN REPUESTOS TSG')) {
                         const costoOriginal = Number(item.COSTO) || 0;
                         const costoPositivo = Math.abs(costoOriginal);
 
                         datosEntrega.push({
                             fecha: item.FECHA || '', 
+                            almacen: nombreAlmacen,
                             docto: item.NOMBRE_DOCTO || '', 
                             codigo: codigo,
                             descripcion: item.NOMBRE_DESCRIPCION || '', 
@@ -512,6 +516,8 @@
                 tablaBody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="py-2 px-4">${item.fecha}</td>
+                        <!-- NUEVA COLUMNA AQUÍ -->
+                        <td class="py-2 px-4 text-slate-600 text-xs">${item.almacen}</td>
                         <td class="py-2 px-4 font-medium">${item.docto}</td>
                         <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                         <td class="py-2 px-4">${item.descripcion}</td>
@@ -521,7 +527,7 @@
                 `;
             });
 
-            if (datos.length === 0) tablaBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No hay Notas de Entrega (sin Fábrica).</td></tr>';
+            if (datos.length === 0) tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega en ese almacén.</td></tr>';
 
             document.getElementById('total-costo-entrega').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
 
