@@ -160,7 +160,6 @@
                     
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
                         <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TOP PRODUCTOS CON MAYOR UTILIDAD</h2>
-                        <!-- Contenedor responsivo para el gráfico -->
                         <div class="relative w-full h-80 md:h-96"><canvas id="graficoUtilidad"></canvas></div>
                     </div>
                 </div>
@@ -256,7 +255,6 @@
                     </div>
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
                         <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TODAS LAS DIVISIONES POR COSTO</h2>
-                        <!-- Contenedor responsivo para el gráfico -->
                         <div class="relative w-full h-80 md:h-96"><canvas id="graficoEntregaDivisiones"></canvas></div>
                     </div>
                 </div>
@@ -310,6 +308,10 @@
             localStorage.removeItem('oted_session');
             window.location.href = 'login.html';
         }
+
+        // Variables para recordar los filtros
+        let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
+        let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
 
         function openTab(tabName) {
             document.getElementById('tab-compras').classList.add('hidden');
@@ -402,6 +404,10 @@
 
         // --- CARGA COBRANZAS ---
         async function cargarCobranza() {
+            // Restaurar inputs si teníamos filtros guardados
+            if (filtrosCobranza.fechaIni) document.getElementById('filtro-fecha-ini').value = filtrosCobranza.fechaIni;
+            if (filtrosCobranza.fechaFin) document.getElementById('filtro-fecha-fin').value = filtrosCobranza.fechaFin;
+
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
@@ -444,7 +450,6 @@
                 });
             }
 
-            document.getElementById('kpi-registros').innerText = datosGlobales.length;
             document.getElementById('kpi-actualizacion').innerText = ultimaFecha;
 
             const selectDesc = document.getElementById('filtro-descripcion');
@@ -452,7 +457,13 @@
             selectDesc.innerHTML = '<option value="">Todos los productos...</option>';
             descripcionesUnicas.forEach(desc => { selectDesc.innerHTML += `<option value="${desc}">${desc}</option>`; });
 
-            renderizarTablaCobranza(datosGlobales);
+            // Restauramos la descripción seleccionada
+            if (filtrosCobranza.descripcion) {
+                selectDesc.value = filtrosCobranza.descripcion;
+                aplicarFiltrosGlobalesCobranza(); // Re-aplicar filtros
+            } else {
+                renderizarTablaCobranza(datosGlobales);
+            }
         }
 
         function renderizarTablaCobranza(datos) {
@@ -485,6 +496,7 @@
             document.getElementById('total-venta').innerText = 'Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2});
             document.getElementById('total-utilidad').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2});
             document.getElementById('kpi-utilidad-total').innerText = 'Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-registros').innerText = datos.length;
 
             if (dataTableCobranza) dataTableCobranza.destroy();
             setTimeout(() => {
@@ -550,6 +562,10 @@
 
         // --- LÓGICA NOTA DE ENTREGA ---
         async function cargarEntrega() {
+            // Restaurar inputs si teníamos filtros guardados
+            if (filtrosEntrega.fechaIni) document.getElementById('filtro-entrega-fecha-ini').value = filtrosEntrega.fechaIni;
+            if (filtrosEntrega.fechaFin) document.getElementById('filtro-entrega-fecha-fin').value = filtrosEntrega.fechaFin;
+
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, NOMBRE_ALMACEN, ID_ALMACEN')
@@ -609,7 +625,13 @@
             selectDiv.innerHTML = '<option value="">Todas las divisiones...</option>';
             divisionesUnicas.forEach(div => { selectDiv.innerHTML += `<option value="${div}">${div}</option>`; });
 
-            renderizarTablaEntrega(datosEntrega);
+            // Restauramos la división seleccionada
+            if (filtrosEntrega.division) {
+                selectDiv.value = filtrosEntrega.division;
+                aplicarFiltrosGlobalesEntrega();
+            } else {
+                renderizarTablaEntrega(datosEntrega);
+            }
         }
 
         function renderizarTablaEntrega(datos) {
@@ -736,6 +758,9 @@
             const fFin = document.getElementById('filtro-fecha-fin').value; 
             const desc = document.getElementById('filtro-descripcion').value; 
 
+            // Guardar estado de los filtros
+            filtrosCobranza = { fechaIni: fIni, fechaFin: fFin, descripcion: desc };
+
             const filtrados = datosGlobales.filter(item => {
                 let cF = true, cD = true;
                 if (fIni || fFin) {
@@ -758,6 +783,7 @@
             document.getElementById('filtro-fecha-ini').value = '';
             document.getElementById('filtro-fecha-fin').value = '';
             document.getElementById('filtro-descripcion').value = '';
+            filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' }; // Limpiar memoria
             renderizarTablaCobranza(datosGlobales);
             limpiarFiltroTablaCobranza();
         }
@@ -798,6 +824,9 @@
             const fFin = document.getElementById('filtro-entrega-fecha-fin').value; 
             const div = document.getElementById('filtro-entrega-division').value; 
 
+            // Guardar estado de los filtros
+            filtrosEntrega = { fechaIni: fIni, fechaFin: fFin, division: div };
+
             const filtrados = datosEntrega.filter(item => {
                 let cF = true, cD = true;
                 if (fIni || fFin) {
@@ -820,6 +849,7 @@
             document.getElementById('filtro-entrega-fecha-ini').value = '';
             document.getElementById('filtro-entrega-fecha-fin').value = '';
             document.getElementById('filtro-entrega-division').value = '';
+            filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' }; // Limpiar memoria
             renderizarTablaEntrega(datosEntrega);
         }
 
