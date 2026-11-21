@@ -87,30 +87,34 @@
 
         <div class="max-w-7xl mx-auto p-4 md:p-6">
             
-            <!-- PESTAÑA 1: COMPRAS -->
+            <!-- PESTAÑA 1: COMPRAS (MODIFICADA) -->
             <div id="tab-compras" class="block">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Compras (Caja Chica)</p>
-                        <p id="kpi-total" class="text-3xl font-black text-gray-800">Cargando...</p>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
+                        <h2 class="text-lg font-bold text-slate-800">Detalle de Compras (Recepciones)</h2>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Fábrica</p>
-                        <p id="kpi-fabrica" class="text-3xl font-black text-gray-800">Cargando...</p>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-600">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Total Post-Venta</p>
-                        <p id="kpi-postventa" class="text-3xl font-black text-gray-800">Cargando...</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h2 class="text-lg font-bold text-gray-800 mb-4">Distribución</h2>
-                        <div class="h-64 flex justify-center"><canvas id="graficoDona"></canvas></div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h2 class="text-lg font-bold text-gray-800 mb-4">Top 5 Proveedores</h2>
-                        <div class="h-64"><canvas id="graficoBarras"></canvas></div>
+                    
+                    <div class="w-full overflow-x-auto">
+                        <table id="tablaCompras" class="w-full text-left border-collapse display">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>ID Almacén</th>
+                                    <th>Nombre Docto</th>
+                                    <th>Nombre Producto</th>
+                                    <th>Proveedor</th>
+                                    <th>Unidad Negocio</th>
+                                    <th class="text-right">Costo (+)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-compras-body"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="6" class="text-right py-3 px-2">TOTAL COSTO:</th>
+                                    <th id="total-costo-compras" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -311,7 +315,9 @@
             
             localStorage.setItem('galval_active_tab', tabName);
 
-            if(tabName === 'cobranza') {
+            if(tabName === 'compras') {
+                cargarCompras();
+            } else if(tabName === 'cobranza') {
                 cargarCobranza();
             } else if(tabName === 'entrega') {
                 cargarEntrega();
@@ -356,41 +362,118 @@
         });
 
         let chartDona = null, chartBarras = null, chartUtilidad = null, chartEntregaDivisiones = null;
-        let dataTableCobranza = null, dataTableEntrega = null;
+        let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
 
+        // --- LÓGICA DE COMPRAS (MODIFICADA) ---
         async function cargarCompras() {
-            const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
-            if (cajaChica) {
-                let total = 0, fabrica = 0, postVenta = 0;
-                const proveedores = {};
-                cajaChica.forEach(item => {
-                    const monto = Number(item.IMPORTE) || 0;
-                    total += monto;
-                    if (item.UNIDAD_NEGOCIO === 'FABRICA') fabrica += monto;
-                    if (item.UNIDAD_NEGOCIO === 'POST VENTA') postVenta += monto;
-                    if (item.PROVEEDOR) proveedores[item.PROVEEDOR] = (proveedores[item.PROVEEDOR] || 0) + monto;
-                });
-                document.getElementById('kpi-total').innerText = 'Bs ' + total.toLocaleString('es-BO');
-                document.getElementById('kpi-fabrica').innerText = 'Bs ' + fabrica.toLocaleString('es-BO');
-                document.getElementById('kpi-postventa').innerText = 'Bs ' + postVenta.toLocaleString('es-BO');
+            // 1. Consultar el Consolidado filtrando por los almacenes 121002 y 121007
+            const { data: consolidado, error: err1 } = await supabaseClient
+                .from('consolidado_repuestos')
+                .select('FECHA, ID_ALMACEN, NOMBRE_DOCTO, NOMBRE_PRODUCTO, NOMBRE_DESCRIPCION, COSTO, NRO_DOC_FTE_CA')
+                .in('ID_ALMACEN', ['121002', '121007'])
+                .ilike('NOMBRE_DOCTO', '%Recepcion Compra%');
 
-                if (chartDona) chartDona.destroy();
-                chartDona = new Chart(document.getElementById('graficoDona'), {
-                    type: 'doughnut',
-                    data: { labels: ['Fábrica', 'Post-Venta'], datasets: [{ data: [fabrica, postVenta], backgroundColor: ['#2563eb', '#16a34a'], borderWidth: 0 }] },
-                    options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-                });
-                const topProveedores = Object.entries(proveedores).sort(([,a], [,b]) => b - a).slice(0, 5);
-                if (chartBarras) chartBarras.destroy();
-                chartBarras = new Chart(document.getElementById('graficoBarras'), {
-                    type: 'bar',
-                    data: { labels: topProveedores.map(p => p[0].substring(0, 15) + '...'), datasets: [{ label: 'Monto (Bs)', data: topProveedores.map(p => p[1]), backgroundColor: '#dc2626', borderRadius: 4 }] },
-                    options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+            // 2. Consultar la tabla maestra de divisiones
+            const { data: divisiones, error: err2 } = await supabaseClient
+                .from('vendedores_division')
+                .select('N, DIVISION')
+                .limit(10000);
+
+            if (err1 || err2) { console.error(err1 || err2); return; }
+
+            // 3. Crear un diccionario para buscar rápido la división por el número (N)
+            const mapaDivisiones = {};
+            if (divisiones) {
+                divisiones.forEach(d => {
+                    if (d.N) mapaDivisiones[String(d.N).trim()] = d.DIVISION;
                 });
             }
+
+            const datosCompras = [];
+
+            // 4. Cruzar los datos y armar la lógica
+            if (consolidado && consolidado.length > 0) {
+                consolidado.forEach(item => {
+                    const nroFactura = String(item.NRO_DOC_FTE_CA || '').trim();
+                    const divisionCruzada = mapaDivisiones[nroFactura] || '';
+
+                    // Si la división cruzada contiene "POST VENTA", se deja así, si no, es "FABRICA"
+                    let unidadNegocio = 'FABRICA';
+                    if (divisionCruzada.toUpperCase().includes('POST VENTA')) {
+                        unidadNegocio = 'POST VENTA';
+                    }
+
+                    const costoOriginal = Number(item.COSTO) || 0;
+                    const costoPositivo = Math.abs(costoOriginal);
+
+                    datosCompras.push({
+                        fecha: item.FECHA || '',
+                        id_almacen: item.ID_ALMACEN || '',
+                        docto: item.NOMBRE_DOCTO || '',
+                        producto: item.NOMBRE_PRODUCTO || '',
+                        proveedor: item.NOMBRE_DESCRIPCION || '',
+                        unidad_negocio: unidadNegocio,
+                        costo: costoPositivo
+                    });
+                });
+            }
+
+            renderizarTablaCompras(datosCompras);
         }
 
+        function renderizarTablaCompras(datos) {
+            const tablaBody = document.getElementById('tabla-compras-body');
+            tablaBody.innerHTML = '';
+
+            if (datos.length === 0) {
+                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay registros de compras para esos almacenes.</td></tr>';
+            } else {
+                datos.forEach(item => {
+                    tablaBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="py-2 px-4">${item.fecha}</td>
+                            <td class="py-2 px-4 text-slate-600">${item.id_almacen}</td>
+                            <td class="py-2 px-4 font-medium">${item.docto}</td>
+                            <td class="py-2 px-4">${item.producto}</td>
+                            <td class="py-2 px-4 text-slate-700">${item.proveedor}</td>
+                            <td class="py-2 px-4">
+                                <span class="py-1 px-2 rounded text-xs font-bold ${item.unidad_negocio === 'POST VENTA' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}">
+                                    ${item.unidad_negocio}
+                                </span>
+                            </td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            if (dataTableCompras) dataTableCompras.destroy();
+            setTimeout(() => {
+                dataTableCompras = $('#tablaCompras').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [{ 
+                        extend: 'excelHtml5', 
+                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
+                        title: 'Compras', 
+                        className: 'dt-button'
+                    }],
+                    "pageLength": 10, 
+                    "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
+                    "footerCallback": function ( row, data, start, end, display ) {
+                        var api = this.api();
+                        var intVal = function ( i ) {
+                            if (typeof i === 'string') return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
+                            return typeof i === 'number' ? i : 0;
+                        };
+                        var totalCosto = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        $('#total-costo-compras').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    }
+                });
+            }, 100);
+        }
+
+        // --- LÓGICA DE COBRANZAS ---
         async function cargarCobranza() {
             if (filtrosCobranza.fechaIni) document.getElementById('filtro-fecha-ini').value = filtrosCobranza.fechaIni;
             if (filtrosCobranza.fechaFin) document.getElementById('filtro-fecha-fin').value = filtrosCobranza.fechaFin;
@@ -591,6 +674,7 @@
             });
         }
 
+        // --- LÓGICA DE NOTA DE ENTREGA ---
         async function cargarEntrega() {
             if (filtrosEntrega.fechaIni) document.getElementById('filtro-entrega-fecha-ini').value = filtrosEntrega.fechaIni;
             if (filtrosEntrega.fechaFin) document.getElementById('filtro-entrega-fecha-fin').value = filtrosEntrega.fechaFin;
@@ -792,7 +876,7 @@
             }, 100);
         }
 
-        // --- AQUI ESTA LA MAGIA PARA QUE EL BOTON BUSCAR CONTROLE LA TABLA ---
+        // --- FILTROS COBRANZAS ---
         function aplicarFiltrosGlobalesCobranza() {
             const fIni = document.getElementById('filtro-fecha-ini').value; 
             const fFin = document.getElementById('filtro-fecha-fin').value; 
@@ -800,17 +884,15 @@
 
             filtrosCobranza = { fechaIni: fIni, fechaFin: fFin, descripcion: desc };
 
-            // Remover filtros anteriores para no acumular
             $.fn.dataTable.ext.search.pop();
 
-            // Agregar el nuevo filtro a DataTables
             $.fn.dataTable.ext.search.push(
                 function(settings, data, dataIndex) {
                     if (settings.nTable.id !== 'tablaCobranza') return true;
 
                     let cF = true, cD = true;
-                    let fechaStr = data[0]; // Columna 0 (Fecha)
-                    let descStr = data[3];  // Columna 3 (Descripción)
+                    let fechaStr = data[0]; 
+                    let descStr = data[3];  
 
                     if (fIni || fFin) {
                         if (fechaStr && fechaStr.includes('/')) {
@@ -827,12 +909,10 @@
                 }
             );
 
-            // Forzar a DataTables a redibujarse (esto actualizará los totales por el footerCallback)
             if (dataTableCobranza) {
                 dataTableCobranza.draw();
             }
             
-            // Actualizamos el gráfico manualmente con los datos filtrados
             const filtrados = datosGlobales.filter(item => {
                 let cF = true, cD = true;
                 if (fIni || fFin) {
@@ -867,10 +947,9 @@
             document.getElementById('filtro-descripcion').value = '';
             filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' }; 
             
-            $.fn.dataTable.ext.search.pop(); // Quitar filtros
-            if (dataTableCobranza) dataTableCobranza.draw(); // Redibujar tabla completa
+            $.fn.dataTable.ext.search.pop(); 
+            if (dataTableCobranza) dataTableCobranza.draw(); 
             
-            // Regenerar gráfico completo
             let utilidadPorProducto = {};
             datosGlobales.forEach(item => {
                 utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
@@ -883,6 +962,7 @@
             }
         }
 
+        // --- FILTROS ENTREGA ---
         function aplicarFiltrosGlobalesEntrega() {
             const fIni = document.getElementById('filtro-entrega-fecha-ini').value; 
             const fFin = document.getElementById('filtro-entrega-fecha-fin').value; 
@@ -897,8 +977,8 @@
                     if (settings.nTable.id !== 'tablaEntrega') return true;
 
                     let cF = true, cD = true;
-                    let fechaStr = data[0]; // Columna 0 (Fecha)
-                    let divStr = data[5];   // Columna 5 (División)
+                    let fechaStr = data[0]; 
+                    let divStr = data[5];   
 
                     if (fIni || fFin) {
                         if (fechaStr && fechaStr.includes('/')) {
@@ -968,7 +1048,8 @@
             }
         }
 
-        cargarCompras();
+        // Iniciar la carga según la pestaña guardada
+        window.onload();
     </script>
 </body>
 </html>
