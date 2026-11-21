@@ -365,12 +365,12 @@
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
                 .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`)
-                .limit(10000); // <-- AGREGADO AQUI
+                .limit(10000);
 
             const { data: divisiones, error: err2 } = await supabaseClient
                 .from('vendedores_division')
                 .select('PERSONA_LINEA_PRODUCCION, DIVISION')
-                .limit(10000); // <-- AGREGADO AQUI
+                .limit(10000);
 
             if (err1 || err2) { console.error(err1 || err2); return; }
 
@@ -467,14 +467,14 @@
         async function cargarEntrega() {
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
-                .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, NOMBRE_ALMACEN')
+                .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, NOMBRE_ALMACEN, ID_ALMACEN')
                 .or(`NOMBRE_DOCTO.ilike.%ENTREGA%`)
-                .limit(10000); // <-- AGREGADO AQUI
+                .limit(10000); 
 
             const { data: divisiones, error: err2 } = await supabaseClient
                 .from('vendedores_division')
                 .select('PERSONA_LINEA_PRODUCCION, DIVISION')
-                .limit(10000); // <-- AGREGADO AQUI
+                .limit(10000); 
 
             if (err1 || err2) { console.error(err1 || err2); return; }
 
@@ -487,15 +487,16 @@
                 consolidado.forEach(item => {
                     const codigo = String(item.PERSONA_LINEA_PRODUCCION || '');
                     const divisionCruzada = mapaDivisiones[codigo] || 'SIN DIVISION';
-                    const nombreAlmacen = item.NOMBRE_ALMACEN || '';
                     
-                    if (!divisionCruzada.toUpperCase().includes('FABRICA') && nombreAlmacen.includes('ALMACÉN REPUESTOS TSG')) {
+                    // --- AQUI ESTA LA MAGIA: FILTRAMOS POR EL ID 101016 ---
+                    if (String(item.ID_ALMACEN) === '101016') {
+                        
                         const costoOriginal = Number(item.COSTO) || 0;
                         const costoPositivo = Math.abs(costoOriginal);
 
                         datosEntrega.push({
                             fecha: item.FECHA || '', 
-                            almacen: nombreAlmacen,
+                            almacen: item.NOMBRE_ALMACEN || 'CEN - ALMACÉN REPUESTOS TSG', 
                             docto: item.NOMBRE_DOCTO || '', 
                             codigo: codigo,
                             descripcion: item.NOMBRE_DESCRIPCION || '', 
@@ -514,8 +515,7 @@
             tablaBody.innerHTML = '';
 
             if (datos.length === 0) {
-                // 7 celdas vacías para mantener el conteo
-                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega en ese almacén.</td></tr>';
+                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega para este almacén.</td></tr>';
             } else {
                 datos.forEach(item => {
                     tablaBody.innerHTML += `
@@ -540,22 +540,18 @@
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api(), data;
-                        // Remover el formato para sumar
                         var intVal = function ( i ) {
                             if (typeof i === 'string') {
                                 return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
                             }
                             return typeof i === 'number' ? i : 0;
                         };
-                        // Sumar solo la columna 6 (Costo)
                         var totalCosto = api
                             .column( 6, { page: 'current'} )
                             .data()
                             .reduce( function (a, b) {
                                 return intVal(a) + intVal(b);
                             }, 0 );
-                        
-                        // Actualizar el HTML del footer
                         $('#total-costo-entrega').html( 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
                     }
                 });
@@ -572,10 +568,8 @@
                 let cF = true, cD = true;
                 if (fIni || fFin) {
                     if(item.fecha && item.fecha.includes('/')) {
-                        // Limpiamos la hora si es que viene en el texto
                         const fechaLimpia = item.fecha.split(' ')[0]; 
                         const p = fechaLimpia.split('/'); 
-                        // Formateamos a YYYY-MM-DD con ceros a la izquierda
                         const fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
 
                         if (fIni && fechaItemStr < fIni) cF = false;
@@ -607,10 +601,8 @@
                 const fechaTabla = data[0];
                 if (!fechaTabla || !fechaTabla.includes('/')) return true;
                 
-                // Limpiamos la hora
                 const fechaLimpia = fechaTabla.split(' ')[0];
                 const p = fechaLimpia.split('/');
-                // Formateamos a YYYY-MM-DD
                 const fObjStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
                 
                 let c = true;
@@ -639,10 +631,8 @@
                 const fechaTabla = data[0];
                 if (!fechaTabla || !fechaTabla.includes('/')) return true;
                 
-                // Limpiamos la hora
                 const fechaLimpia = fechaTabla.split(' ')[0];
                 const p = fechaLimpia.split('/');
-                // Formateamos a YYYY-MM-DD
                 const fObjStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
                 
                 let c = true;
