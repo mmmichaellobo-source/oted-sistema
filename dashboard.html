@@ -117,7 +117,6 @@
 
             <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
-                <!-- PANEL DE FILTROS (Solo arriba) -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
                     <div class="flex-1 min-w-[150px]">
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
@@ -200,7 +199,6 @@
             <!-- PESTAÑA 3: NOTA DE ENTREGA -->
             <div id="tab-entrega" class="hidden">
                 
-                <!-- 1. PANEL DE FILTROS (Solo arriba) -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
                     <div class="flex-1 min-w-[150px]">
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
@@ -226,7 +224,6 @@
                     </div>
                 </div>
 
-                <!-- 2. CUADROS Y GRÁFICO -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     <div class="flex flex-col gap-4">
                         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-gray-700">
@@ -248,7 +245,6 @@
                     </div>
                 </div>
 
-                <!-- 3. TABLA DETALLE -->
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Almacén Repuestos TSG)</h2>
@@ -314,7 +310,6 @@
             document.getElementById('tab-' + tabName).classList.remove('hidden');
             document.getElementById('btn-' + tabName).classList.add('active');
             
-            // Guardar la pestaña actual en la memoria del navegador
             localStorage.setItem('galval_active_tab', tabName);
 
             if(tabName === 'cobranza') {
@@ -324,7 +319,6 @@
             }
         }
 
-        // Al cargar la página, verificar si hay una pestaña guardada y abrirla
         window.onload = function() {
             const savedTab = localStorage.getItem('galval_active_tab') || 'compras';
             openTab(savedTab);
@@ -503,48 +497,50 @@
                             }
                         }
                     }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
-                    "drawCallback": function () {
-                        var api = this.api();
-                        var intVal = function ( i ) {
-                            if (typeof i === 'string') {
-                                return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
-                            }
-                            return typeof i === 'number' ? i : 0;
-                        };
-                        
-                        var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalRegistros = api.rows({ search: 'applied' }).count();
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" }
+                });
 
-                        $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                        $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                        $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                        
-                        $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                        $('#kpi-registros').html(totalRegistros);
+                // EVENTO MÁGICO QUE SE EJECUTA CADA VEZ QUE LA TABLA SE DIBUJA O FILTRA
+                dataTableCobranza.on('draw', function () {
+                    var api = this.api();
+                    var intVal = function ( i ) {
+                        if (typeof i === 'string') {
+                            return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
+                        }
+                        return typeof i === 'number' ? i : 0;
+                    };
+                    
+                    var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                    var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                    var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                    var totalRegistros = api.rows({ search: 'applied' }).count();
 
-                        var datosVisibles = api.rows({ search: 'applied' }).data();
-                        if (datosVisibles.length > 0) {
-                            let fechas = [];
-                            for(let i=0; i<datosVisibles.length; i++) {
-                                let fechaStr = datosVisibles[i][0];
-                                if (fechaStr && fechaStr.includes('/')) {
-                                    let p = fechaStr.split(' ')[0].split('/');
-                                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
-                                }
+                    $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    
+                    $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#kpi-registros').html(totalRegistros);
+
+                    var datosVisibles = api.rows({ search: 'applied' }).data();
+                    if (datosVisibles.length > 0) {
+                        let fechas = [];
+                        for(let i=0; i<datosVisibles.length; i++) {
+                            let fechaStr = datosVisibles[i][0];
+                            if (fechaStr && fechaStr.includes('/')) {
+                                let p = fechaStr.split(' ')[0].split('/');
+                                if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
                             }
-                            if (fechas.length > 0) {
-                                fechas.sort((a, b) => b - a);
-                                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                                $('#kpi-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
-                            } else {
-                                $('#kpi-actualizacion').html('--/--/----');
-                            }
+                        }
+                        if (fechas.length > 0) {
+                            fechas.sort((a, b) => b - a);
+                            const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                            $('#kpi-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
                         } else {
                             $('#kpi-actualizacion').html('--/--/----');
                         }
+                    } else {
+                        $('#kpi-actualizacion').html('--/--/----');
                     }
                 });
             }, 100);
@@ -759,44 +755,46 @@
                             }
                         }
                     }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
-                    "drawCallback": function () {
-                        var api = this.api();
-                        var intVal = function ( i ) {
-                            if (typeof i === 'string') {
-                                return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
-                            }
-                            return typeof i === 'number' ? i : 0;
-                        };
-                        
-                        var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
-                        
-                        $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
-                        
-                        $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                        $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" }
+                });
 
-                        var datosVisibles = api.rows({ search: 'applied' }).data();
-                        if (datosVisibles.length > 0) {
-                            let fechas = [];
-                            for(let i=0; i<datosVisibles.length; i++) {
-                                let fechaStr = datosVisibles[i][0];
-                                if (fechaStr && fechaStr.includes('/')) {
-                                    let p = fechaStr.split(' ')[0].split('/');
-                                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
-                                }
+                // EVENTO MÁGICO QUE SE EJECUTA CADA VEZ QUE LA TABLA SE DIBUJA O FILTRA
+                dataTableEntrega.on('draw', function () {
+                    var api = this.api();
+                    var intVal = function ( i ) {
+                        if (typeof i === 'string') {
+                            return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
+                        }
+                        return typeof i === 'number' ? i : 0;
+                    };
+                    
+                    var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                    var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
+                    
+                    $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
+                    
+                    $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
+
+                    var datosVisibles = api.rows({ search: 'applied' }).data();
+                    if (datosVisibles.length > 0) {
+                        let fechas = [];
+                        for(let i=0; i<datosVisibles.length; i++) {
+                            let fechaStr = datosVisibles[i][0];
+                            if (fechaStr && fechaStr.includes('/')) {
+                                let p = fechaStr.split(' ')[0].split('/');
+                                if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
                             }
-                            if (fechas.length > 0) {
-                                fechas.sort((a, b) => b - a);
-                                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                                $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
-                            } else {
-                                $('#kpi-entrega-actualizacion').html('--/--/----');
-                            }
+                        }
+                        if (fechas.length > 0) {
+                            fechas.sort((a, b) => b - a);
+                            const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                            $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
                         } else {
                             $('#kpi-entrega-actualizacion').html('--/--/----');
                         }
+                    } else {
+                        $('#kpi-entrega-actualizacion').html('--/--/----');
                     }
                 });
             }, 100);
