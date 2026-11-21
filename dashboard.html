@@ -485,7 +485,6 @@
                     const divisionCruzada = mapaDivisiones[codigo] || 'SIN DIVISION';
                     const nombreAlmacen = item.NOMBRE_ALMACEN || '';
                     
-                    // Filtro corregido: Busca con tilde
                     if (!divisionCruzada.toUpperCase().includes('FABRICA') && nombreAlmacen.includes('ALMACÉN REPUESTOS TSG')) {
                         const costoOriginal = Number(item.COSTO) || 0;
                         const costoPositivo = Math.abs(costoOriginal);
@@ -509,14 +508,12 @@
         function renderizarTablaEntrega(datos) {
             const tablaBody = document.getElementById('tabla-entrega-body');
             tablaBody.innerHTML = '';
-            let totalCosto = 0;
 
             if (datos.length === 0) {
-                // En lugar de colspan, creamos 7 celdas vacías para mantener el conteo
+                // 7 celdas vacías para mantener el conteo
                 tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega en ese almacén.</td></tr>';
             } else {
                 datos.forEach(item => {
-                    totalCosto += item.costo;
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -531,14 +528,32 @@
                 });
             }
 
-            document.getElementById('total-costo-entrega').innerText = 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2});
-
             if (dataTableEntrega) dataTableEntrega.destroy();
             setTimeout(() => {
                 dataTableEntrega = $('#tablaEntrega').DataTable({
                     dom: 'Bfrtip',
                     buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Notas_Entrega', className: 'dt-button' }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" }
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
+                    "footerCallback": function ( row, data, start, end, display ) {
+                        var api = this.api(), data;
+                        // Remover el formato para sumar
+                        var intVal = function ( i ) {
+                            if (typeof i === 'string') {
+                                return parseFloat(i.replace(/[^\d.-]/g, '')) || 0;
+                            }
+                            return typeof i === 'number' ? i : 0;
+                        };
+                        // Sumar solo la columna 6 (Costo)
+                        var totalCosto = api
+                            .column( 6, { page: 'current'} )
+                            .data()
+                            .reduce( function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0 );
+                        
+                        // Actualizar el HTML del footer
+                        $('#total-costo-entrega').html( 'Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
+                    }
                 });
             }, 100);
         }
