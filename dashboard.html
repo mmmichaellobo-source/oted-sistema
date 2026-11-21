@@ -294,7 +294,6 @@
             window.location.href = 'login.html';
         }
 
-        // Variables para recordar los filtros
         let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
         let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
 
@@ -324,7 +323,6 @@
             openTab(savedTab);
         };
 
-        // --- SUBIDA DE ARCHIVOS ---
         async function subirArchivo(file, tipoExcel) {
             const formData = new FormData();
             formData.append('excelFile', file);
@@ -361,7 +359,6 @@
         let dataTableCobranza = null, dataTableEntrega = null;
         let datosGlobales = [], datosEntrega = [];
 
-        // --- CARGA COMPRAS ---
         async function cargarCompras() {
             const { data: cajaChica } = await supabaseClient.from('caja_chica').select('*');
             if (cajaChica) {
@@ -394,7 +391,6 @@
             }
         }
 
-        // --- CARGA COBRANZAS ---
         async function cargarCobranza() {
             if (filtrosCobranza.fechaIni) document.getElementById('filtro-fecha-ini').value = filtrosCobranza.fechaIni;
             if (filtrosCobranza.fechaFin) document.getElementById('filtro-fecha-fin').value = filtrosCobranza.fechaFin;
@@ -458,7 +454,7 @@
                 tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
             } else {
                 datos.forEach(item => {
-                    // AQUI AGREGAMOS data-order PARA QUE DATATABLES ENTIENDA LOS NUMEROS
+                    // data-order oculto con el valor NUMÉRICO PURO
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -504,12 +500,11 @@
                 dataTableCobranza.on('draw', function () {
                     var api = this.api();
                     
-                    // Sumar usando data-order
+                    // Leer el atributo data-order en lugar del texto visible
                     var totalCosto = api.column(5, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
                     var totalVenta = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
                     var totalUtilidad = api.column(7, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
                     
-                    // Contar registros
                     var totalRegistros = api.rows({ search: 'applied' }).count();
 
                     $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
@@ -519,12 +514,11 @@
                     $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                     $('#kpi-registros').html(totalRegistros);
 
-                    // Buscar la última fecha en los datos visibles (usando las filas del DOM)
                     var filasVisibles = api.rows({ search: 'applied' }).nodes();
                     if (filasVisibles.length > 0) {
                         let fechas = [];
                         $(filasVisibles).each(function() {
-                            let fechaStr = $(this).find('td').eq(0).text(); // La fecha está en la columna 0
+                            let fechaStr = $(this).find('td').eq(0).text();
                             if (fechaStr && fechaStr.includes('/')) {
                                 let p = fechaStr.split(' ')[0].split('/');
                                 if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
@@ -543,7 +537,6 @@
                 });
             }, 100);
 
-            // --- GRÁFICO CORPORATIVO PARA COBRANZAS ---
             let utilidadPorProducto = {};
             datos.forEach(item => {
                 utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
@@ -595,7 +588,6 @@
             });
         }
 
-        // --- LÓGICA NOTA DE ENTREGA ---
         async function cargarEntrega() {
             if (filtrosEntrega.fechaIni) document.getElementById('filtro-entrega-fecha-ini').value = filtrosEntrega.fechaIni;
             if (filtrosEntrega.fechaFin) document.getElementById('filtro-entrega-fecha-fin').value = filtrosEntrega.fechaFin;
@@ -670,7 +662,7 @@
             } else {
                 datos.forEach(item => {
                     costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
-                    // AQUI AGREGAMOS data-order PARA QUE DATATABLES ENTIENDA LOS NUMEROS
+                    // data-order oculto con el valor NUMÉRICO PURO
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -760,9 +752,9 @@
                 dataTableEntrega.on('draw', function () {
                     var api = this.api();
                     
-                    // Sumar usando data-order
+                    // Leer el atributo data-order en lugar del texto visible
                     var totalCostoFiltrado = api.column(6, { search: 'applied' }).nodes().reduce((a, b) => a + parseFloat($(b).attr('data-order') || 0), 0);
-                    // Contar registros
+                    
                     var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
                     
                     $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
@@ -770,12 +762,11 @@
                     $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                     $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
 
-                    // Buscar la última fecha en los datos visibles (usando las filas del DOM)
                     var filasVisibles = api.rows({ search: 'applied' }).nodes();
                     if (filasVisibles.length > 0) {
                         let fechas = [];
                         $(filasVisibles).each(function() {
-                            let fechaStr = $(this).find('td').eq(0).text(); // La fecha está en la columna 0
+                            let fechaStr = $(this).find('td').eq(0).text();
                             if (fechaStr && fechaStr.includes('/')) {
                                 let p = fechaStr.split(' ')[0].split('/');
                                 if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
@@ -795,7 +786,6 @@
             }, 100);
         }
 
-        // --- FILTROS GLOBALES COBRANZAS ---
         function aplicarFiltrosGlobalesCobranza() {
             const fIni = document.getElementById('filtro-fecha-ini').value; 
             const fFin = document.getElementById('filtro-fecha-fin').value; 
@@ -829,7 +819,6 @@
             renderizarTablaCobranza(datosGlobales);
         }
 
-        // --- FILTROS GLOBALES ENTREGA ---
         function aplicarFiltrosGlobalesEntrega() {
             const fIni = document.getElementById('filtro-entrega-fecha-ini').value; 
             const fFin = document.getElementById('filtro-entrega-fecha-fin').value; 
