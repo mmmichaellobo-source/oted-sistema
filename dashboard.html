@@ -364,11 +364,13 @@
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
-                .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`);
+                .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`)
+                .limit(10000); // <-- AGREGADO AQUI
 
             const { data: divisiones, error: err2 } = await supabaseClient
                 .from('vendedores_division')
-                .select('PERSONA_LINEA_PRODUCCION, DIVISION');
+                .select('PERSONA_LINEA_PRODUCCION, DIVISION')
+                .limit(10000); // <-- AGREGADO AQUI
 
             if (err1 || err2) { console.error(err1 || err2); return; }
 
@@ -466,11 +468,13 @@
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, NOMBRE_ALMACEN')
-                .or(`NOMBRE_DOCTO.ilike.%ENTREGA%`);
+                .or(`NOMBRE_DOCTO.ilike.%ENTREGA%`)
+                .limit(10000); // <-- AGREGADO AQUI
 
             const { data: divisiones, error: err2 } = await supabaseClient
                 .from('vendedores_division')
-                .select('PERSONA_LINEA_PRODUCCION, DIVISION');
+                .select('PERSONA_LINEA_PRODUCCION, DIVISION')
+                .limit(10000); // <-- AGREGADO AQUI
 
             if (err1 || err2) { console.error(err1 || err2); return; }
 
