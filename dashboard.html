@@ -324,11 +324,6 @@
             }
         }
 
-        window.onload = function() {
-            const savedTab = localStorage.getItem('galval_active_tab') || 'compras';
-            openTab(savedTab);
-        };
-
         async function subirArchivo(file, tipoExcel) {
             const formData = new FormData();
             formData.append('excelFile', file);
@@ -365,40 +360,48 @@
         let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
 
-        // --- LÓGICA DE COMPRAS ---
+        // --- LÓGICA DE COMPRAS (CON CRUCE CORREGIDO) ---
         async function cargarCompras() {
-            // Usamos .in() que es la forma correcta en Supabase para buscar múltiples valores
+            // 1. Consulta al consolidado
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, ID_ALMACEN, NOMBRE_DOCTO, NOMBRE_PRODUCTO, NOMBRE_DESCRIPCION, COSTO, NRO_DOC_FTE_CA')
                 .in('ID_ALMACEN', ['121002', '121007'])
-                .ilike('NOMBRE_DOCTO', '%Recepcion Compra%');
+                .ilike('NOMBRE_DOCTO', '%Recepcion%');
 
-            const { data: divisiones, error: err2 } = await supabaseClient
-                .from('vendedores_division')
-                .select('N, DIVISION')
+            // 2. Consulta a caja_chica (buscando la columna N y UNIDAD_NEGOCIO)
+            const { data: cajaChica, error: err2 } = await supabaseClient
+                .from('caja_chica') 
+                .select('N, UNIDAD_NEGOCIO')
                 .limit(10000);
 
-            if (err1 || err2) { console.error("Error en Supabase:", err1 || err2); return; }
+            if (err1 || err2) { 
+                console.error("Error en Supabase:", err1 || err2); 
+                return; 
+            }
 
+            // 3. Creamos el mapa de caja_chica
             const mapaDivisiones = {};
-            if (divisiones) {
-                divisiones.forEach(d => {
-                    if (d.N) mapaDivisiones[String(d.N).trim()] = d.DIVISION;
+            if (cajaChica) {
+                cajaChica.forEach(d => {
+                    if (d.N) {
+                        mapaDivisiones[String(d.N).trim()] = d.UNIDAD_NEGOCIO;
+                    }
                 });
             }
 
             const datosCompras = [];
 
+            // 4. Cruzamos los datos aplicando magia para limpiar el texto
             if (consolidado && consolidado.length > 0) {
                 consolidado.forEach(item => {
-                    const nroFactura = String(item.NRO_DOC_FTE_CA || '').trim();
-                    const divisionCruzada = mapaDivisiones[nroFactura] || '';
-
-                    let unidadNegocio = 'FABRICA';
-                    if (divisionCruzada.toUpperCase().includes('POST VENTA')) {
-                        unidadNegocio = 'POST VENTA';
-                    }
+                    const docOriginal = String(item.NRO_DOC_FTE_CA || '').trim();
+                    
+                    // Esta línea usa una expresión regular para dejar solo dígitos (quita N.V-, FAC-, etc.)
+                    const soloNumeros = docOriginal.replace(/\D/g, ''); 
+                    
+                    // Buscamos "2577" en el mapa. Si no lo encuentra, pone 'FABRICA' por defecto.
+                    const unidadNegocioCruzada = mapaDivisiones[soloNumeros] || 'FABRICA'; 
 
                     const costoOriginal = Number(item.COSTO) || 0;
                     const costoPositivo = Math.abs(costoOriginal);
@@ -409,12 +412,15 @@
                         docto: item.NOMBRE_DOCTO || '',
                         producto: item.NOMBRE_PRODUCTO || '',
                         proveedor: item.NOMBRE_DESCRIPCION || '',
-                        unidad_negocio: unidadNegocio,
+                        unidad_negocio: unidadNegocioCruzada,
                         costo: costoPositivo
                     });
                 });
+            } else {
+                console.warn("No se encontraron registros en consolidado_repuestos con esos filtros.");
             }
 
+            // 5. Renderizamos la tabla
             renderizarTablaCompras(datosCompras);
         }
 
@@ -1044,8 +1050,11 @@
             }
         }
 
-        // Iniciar la carga según la pestaña guardada
-        window.onload();
+        // --- INICIO DE LA APLICACIÓN CORREGIDO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTab = localStorage.getItem('galval_active_tab') || 'compras';
+            openTab(savedTab);
+        });
     </script>
 </body>
 </html>
