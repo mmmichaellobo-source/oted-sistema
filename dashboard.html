@@ -42,11 +42,10 @@
         table.dataTable tbody td { font-size: 0.875rem; padding: 10px 8px; color: #334155; }
         tfoot th { background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0; color: #1e293b; }
 
-        /* Contenedor de gráficos para altura fija */
-        .chart-container { position: relative; height: 350px; width: 100%; }
-        .chart-container-large { position: relative; height: 400px; width: 100%; max-width: 500px; margin: 0 auto; }
-        /* Contenedor alto para los gráficos de proveedores sin límite */
-        .chart-container-tall { position: relative; height: 600px; width: 100%; }
+        /* Contenedores de gráficos ajustados (20% más compactos) */
+        .chart-container { position: relative; height: 280px; width: 100%; }
+        .chart-container-large { position: relative; height: 320px; width: 100%; max-width: 450px; margin: 0 auto; }
+        .chart-container-tall { position: relative; height: 500px; width: 100%; }
         
         /* Animación del acordeón */
         .rotate-180 { transform: rotate(180deg); }
@@ -95,14 +94,14 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto p-4 md:p-6">
+        <div class="max-w-7xl mx-auto p-4 md:p-5">
             
-            <!-- PESTAÑA 0: RESUMEN GENERAL (CASCADA) -->
+            <!-- PESTAÑA 0: RESUMEN GENERAL (CASCADA COMPACTA) -->
             <div id="tab-resumen" class="hidden">
                 
                 <!-- Acordeón Filtros Resumen -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
-                    <button onclick="toggleAccordion('filtros-resumen')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-resumen')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros Globales de Resumen</span>
                         <i id="icon-filtros-resumen" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
                     </button>
@@ -138,65 +137,65 @@
                 </div>
 
                 <!-- Fila 1: Tarjetas KPI Ejecutivas -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Post Venta</p>
                         <p id="res-kpi-post" class="text-2xl font-black text-green-600">Bs 0.00</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Fábrica</p>
                         <p id="res-kpi-fab" class="text-2xl font-black text-blue-600">Bs 0.00</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-teal-500">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-teal-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Cobranzas</p>
                         <p id="res-kpi-cobranza" class="text-2xl font-black text-teal-600">Bs 0.00</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-gray-700">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-gray-700">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Entrega</p>
                         <p id="res-kpi-entrega" class="text-2xl font-black text-gray-800">Bs 0.00</p>
                     </div>
                 </div>
 
                 <!-- Fila 2: Gráfico de Torta -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6 w-full lg:w-2/3 mx-auto">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA</h3>
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-4 w-full lg:w-2/3 mx-auto">
+                    <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">RELACIÓN POST VENTA VS FÁBRICA</h3>
                     <div class="chart-container-large">
                         <canvas id="res_torta"></canvas>
                     </div>
                 </div>
 
                 <!-- Fila 3: Proveedores (Todos, altura extendida) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TODOS LOS PROVEEDORES</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TODOS LOS PROVEEDORES</h3>
                         <div class="chart-container-tall"><canvas id="res_g2_post_prov"></canvas></div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TODOS LOS PROVEEDORES</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TODOS LOS PROVEEDORES</h3>
                         <div class="chart-container-tall"><canvas id="res_g3_fab_prov"></canvas></div>
                     </div>
                 </div>
 
                 <!-- Fila 4: Productos (Top 10) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP 10 PRODUCTOS</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TOP 10 PRODUCTOS</h3>
                         <div class="chart-container"><canvas id="res_g4_post_prod"></canvas></div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP 10 PRODUCTOS</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TOP 10 PRODUCTOS</h3>
                         <div class="chart-container"><canvas id="res_g5_fab_prod"></canvas></div>
                     </div>
                 </div>
 
                 <!-- Fila 5: Cobranzas y Entrega -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">COBRANZAS: TOP UTILIDAD</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">COBRANZAS: TOP UTILIDAD</h3>
                         <div class="chart-container"><canvas id="res_cobranza"></canvas></div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">ENTREGA: COSTO POR DIVISIÓN</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">ENTREGA: COSTO POR DIVISIÓN</h3>
                         <div class="chart-container"><canvas id="res_entrega"></canvas></div>
                     </div>
                 </div>
@@ -207,8 +206,8 @@
             <div id="tab-compras" class="block">
                 
                 <!-- Acordeón Filtros -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
-                    <button onclick="toggleAccordion('filtros-compras')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-compras')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Compras)</span>
                         <i id="icon-filtros-compras" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
                     </button>
@@ -248,58 +247,58 @@
                 </div>
 
                 <!-- KPIs -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad POST VENTA</p>
                         <p id="kpi-utilidad-post" class="text-2xl font-black text-green-600">Bs 0.00</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad FÁBRICA</p>
                         <p id="kpi-utilidad-fab" class="text-2xl font-black text-blue-600">Bs 0.00</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-gray-700">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-gray-700">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
                         <p id="kpi-compras-registros" class="text-2xl font-black text-gray-800">0</p>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-slate-400">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-slate-400">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
                         <p id="kpi-compras-fecha" class="text-xl font-bold text-slate-700">--/--/----</p>
                     </div>
                 </div>
 
                 <!-- SECCIÓN DE GRÁFICOS -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                     <!-- Gráfico 1: Torta -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA (Porcentaje)</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">RELACIÓN POST VENTA VS FÁBRICA (Porcentaje)</h3>
                         <div class="chart-container max-w-sm mx-auto">
                             <canvas id="g1_torta"></canvas>
                         </div>
                     </div>
                     <!-- Gráfico 2: Post Venta Proveedores -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PROVEEDORES POR COSTO</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TOP PROVEEDORES POR COSTO</h3>
                         <div class="chart-container">
                             <canvas id="g2_post_proveedor"></canvas>
                         </div>
                     </div>
                     <!-- Gráfico 3: Fabrica Proveedores -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PROVEEDORES POR COSTO</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TOP PROVEEDORES POR COSTO</h3>
                         <div class="chart-container">
                             <canvas id="g3_fab_proveedor"></canvas>
                         </div>
                     </div>
                     <!-- Gráfico 4: Post Venta Productos -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP 10 PRODUCTOS POR COSTO</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TOP 10 PRODUCTOS POR COSTO</h3>
                         <div class="chart-container">
                             <canvas id="g4_post_producto"></canvas>
                         </div>
                     </div>
                     <!-- Gráfico 5: Fabrica Productos -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2 lg:w-1/2 lg:mx-auto">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP 10 PRODUCTOS POR COSTO</h3>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TOP 10 PRODUCTOS POR COSTO</h3>
                         <div class="chart-container">
                             <canvas id="g5_fab_producto"></canvas>
                         </div>
@@ -307,8 +306,8 @@
                 </div>
 
                 <!-- Tabla de Compras -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-3">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Compras (Recepciones)</h2>
                     </div>
                     
@@ -342,8 +341,8 @@
             <div id="tab-cobranza" class="hidden">
                 
                 <!-- Acordeón Filtros Cobranzas -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
-                    <button onclick="toggleAccordion('filtros-cobranza')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-cobranza')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Cobranzas)</span>
                         <i id="icon-filtros-cobranza" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
                     </button>
@@ -376,30 +375,30 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <div class="flex flex-col gap-4">
-                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                    <div class="flex flex-col gap-3">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Total (Bs)</p>
-                            <p id="kpi-utilidad-total" class="text-3xl font-black text-green-600">Bs 0.00</p>
+                            <p id="kpi-utilidad-total" class="text-2xl font-black text-green-600">Bs 0.00</p>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
-                            <p id="kpi-registros" class="text-3xl font-black text-blue-600">0</p>
+                            <p id="kpi-registros" class="text-2xl font-black text-blue-600">0</p>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-slate-400">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-slate-400">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
                             <p id="kpi-actualizacion" class="text-xl font-bold text-slate-700">--/--/----</p>
                         </div>
                     </div>
                     
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
-                        <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TOP PRODUCTOS CON MAYOR UTILIDAD</h2>
-                        <div class="relative w-full h-80 md:h-96"><canvas id="graficoUtilidad"></canvas></div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 lg:col-span-2">
+                        <h2 class="text-sm font-bold text-slate-700 mb-3 text-center">TOP PRODUCTOS CON MAYOR UTILIDAD</h2>
+                        <div class="relative w-full h-64 md:h-72"><canvas id="graficoUtilidad"></canvas></div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-3">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Cobranzas (Garantías)</h2>
                     </div>
                     <div class="w-full overflow-x-auto">
@@ -434,8 +433,8 @@
             <div id="tab-entrega" class="hidden">
                 
                 <!-- Acordeón Filtros Entrega -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
-                    <button onclick="toggleAccordion('filtros-entrega')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-entrega')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Nota de Entrega)</span>
                         <i id="icon-filtros-entrega" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
                     </button>
@@ -468,29 +467,29 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <div class="flex flex-col gap-4">
-                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-gray-700">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                    <div class="flex flex-col gap-3">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-gray-700">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Total (Bs)</p>
-                            <p id="kpi-entrega-costo" class="text-3xl font-black text-gray-800">Bs 0.00</p>
+                            <p id="kpi-entrega-costo" class="text-2xl font-black text-gray-800">Bs 0.00</p>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
-                            <p id="kpi-entrega-registros" class="text-3xl font-black text-blue-600">0</p>
+                            <p id="kpi-entrega-registros" class="text-2xl font-black text-blue-600">0</p>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-slate-400">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-slate-400">
                             <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
                             <p id="kpi-entrega-actualizacion" class="text-xl font-bold text-slate-700">--/--/----</p>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2">
-                        <h2 class="text-sm font-bold text-slate-700 mb-4 text-center">TODAS LAS DIVISIONES POR COSTO</h2>
-                        <div class="relative w-full h-80 md:h-96"><canvas id="graficoEntregaDivisiones"></canvas></div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 lg:col-span-2">
+                        <h2 class="text-sm font-bold text-slate-700 mb-3 text-center">TODAS LAS DIVISIONES POR COSTO</h2>
+                        <div class="relative w-full h-64 md:h-72"><canvas id="graficoEntregaDivisiones"></canvas></div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-3">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Almacén Repuestos TSG)</h2>
                     </div>
                     
@@ -1302,6 +1301,46 @@
             renderizarGraficosResumen(comprasFiltradas, cobranzasFiltradas, entregaFiltrada);
         }
 
+        // Función auxiliar para añadir texto de totales a los gráficos
+        const pluginTotales = {
+            id: 'pluginTotales',
+            afterDraw: (chart, args, options) => {
+                if (!options || !options.texto) return;
+                const { ctx, chartArea: { top, right } } = chart;
+                ctx.save();
+                
+                // Configuración de fuente del texto
+                ctx.font = 'bold 12px "Segoe UI"';
+                ctx.fillStyle = '#475569'; // Color gris oscuro elegante
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                
+                // Dibujamos el texto en la esquina superior derecha
+                ctx.fillText(options.texto, right, top - 10);
+                ctx.restore();
+            }
+        };
+
+        // Función auxiliar para texto central en la torta
+        const pluginCentroTorta = {
+            id: 'pluginCentroTorta',
+            afterDraw: (chart, args, options) => {
+                if (!options || !options.texto) return;
+                const { ctx, chartArea: { top, bottom, left, right } } = chart;
+                const centerX = (left + right) / 2;
+                const centerY = (top + bottom) / 2;
+                ctx.save();
+                
+                ctx.font = 'bold 16px "Segoe UI"';
+                ctx.fillStyle = '#1e293b'; // Color azul muy oscuro/gris
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                ctx.fillText(options.texto, centerX, centerY);
+                ctx.restore();
+            }
+        };
+
         function renderizarGraficosResumen(compras, cobranzas, entrega) {
             if (res_torta) res_torta.destroy();
             if (res_g2_post_prov) res_g2_post_prov.destroy();
@@ -1314,6 +1353,7 @@
             // 1. Torta Resumen
             let countPostVenta = compras.filter(d => d.unidad_negocio === 'POST VENTA').length;
             let countFabrica = compras.filter(d => d.unidad_negocio === 'FABRICA').length;
+            let totalCostoGlobal = compras.reduce((acc, curr) => acc + curr.costo, 0);
 
             res_torta = new Chart(document.getElementById('res_torta'), {
                 type: 'doughnut',
@@ -1321,6 +1361,7 @@
                     labels: ['POST VENTA', 'FÁBRICA'],
                     datasets: [{ data: [countPostVenta, countFabrica], backgroundColor: ['#10b981', '#3b82f6'], hoverOffset: 4 }]
                 },
+                plugins: [pluginCentroTorta],
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: {
@@ -1334,6 +1375,9 @@
                                     return ` ${context.label}: ${porcentaje}% (${valor} reg.)`;
                                 }
                             }
+                        },
+                        pluginCentroTorta: {
+                            texto: 'Total:\nBs ' + totalCostoGlobal.toLocaleString('es-BO', {minimumFractionDigits: 2})
                         }
                     }
                 }
@@ -1351,51 +1395,75 @@
                 return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
             }
 
-            const configBarras = (labels, values, tooltipData, color) => ({
+            const configBarras = (labels, values, tooltipData, color, totalTexto) => ({
                 type: 'bar',
                 data: { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }] },
+                plugins: [pluginTotales],
                 options: {
                     indexAxis: 'y', responsive: true, maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: { callbacks: { label: function(context) { const item = tooltipData[context.dataIndex]; return ` Costo: Bs ${item.costo.toLocaleString('es-BO')} | Cant: ${item.cantidad}`; } } }
+                        tooltip: { callbacks: { label: function(context) { const item = tooltipData[context.dataIndex]; return ` Costo: Bs ${item.costo.toLocaleString('es-BO')} | Cant: ${item.cantidad}`; } } },
+                        pluginTotales: { texto: totalTexto }
                     },
                     scales: { x: { grid: { display: false } }, y: { grid: { display: false } } }
                 }
             });
 
             // 2 y 3. Proveedores SIN LIMITE (Todos)
-            const dataPostProv = agrupar(compras, 'POST VENTA', 'proveedor'); // Sin slice
-            res_g2_post_prov = new Chart(document.getElementById('res_g2_post_prov'), configBarras(dataPostProv.map(d => d[0].substring(0, 15) + '...'), dataPostProv.map(d => d[1].costo), dataPostProv.map(d => d[1]), '#10b981'));
+            const dataPostProv = agrupar(compras, 'POST VENTA', 'proveedor');
+            let totalPostProv = dataPostProv.reduce((acc, curr) => acc + curr[1].costo, 0);
+            res_g2_post_prov = new Chart(document.getElementById('res_g2_post_prov'), configBarras(dataPostProv.map(d => d[0].substring(0, 15) + '...'), dataPostProv.map(d => d[1].costo), dataPostProv.map(d => d[1]), '#10b981', 'Total: Bs ' + totalPostProv.toLocaleString('es-BO', {minimumFractionDigits: 2})));
 
-            const dataFabProv = agrupar(compras, 'FABRICA', 'proveedor'); // Sin slice
-            res_g3_fab_prov = new Chart(document.getElementById('res_g3_fab_prov'), configBarras(dataFabProv.map(d => d[0].substring(0, 15) + '...'), dataFabProv.map(d => d[1].costo), dataFabProv.map(d => d[1]), '#3b82f6'));
+            const dataFabProv = agrupar(compras, 'FABRICA', 'proveedor');
+            let totalFabProv = dataFabProv.reduce((acc, curr) => acc + curr[1].costo, 0);
+            res_g3_fab_prov = new Chart(document.getElementById('res_g3_fab_prov'), configBarras(dataFabProv.map(d => d[0].substring(0, 15) + '...'), dataFabProv.map(d => d[1].costo), dataFabProv.map(d => d[1]), '#3b82f6', 'Total: Bs ' + totalFabProv.toLocaleString('es-BO', {minimumFractionDigits: 2})));
 
             // 4 y 5. Productos TOP 10
             const dataPostProd = agrupar(compras, 'POST VENTA', 'producto').slice(0, 10);
-            res_g4_post_prod = new Chart(document.getElementById('res_g4_post_prod'), configBarras(dataPostProd.map(d => d[0].substring(0, 20) + '...'), dataPostProd.map(d => d[1].costo), dataPostProd.map(d => d[1]), '#10b981'));
+            res_g4_post_prod = new Chart(document.getElementById('res_g4_post_prod'), configBarras(dataPostProd.map(d => d[0].substring(0, 20) + '...'), dataPostProd.map(d => d[1].costo), dataPostProd.map(d => d[1]), '#10b981', ''));
 
             const dataFabProd = agrupar(compras, 'FABRICA', 'producto').slice(0, 10);
-            res_g5_fab_prod = new Chart(document.getElementById('res_g5_fab_prod'), configBarras(dataFabProd.map(d => d[0].substring(0, 20) + '...'), dataFabProd.map(d => d[1].costo), dataFabProd.map(d => d[1]), '#3b82f6'));
+            res_g5_fab_prod = new Chart(document.getElementById('res_g5_fab_prod'), configBarras(dataFabProd.map(d => d[0].substring(0, 20) + '...'), dataFabProd.map(d => d[1].costo), dataFabProd.map(d => d[1]), '#3b82f6', ''));
 
             // 6. Cobranzas
             let utilidadPorProducto = {};
             cobranzas.forEach(item => { utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad; });
             const topUtilidad = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 5);
+            let totalUtilidadCob = cobranzas.reduce((acc, curr) => acc + curr.utilidad, 0);
+            
             res_cobranza = new Chart(document.getElementById('res_cobranza'), {
                 type: 'bar',
                 data: { labels: topUtilidad.map(p => p[0].substring(0, 20) + '...'), datasets: [{ label: 'Utilidad', data: topUtilidad.map(p => p[1]), backgroundColor: '#10b981', borderRadius: 4 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } }
+                plugins: [pluginTotales],
+                options: { 
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        pluginTotales: { texto: 'Total: Bs ' + totalUtilidadCob.toLocaleString('es-BO', {minimumFractionDigits: 2}) }
+                    }, 
+                    scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } 
+                }
             });
 
             // 7. Entrega
             let costoPorDivision = {};
             entrega.forEach(item => { costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo; });
             const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a).slice(0, 5);
+            let totalEntrega = entrega.reduce((acc, curr) => acc + curr.costo, 0);
+
             res_entrega = new Chart(document.getElementById('res_entrega'), {
                 type: 'bar',
                 data: { labels: topDivisiones.map(p => p[0].substring(0, 20)), datasets: [{ label: 'Costo', data: topDivisiones.map(p => p[1]), backgroundColor: '#3b82f6', borderRadius: 4 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } }
+                plugins: [pluginTotales],
+                options: { 
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        pluginTotales: { texto: 'Total: Bs ' + totalEntrega.toLocaleString('es-BO', {minimumFractionDigits: 2}) }
+                    }, 
+                    scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } 
+                }
             });
         }
 
