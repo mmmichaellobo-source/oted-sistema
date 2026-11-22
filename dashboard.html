@@ -44,6 +44,7 @@
 
         /* Contenedor de gráficos para altura fija */
         .chart-container { position: relative; height: 350px; width: 100%; }
+        .chart-container-large { position: relative; height: 400px; width: 100%; max-width: 500px; margin: 0 auto; }
         
         /* Animación del acordeón */
         .rotate-180 { transform: rotate(180deg); }
@@ -94,8 +95,9 @@
 
         <div class="max-w-7xl mx-auto p-4 md:p-6">
             
-            <!-- PESTAÑA 0: RESUMEN GENERAL -->
+            <!-- PESTAÑA 0: RESUMEN GENERAL (CASCADA) -->
             <div id="tab-resumen" class="hidden">
+                
                 <!-- Acordeón Filtros Resumen -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-resumen')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
@@ -133,44 +135,70 @@
                     </div>
                 </div>
 
-                <!-- Gráficos de Resumen -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                    <!-- Torta -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA</h3>
-                        <div class="chart-container max-w-sm mx-auto"><canvas id="res_torta"></canvas></div>
+                <!-- Fila 1: Tarjetas KPI Ejecutivas -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Post Venta</p>
+                        <p id="res-kpi-post" class="text-2xl font-black text-green-600">Bs 0.00</p>
                     </div>
-                    <!-- Compras: Post Venta Proveedores -->
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Fábrica</p>
+                        <p id="res-kpi-fab" class="text-2xl font-black text-blue-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-teal-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Cobranzas</p>
+                        <p id="res-kpi-cobranza" class="text-2xl font-black text-teal-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-gray-700">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Entrega</p>
+                        <p id="res-kpi-entrega" class="text-2xl font-black text-gray-800">Bs 0.00</p>
+                    </div>
+                </div>
+
+                <!-- Fila 2: Gráfico de Torta -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6 w-full lg:w-2/3 mx-auto">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA</h3>
+                    <div class="chart-container-large">
+                        <canvas id="res_torta"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fila 3: Proveedores -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PROVEEDORES</h3>
                         <div class="chart-container"><canvas id="res_g2_post_prov"></canvas></div>
                     </div>
-                    <!-- Compras: Fabrica Proveedores -->
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PROVEEDORES</h3>
                         <div class="chart-container"><canvas id="res_g3_fab_prov"></canvas></div>
                     </div>
-                    <!-- Compras: Post Venta Productos -->
+                </div>
+
+                <!-- Fila 4: Productos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PRODUCTOS</h3>
                         <div class="chart-container"><canvas id="res_g4_post_prod"></canvas></div>
                     </div>
-                    <!-- Compras: Fabrica Productos -->
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PRODUCTOS</h3>
                         <div class="chart-container"><canvas id="res_g5_fab_prod"></canvas></div>
                     </div>
-                    <!-- Cobranzas: Utilidad Productos -->
+                </div>
+
+                <!-- Fila 5: Cobranzas y Entrega -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">COBRANZAS: TOP UTILIDAD</h3>
                         <div class="chart-container"><canvas id="res_cobranza"></canvas></div>
                     </div>
-                    <!-- Entrega: Divisiones -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2 lg:col-start-2">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">ENTREGA: COSTO POR DIVISIÓN</h3>
                         <div class="chart-container"><canvas id="res_entrega"></canvas></div>
                     </div>
                 </div>
+
             </div>
 
             <!-- PESTAÑA 1: COMPRAS -->
@@ -511,10 +539,9 @@
         let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
         let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
         
-        // Variables globales para gráficos
         let datosComprasGlobales = [];
         let g1_torta = null, g2_post_prov = null, g3_fab_prov = null, g4_post_prod = null, g5_fab_prod = null;
-        // Variables para gráficos de resumen
+        
         let res_torta = null, res_g2_post_prov = null, res_g3_fab_prov = null, res_g4_post_prod = null, res_g5_fab_prod = null, res_cobranza = null, res_entrega = null;
 
         function toggleAccordion(id) {
@@ -796,7 +823,6 @@
             if (g4_post_prod) g4_post_prod.destroy();
             if (g5_fab_prod) g5_fab_prod.destroy();
 
-            // 1. Gráfico de Torta
             let countPostVenta = datos.filter(d => d.unidad_negocio === 'POST VENTA').length;
             let countFabrica = datos.filter(d => d.unidad_negocio === 'FABRICA').length;
 
@@ -804,15 +830,10 @@
                 type: 'doughnut',
                 data: {
                     labels: ['POST VENTA', 'FÁBRICA'],
-                    datasets: [{
-                        data: [countPostVenta, countFabrica],
-                        backgroundColor: ['#10b981', '#3b82f6'],
-                        hoverOffset: 4
-                    }]
+                    datasets: [{ data: [countPostVenta, countFabrica], backgroundColor: ['#10b981', '#3b82f6'], hoverOffset: 4 }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
                         legend: { position: 'bottom' },
                         tooltip: {
@@ -844,29 +865,14 @@
             const crearConfiguracionBarras = (labels, values, tooltipData, color) => {
                 return {
                     type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }]
-                    },
+                    data: { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }] },
                     options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const item = tooltipData[context.dataIndex];
-                                        return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`;
-                                    }
-                                }
-                            }
+                            tooltip: { callbacks: { label: function(context) { const item = tooltipData[context.dataIndex]; return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`; } } }
                         },
-                        scales: {
-                            x: { grid: { display: false } },
-                            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                        }
+                        scales: { x: { grid: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
                     }
                 };
             };
@@ -1221,8 +1227,6 @@
 
         // --- LÓGICA DE LA PESTAÑA RESUMEN ---
         async function cargarDatosResumen() {
-            // Nota: Para no saturar la base de datos, el resumen usará los datos ya cargados.
-            // Si no se han cargado (porque el usuario entra directo a Resumen), hacemos las consultas.
             if (datosComprasOriginales.length === 0) await cargarCompras();
             if (datosGlobales.length === 0) await cargarCobranza();
             if (datosEntrega.length === 0) await cargarEntrega();
@@ -1235,7 +1239,6 @@
             const fFin = document.getElementById('filtro-res-fecha-fin').value;
             const unidad = document.getElementById('filtro-res-unidad').value;
 
-            // Filtrar datos de Compras
             let comprasFiltradas = datosComprasOriginales.filter(item => {
                 let cF = true, cU = true;
                 if (fIni || fFin) {
@@ -1250,7 +1253,6 @@
                 return cF && cU;
             });
 
-            // Filtrar datos de Cobranzas
             let cobranzasFiltradas = datosGlobales.filter(item => {
                 let cF = true;
                 if (fIni || fFin) {
@@ -1261,11 +1263,9 @@
                         if (fFin && fechaItem > fFin) cF = false;
                     } else cF = false;
                 }
-                // Cobranzas no tiene campo unidad_negocio directo en este arreglo, se maneja por división
                 return cF;
             });
 
-            // Filtrar datos de Entrega
             let entregaFiltrada = datosEntrega.filter(item => {
                 let cF = true;
                 if (fIni || fFin) {
@@ -1279,12 +1279,28 @@
                 return cF;
             });
 
-            // Renderizar gráficos de resumen
+            // Actualizar Tarjetas KPI
+            let costoPost = 0, costoFab = 0;
+            comprasFiltradas.forEach(item => {
+                if (item.unidad_negocio === 'POST VENTA') costoPost += item.costo;
+                else costoFab += item.costo;
+            });
+            document.getElementById('res-kpi-post').innerText = 'Bs ' + costoPost.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('res-kpi-fab').innerText = 'Bs ' + costoFab.toLocaleString('es-BO', {minimumFractionDigits: 2});
+
+            let utilidadCobranzas = 0;
+            cobranzasFiltradas.forEach(item => { utilidadCobranzas += item.utilidad; });
+            document.getElementById('res-kpi-cobranza').innerText = 'Bs ' + utilidadCobranzas.toLocaleString('es-BO', {minimumFractionDigits: 2});
+
+            let costoEntregaTotal = 0;
+            entregaFiltrada.forEach(item => { costoEntregaTotal += item.costo; });
+            document.getElementById('res-kpi-entrega').innerText = 'Bs ' + costoEntregaTotal.toLocaleString('es-BO', {minimumFractionDigits: 2});
+
+            // Renderizar gráficos
             renderizarGraficosResumen(comprasFiltradas, cobranzasFiltradas, entregaFiltrada);
         }
 
         function renderizarGraficosResumen(compras, cobranzas, entrega) {
-            // Destruir anteriores
             if (res_torta) res_torta.destroy();
             if (res_g2_post_prov) res_g2_post_prov.destroy();
             if (res_g3_fab_prov) res_g3_fab_prov.destroy();
@@ -1303,10 +1319,24 @@
                     labels: ['POST VENTA', 'FÁBRICA'],
                     datasets: [{ data: [countPostVenta, countFabrica], backgroundColor: ['#10b981', '#3b82f6'], hoverOffset: 4 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let valor = context.raw;
+                                    let porcentaje = total > 0 ? ((valor / total) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${porcentaje}% (${valor} reg.)`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
-            // Función auxiliar para agrupar
             function agrupar(datos, filtroUnidad, campoAgrupar) {
                 let agrupado = {};
                 datos.forEach(item => {
@@ -1319,7 +1349,6 @@
                 return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
             }
 
-            // 2,3,4,5. Barras de Compras
             const configBarras = (labels, values, tooltipData, color) => ({
                 type: 'bar',
                 data: { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }] },
@@ -1345,7 +1374,6 @@
             const dataFabProd = agrupar(compras, 'FABRICA', 'producto').slice(0, 5);
             res_g5_fab_prod = new Chart(document.getElementById('res_g5_fab_prod'), configBarras(dataFabProd.map(d => d[0].substring(0, 20) + '...'), dataFabProd.map(d => d[1].costo), dataFabProd.map(d => d[1]), '#3b82f6'));
 
-            // 6. Cobranzas: Utilidad
             let utilidadPorProducto = {};
             cobranzas.forEach(item => { utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad; });
             const topUtilidad = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 5);
@@ -1355,7 +1383,6 @@
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } }
             });
 
-            // 7. Entrega: Divisiones
             let costoPorDivision = {};
             entrega.forEach(item => { costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo; });
             const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a).slice(0, 5);
