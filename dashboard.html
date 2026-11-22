@@ -701,7 +701,7 @@
             }, 100);
         }
 
-        // --- GRÁFICOS DE COMPRAS (CORREGIDOS) ---
+        // --- GRÁFICOS DE COMPRAS ---
         function renderizarGraficosCompras(datos) {
             if (g1_torta) g1_torta.destroy();
             if (g2_post_prov) g2_post_prov.destroy();
@@ -772,7 +772,6 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        // Leemos del arreglo tooltipData usando el índice
                                         const item = tooltipData[context.dataIndex];
                                         return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`;
                                     }
@@ -1068,6 +1067,27 @@
                 });
             }
 
+            // CORRECCIÓN: Calcular KPIs directamente sobre el arreglo de datos brutos, no en la tabla
+            let costoTotal = 0;
+            let fechas = [];
+            datos.forEach(item => {
+                costoTotal += item.costo;
+                if (item.fecha && item.fecha.includes('/')) {
+                    let p = item.fecha.split(' ')[0].split('/');
+                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                }
+            });
+
+            document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + costoTotal.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-entrega-registros').innerText = datos.length;
+            
+            if (fechas.length > 0) {
+                fechas.sort((a, b) => b - a);
+                document.getElementById('kpi-entrega-actualizacion').innerText = fechas[0].toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            } else {
+                document.getElementById('kpi-entrega-actualizacion').innerText = '--/--/----';
+            }
+
             const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
             if (chartEntregaDivisiones) chartEntregaDivisiones.destroy();
             
@@ -1084,14 +1104,11 @@
                     buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Notas_Entrega', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 6) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
+                        // El footer callback de la tabla se deja para el total de la tabla visual, pero los KPIs de arriba ya están calculados.
                         var api = this.api();
                         var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
                         var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
-                        
                         $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}) );
-                        $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-                        $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
                     }
                 });
             }, 100);
