@@ -93,8 +93,108 @@
             <!-- PESTAÑA 1: COMPRAS -->
             <div id="tab-compras" class="block">
                 
+                <!-- Acordeón Filtros -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-compras')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Compras)</span>
+                        <i id="icon-filtros-compras" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="filtros-compras" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-compra-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-compra-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Producto</label>
+                                <select id="filtro-compra-producto" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todos los productos...</option>
+                                </select>
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Proveedor</label>
+                                <select id="filtro-compra-proveedor" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todos los proveedores...</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosCompras()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosCompras()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad POST VENTA</p>
+                        <p id="kpi-utilidad-post" class="text-2xl font-black text-green-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad FÁBRICA</p>
+                        <p id="kpi-utilidad-fab" class="text-2xl font-black text-blue-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-gray-700">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
+                        <p id="kpi-compras-registros" class="text-2xl font-black text-gray-800">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-slate-400">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
+                        <p id="kpi-compras-fecha" class="text-xl font-bold text-slate-700">--/--/----</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE GRÁFICOS -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Gráfico 1: Torta -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA (Porcentaje)</h3>
+                        <div class="chart-container max-w-sm mx-auto">
+                            <canvas id="g1_torta"></canvas>
+                        </div>
+                    </div>
+                    <!-- Gráfico 2: Post Venta Proveedores -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PROVEEDORES POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g2_post_proveedor"></canvas>
+                        </div>
+                    </div>
+                    <!-- Gráfico 3: Fabrica Proveedores -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PROVEEDORES POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g3_fab_proveedor"></canvas>
+                        </div>
+                    </div>
+                    <!-- Gráfico 4: Post Venta Productos -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP 10 PRODUCTOS POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g4_post_producto"></canvas>
+                        </div>
+                    </div>
+                    <!-- Gráfico 5: Fabrica Productos -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP 10 PRODUCTOS POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g5_fab_producto"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tabla de Compras -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Compras (Recepciones)</h2>
                     </div>
@@ -123,78 +223,43 @@
                         </table>
                     </div>
                 </div>
-
-                <!-- SECCIÓN DE GRÁFICOS -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
-                    <!-- Gráfico 1: Torta (Post Venta vs Fabrica) -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA (Registros)</h3>
-                        <div class="chart-container max-w-sm mx-auto">
-                            <canvas id="g1_torta"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico 2: Post Venta - Proveedores por Costo -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PROVEEDORES POR COSTO</h3>
-                        <div class="chart-container">
-                            <canvas id="g2_post_proveedor"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico 3: Fabrica - Proveedores por Costo -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PROVEEDORES POR COSTO</h3>
-                        <div class="chart-container">
-                            <canvas id="g3_fab_proveedor"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico 4: Post Venta - Top 10 Productos por Costo -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP 10 PRODUCTOS POR COSTO</h3>
-                        <div class="chart-container">
-                            <canvas id="g4_post_producto"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico 5: Fabrica - Top 10 Productos por Costo -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2 lg:w-1/2 lg:mx-auto">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP 10 PRODUCTOS POR COSTO</h3>
-                        <div class="chart-container">
-                            <canvas id="g5_fab_producto"></canvas>
-                        </div>
-                    </div>
-
-                </div>
             </div>
 
             <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
-                <!-- ... (El código de cobranzas se mantiene igual) ... -->
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
-                        <input type="date" id="filtro-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
-                        <input type="date" id="filtro-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Descripción (Producto)</label>
-                        <select id="filtro-descripcion" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
-                            <option value="">Todos los productos...</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="aplicarFiltrosGlobalesCobranza()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
-                            <i class="fas fa-search"></i> Buscar
-                        </button>
-                        <button onclick="limpiarFiltrosGlobalesCobranza()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
-                            <i class="fas fa-eraser"></i> Limpiar
-                        </button>
+                
+                <!-- Acordeón Filtros Cobranzas -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-cobranza')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Cobranzas)</span>
+                        <i id="icon-filtros-cobranza" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="filtros-cobranza" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Descripción (Producto)</label>
+                                <select id="filtro-descripcion" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todos los productos...</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosGlobalesCobranza()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosGlobalesCobranza()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -254,29 +319,39 @@
 
             <!-- PESTAÑA 3: NOTA DE ENTREGA -->
             <div id="tab-entrega" class="hidden">
-                <!-- ... (El código de entrega se mantiene igual) ... -->
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
-                        <input type="date" id="filtro-entrega-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
-                        <input type="date" id="filtro-entrega-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">División</label>
-                        <select id="filtro-entrega-division" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
-                            <option value="">Todas las divisiones...</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="aplicarFiltrosGlobalesEntrega()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
-                            <i class="fas fa-search"></i> Buscar
-                        </button>
-                        <button onclick="limpiarFiltrosGlobalesEntrega()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
-                            <i class="fas fa-eraser"></i> Limpiar
-                        </button>
+                
+                <!-- Acordeón Filtros Entrega -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-entrega')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Nota de Entrega)</span>
+                        <i id="icon-filtros-entrega" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="filtros-entrega" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-entrega-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-entrega-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">División</label>
+                                <select id="filtro-entrega-division" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todas las divisiones...</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosGlobalesEntrega()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosGlobalesEntrega()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -352,10 +427,24 @@
 
         let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
         let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
-
-        // Variables globales para gráficos de compras
+        
+        // Variables para gráficos
         let datosComprasGlobales = [];
         let g1_torta = null, g2_post_prov = null, g3_fab_prov = null, g4_post_prod = null, g5_fab_prod = null;
+
+        // --- FUNCIÓN ACORDEÓN ---
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
 
         function openTab(tabName) {
             document.getElementById('tab-compras').classList.add('hidden');
@@ -415,8 +504,11 @@
         let chartDona = null, chartBarras = null, chartUtilidad = null, chartEntregaDivisiones = null;
         let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
+        
+        let datosComprasOriginales = []; // Guarda todos los datos sin filtrar
+        let datosComprasFiltrados = [];  // Guarda los datos filtrados actuales
 
-        // --- LÓGICA DE COMPRAS (CON GRÁFICOS) ---
+        // --- LÓGICA DE COMPRAS ---
         async function cargarCompras() {
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
@@ -443,7 +535,7 @@
                 });
             }
 
-            datosComprasGlobales = [];
+            datosComprasOriginales = [];
 
             if (consolidado && consolidado.length > 0) {
                 consolidado.forEach(item => {
@@ -452,11 +544,12 @@
                     const numeroLimpio = soloNumeros ? String(Number(soloNumeros)) : ''; 
                     const unidadNegocioCruzada = mapaDivisiones[numeroLimpio] || 'FABRICA'; 
 
-                    const costoOriginal = Number(item.COSTO) || 0;
+                    // Aseguramos que COSTO sea número puro
+                    const costoOriginal = parseFloat(String(item.COSTO).replace(',', '.')) || 0;
                     const costoPositivo = Math.abs(costoOriginal);
                     const cantidadItem = Number(item.CANTIDAD) || 0;
 
-                    datosComprasGlobales.push({
+                    datosComprasOriginales.push({
                         fecha: item.FECHA || '',
                         id_almacen: item.ID_ALMACEN || '',
                         docto: item.NOMBRE_DOCTO || '',
@@ -469,8 +562,111 @@
                 });
             }
 
-            renderizarTablaCompras(datosComprasGlobales);
-            renderizarGraficosCompras();
+            // Llenar los dropdowns únicos
+            const selectProd = document.getElementById('filtro-compra-producto');
+            const selectProv = document.getElementById('filtro-compra-proveedor');
+            
+            const productosUnicos = [...new Set(datosComprasOriginales.map(i => i.producto))].sort();
+            const proveedoresUnicos = [...new Set(datosComprasOriginales.map(i => i.proveedor))].sort();
+
+            selectProd.innerHTML = '<option value="">Todos los productos...</option>';
+            productosUnicos.forEach(p => { if(p !== 'SIN NOMBRE') selectProd.innerHTML += `<option value="${p}">${p}</option>`; });
+
+            selectProv.innerHTML = '<option value="">Todos los proveedores...</option>';
+            proveedoresUnicos.forEach(p => { if(p !== 'SIN PROVEEDOR') selectProv.innerHTML += `<option value="${p}">${p}</option>`; });
+
+            // Al cargar por primera vez, aplicar filtros (sin filtros reales)
+            aplicarFiltrosCompras();
+        }
+
+        function aplicarFiltrosCompras() {
+            const fIni = document.getElementById('filtro-compra-fecha-ini').value;
+            const fFin = document.getElementById('filtro-compra-fecha-fin').value;
+            const prod = document.getElementById('filtro-compra-producto').value;
+            const prov = document.getElementById('filtro-compra-proveedor').value;
+
+            datosComprasFiltrados = datosComprasOriginales.filter(item => {
+                let cumple = true;
+                
+                // Filtro Fecha
+                if (fIni || fFin) {
+                    if (item.fecha && item.fecha.includes('/')) {
+                        const p = item.fecha.split(' ')[0].split('/');
+                        if (p.length === 3) {
+                            const fechaItem = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                            if (fIni && fechaItem < fIni) cumple = false;
+                            if (fFin && fechaItem > fFin) cumple = false;
+                        } else { cumple = false; }
+                    } else { cumple = false; }
+                }
+                
+                // Filtro Producto
+                if (prod && item.producto !== prod) cumple = false;
+                
+                // Filtro Proveedor
+                if (prov && item.proveedor !== prov) cumple = false;
+
+                return cumple;
+            });
+
+            actualizarVistasCompras();
+        }
+
+        function limpiarFiltrosCompras() {
+            document.getElementById('filtro-compra-fecha-ini').value = '';
+            document.getElementById('filtro-compra-fecha-fin').value = '';
+            document.getElementById('filtro-compra-producto').value = '';
+            document.getElementById('filtro-compra-proveedor').value = '';
+            
+            datosComprasFiltrados = [...datosComprasOriginales];
+            actualizarVistasCompras();
+        }
+
+        function actualizarVistasCompras() {
+            renderizarTablaCompras(datosComprasFiltrados);
+            renderizarGraficosCompras(datosComprasFiltrados);
+            calcularKPIsCompras(datosComprasFiltrados);
+        }
+
+        function calcularKPIsCompras(datos) {
+            let utilidadPost = 0;
+            let utilidadFab = 0;
+            
+            // En compras, no hay "utilidad" como tal, pero usaremos el Costo 
+            // para llenar los KPIs según lo solicitado, o podemos adaptarlo.
+            // Asumiremos que el KPI de "Utilidad" aquí se refiere al Costo Total.
+            let costoPost = 0;
+            let costoFab = 0;
+
+            datos.forEach(item => {
+                if (item.unidad_negocio === 'POST VENTA') {
+                    costoPost += item.costo;
+                } else {
+                    costoFab += item.costo;
+                }
+            });
+
+            document.getElementById('kpi-utilidad-post').innerText = 'Bs ' + costoPost.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-utilidad-fab').innerText = 'Bs ' + costoFab.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-compras-registros').innerText = datos.length;
+
+            if (datos.length > 0) {
+                let fechas = [];
+                datos.forEach(d => {
+                    if (d.fecha && d.fecha.includes('/')) {
+                        let p = d.fecha.split(' ')[0].split('/');
+                        if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                    }
+                });
+                if (fechas.length > 0) {
+                    fechas.sort((a, b) => b - a);
+                    document.getElementById('kpi-compras-fecha').innerText = fechas[0].toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                } else {
+                    document.getElementById('kpi-compras-fecha').innerText = '--/--/----';
+                }
+            } else {
+                document.getElementById('kpi-compras-fecha').innerText = '--/--/----';
+            }
         }
 
         function renderizarTablaCompras(datos) {
@@ -478,7 +674,7 @@
             tablaBody.innerHTML = '';
 
             if (datos.length === 0) {
-                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay registros de compras para esos almacenes.</td></tr>';
+                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay registros con estos filtros.</td></tr>';
             } else {
                 datos.forEach(item => {
                     tablaBody.innerHTML += `
@@ -504,46 +700,30 @@
             setTimeout(() => {
                 dataTableCompras = $('#tablaCompras').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ 
-                        extend: 'excelHtml5', 
-                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
-                        title: 'Compras', 
-                        className: 'dt-button'
-                    }],
+                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Compras', className: 'dt-button' }],
                     "pageLength": 10, 
                     "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
-                        var intVal = function ( i ) {
-                            if (typeof i === 'string') return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
-                            return typeof i === 'number' ? i : 0;
-                        };
+                        var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
                         var totalCosto = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        $('#total-costo-compras').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                        $('#total-costo-compras').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                     }
                 });
             }, 100);
         }
 
-        // --- LÓGICA DE LOS 5 GRÁFICOS DE COMPRAS ---
-        function renderizarGraficosCompras() {
+        // --- GRÁFICOS DE COMPRAS ---
+        function renderizarGraficosCompras(datos) {
             if (g1_torta) g1_torta.destroy();
             if (g2_post_prov) g2_post_prov.destroy();
             if (g3_fab_prov) g3_fab_prov.destroy();
             if (g4_post_prod) g4_post_prod.destroy();
             if (g5_fab_prod) g5_fab_prod.destroy();
 
-            // 1. Gráfico de Torta: Post Venta vs Fabrica
-            let countPostVenta = 0;
-            let countFabrica = 0;
-            
-            datosComprasGlobales.forEach(item => {
-                if (item.unidad_negocio === 'POST VENTA') {
-                    countPostVenta++;
-                } else {
-                    countFabrica++;
-                }
-            });
+            // 1. Gráfico de Torta
+            let countPostVenta = datos.filter(d => d.unidad_negocio === 'POST VENTA').length;
+            let countFabrica = datos.filter(d => d.unidad_negocio === 'FABRICA').length;
 
             g1_torta = new Chart(document.getElementById('g1_torta'), {
                 type: 'doughnut',
@@ -551,7 +731,7 @@
                     labels: ['POST VENTA', 'FÁBRICA'],
                     datasets: [{
                         data: [countPostVenta, countFabrica],
-                        backgroundColor: ['#10b981', '#3b82f6'], // Verde y Azul
+                        backgroundColor: ['#10b981', '#3b82f6'],
                         hoverOffset: 4
                     }]
                 },
@@ -559,28 +739,34 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom' }
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let valor = context.raw;
+                                    let porcentaje = total > 0 ? ((valor / total) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${porcentaje}% (${valor} reg.)`;
+                                }
+                            }
+                        }
                     }
                 }
             });
 
-            // Función auxiliar para agrupar datos
             function agruparDatos(filtroUnidad, campoAgrupar) {
                 let agrupado = {};
-                datosComprasGlobales.forEach(item => {
+                datos.forEach(item => {
                     if (item.unidad_negocio === filtroUnidad) {
-                        if (!agrupado[item[campoAgrupar]]) {
-                            agrupado[item[campoAgrupar]] = { costo: 0, cantidad: 0 };
-                        }
+                        if (!agrupado[item[campoAgrupar]]) agrupado[item[campoAgrupar]] = { costo: 0, cantidad: 0 };
                         agrupado[item[campoAgrupar]].costo += item.costo;
                         agrupado[item[campoAgrupar]].cantidad += item.cantidad;
                     }
                 });
-                return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); // Ordenar de mayor a menor
+                return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
             }
 
-            // Configuración común para gráficos de barras horizontales
-            const opcionesBarras = (titulo) => ({
+            const opcionesBarras = {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
@@ -599,62 +785,50 @@
                     x: { grid: { display: false } },
                     y: { grid: { display: false }, ticks: { font: { size: 10 } } }
                 }
-            });
+            };
 
-            // 2. Post Venta: Top Proveedores por Costo
-            const dataPostProv = agruparDatos('POST VENTA', 'proveedor').slice(0, 10); // Top 10
+            // 2. Post Venta: Proveedores
+            const dataPostProv = agruparDatos('POST VENTA', 'proveedor').slice(0, 10);
             g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), {
                 type: 'bar',
                 data: {
-                    labels: dataPostProv.map(d => d[0].substring(0, 25) + '...'),
-                    datasets: [{
-                        data: dataPostProv.map(d => d[1]),
-                        backgroundColor: '#10b981'
-                    }]
+                    labels: dataPostProv.map(d => d[0].substring(0, 20) + '...'),
+                    datasets: [{ data: dataPostProv.map(d => d[1].costo), backgroundColor: '#10b981' }]
                 },
-                options: opcionesBarras('Post Venta Proveedores')
+                options: opcionesBarras
             });
 
-            // 3. Fabrica: Top Proveedores por Costo
+            // 3. Fabrica: Proveedores
             const dataFabProv = agruparDatos('FABRICA', 'proveedor').slice(0, 10);
             g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), {
                 type: 'bar',
                 data: {
-                    labels: dataFabProv.map(d => d[0].substring(0, 25) + '...'),
-                    datasets: [{
-                        data: dataFabProv.map(d => d[1]),
-                        backgroundColor: '#3b82f6'
-                    }]
+                    labels: dataFabProv.map(d => d[0].substring(0, 20) + '...'),
+                    datasets: [{ data: dataFabProv.map(d => d[1].costo), backgroundColor: '#3b82f6' }]
                 },
-                options: opcionesBarras('Fabrica Proveedores')
+                options: opcionesBarras
             });
 
-            // 4. Post Venta: Top 10 Productos por Costo
+            // 4. Post Venta: Productos
             const dataPostProd = agruparDatos('POST VENTA', 'producto').slice(0, 10);
             g4_post_prod = new Chart(document.getElementById('g4_post_producto'), {
                 type: 'bar',
                 data: {
-                    labels: dataPostProd.map(d => d[0].substring(0, 30) + '...'),
-                    datasets: [{
-                        data: dataPostProd.map(d => d[1]),
-                        backgroundColor: '#10b981'
-                    }]
+                    labels: dataPostProd.map(d => d[0].substring(0, 25) + '...'),
+                    datasets: [{ data: dataPostProd.map(d => d[1].costo), backgroundColor: '#10b981' }]
                 },
-                options: opcionesBarras('Post Venta Productos')
+                options: opcionesBarras
             });
 
-            // 5. Fabrica: Top 10 Productos por Costo
+            // 5. Fabrica: Productos
             const dataFabProd = agruparDatos('FABRICA', 'producto').slice(0, 10);
             g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), {
                 type: 'bar',
                 data: {
-                    labels: dataFabProd.map(d => d[0].substring(0, 30) + '...'),
-                    datasets: [{
-                        data: dataFabProd.map(d => d[1]),
-                        backgroundColor: '#3b82f6'
-                    }]
+                    labels: dataFabProd.map(d => d[0].substring(0, 25) + '...'),
+                    datasets: [{ data: dataFabProd.map(d => d[1].costo), backgroundColor: '#3b82f6' }]
                 },
-                options: opcionesBarras('Fabrica Productos')
+                options: opcionesBarras
             });
         }
 
@@ -741,46 +915,19 @@
             setTimeout(() => {
                 dataTableCobranza = $('#tablaCobranza').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ 
-                        extend: 'excelHtml5', 
-                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
-                        title: 'Cobranzas', 
-                        className: 'dt-button',
-                        exportOptions: {
-                            format: {
-                                body: function ( data, row, column, node ) {
-                                    let textoLimpio = data;
-                                    if (textoLimpio.indexOf('<') !== -1) {
-                                        textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
-                                    }
-                                    if (column === 5 || column === 6 || column === 7) {
-                                        return textoLimpio.replace(/Bs\s?/g, '').trim();
-                                    }
-                                    return textoLimpio.trim();
-                                }
-                            }
-                        }
-                    }],
+                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 5 || column === 6 || column === 7) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
-                        var intVal = function ( i ) {
-                            if (typeof i === 'string') {
-                                return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
-                            }
-                            return typeof i === 'number' ? i : 0;
-                        };
-
+                        var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
                         var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        
                         var totalRegistros = api.rows({ search: 'applied' }).count();
 
                         $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
-
                         $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#kpi-registros').html(totalRegistros);
 
@@ -796,67 +943,61 @@
                             }
                             if (fechas.length > 0) {
                                 fechas.sort((a, b) => b - a);
-                                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                                $('#kpi-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
-                            } else {
-                                $('#kpi-actualizacion').html('--/--/----');
-                            }
-                        } else {
-                            $('#kpi-actualizacion').html('--/--/----');
-                        }
+                                $('#kpi-actualizacion').html(fechas[0].toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+                            } else $('#kpi-actualizacion').html('--/--/----');
+                        } else $('#kpi-actualizacion').html('--/--/----');
                     }
                 });
             }, 100);
 
             let utilidadPorProducto = {};
-            datos.forEach(item => {
-                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
-            });
-
+            datos.forEach(item => { utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad; });
             const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 10);
-            if (chartUtilidad) chartUtilidad.destroy();
             
-            const bgColorsCobranza = topProductos.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)');
-            const borderColorsCobranza = topProductos.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 1)' : 'rgba(37, 99, 235, 1)');
-
+            if (chartUtilidad) chartUtilidad.destroy();
             chartUtilidad = new Chart(document.getElementById('graficoUtilidad'), {
                 type: 'bar',
-                data: { 
-                    labels: topProductos.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : '')), 
-                    datasets: [{ 
-                        label: 'Utilidad (Bs)',
-                        data: topProductos.map(p => p[1]), 
-                        backgroundColor: bgColorsCobranza,
-                        borderColor: borderColorsCobranza,
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barThickness: 20
-                    }] 
-                },
-                options: { 
-                    indexAxis: 'y', 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleFont: { size: 13, family: 'Segoe UI' },
-                            bodyFont: { size: 14, weight: 'bold', family: 'Segoe UI' },
-                            padding: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    return ' Bs ' + context.raw.toLocaleString('es-BO', {minimumFractionDigits: 2});
-                                }
-                            }
-                        }
-                    }, 
-                    scales: { 
-                        x: { grid: { display: false }, ticks: { font: {size: 11, family: 'Segoe UI'}, color: '#64748b' } }, 
-                        y: { grid: { display: false }, ticks: { font: {size: 11, weight: '600', family: 'Segoe UI'}, color: '#334155' } } 
-                    } 
-                }
+                data: { labels: topProductos.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : '')), datasets: [{ label: 'Utilidad (Bs)', data: topProductos.map(p => p[1]), backgroundColor: topProductos.map((_, i) => i === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)'), borderRadius: 6, barThickness: 20 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } }
             });
+        }
+
+        function aplicarFiltrosGlobalesCobranza() {
+            const fIni = document.getElementById('filtro-fecha-ini').value; 
+            const fFin = document.getElementById('filtro-fecha-fin').value; 
+            const desc = document.getElementById('filtro-descripcion').value; 
+
+            filtrosCobranza = { fechaIni: fIni, fechaFin: fFin, descripcion: desc };
+            $.fn.dataTable.ext.search.pop();
+
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'tablaCobranza') return true;
+                    let cF = true, cD = true;
+                    let fechaStr = data[0]; 
+                    let descStr = data[3];  
+                    if (fIni || fFin) {
+                        if (fechaStr && fechaStr.includes('/')) {
+                            let p = fechaStr.split(' ')[0].split('/');
+                            let fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                            if (fIni && fechaItemStr < fIni) cF = false;
+                            if (fFin && fechaItemStr > fFin) cF = false;
+                        } else cF = false;
+                    }
+                    if (desc && descStr !== desc) cD = false;
+                    return cF && cD;
+                }
+            );
+            if (dataTableCobranza) dataTableCobranza.draw();
+        }
+
+        function limpiarFiltrosGlobalesCobranza() {
+            document.getElementById('filtro-fecha-ini').value = '';
+            document.getElementById('filtro-fecha-fin').value = '';
+            document.getElementById('filtro-descripcion').value = '';
+            filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' }; 
+            $.fn.dataTable.ext.search.pop(); 
+            if (dataTableCobranza) dataTableCobranza.draw(); 
         }
 
         // --- LÓGICA DE NOTA DE ENTREGA ---
@@ -879,11 +1020,7 @@
             if (err1 || err2) { console.error("Error de Supabase:", err1 || err2); return; }
 
             const mapaDivisiones = {};
-            if (divisiones) {
-                divisiones.forEach(d => { 
-                    if (d.PERSONA_LINEA_PRODUCCION) mapaDivisiones[String(d.PERSONA_LINEA_PRODUCCION).trim()] = d.DIVISION; 
-                });
-            }
+            if (divisiones) divisiones.forEach(d => { if (d.PERSONA_LINEA_PRODUCCION) mapaDivisiones[String(d.PERSONA_LINEA_PRODUCCION).trim()] = d.DIVISION; });
 
             datosEntrega = []; 
 
@@ -926,7 +1063,6 @@
         function renderizarTablaEntrega(datos) {
             const tablaBody = document.getElementById('tabla-entrega-body');
             tablaBody.innerHTML = '';
-            
             let costoPorDivision = {};
 
             if (datos.length === 0) {
@@ -934,7 +1070,6 @@
             } else {
                 datos.forEach(item => {
                     costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
-                    
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
@@ -952,264 +1087,59 @@
             const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
             if (chartEntregaDivisiones) chartEntregaDivisiones.destroy();
             
-            const bgColorsEntrega = topDivisiones.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)');
-            const borderColorsEntrega = topDivisiones.map((_, index) => index === 0 ? 'rgba(15, 23, 42, 1)' : 'rgba(37, 99, 235, 1)');
-
             chartEntregaDivisiones = new Chart(document.getElementById('graficoEntregaDivisiones'), {
                 type: 'bar',
-                data: { 
-                    labels: topDivisiones.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : '')), 
-                    datasets: [{ 
-                        label: 'Costo Total (Bs)', 
-                        data: topDivisiones.map(p => p[1]), 
-                        backgroundColor: bgColorsEntrega, 
-                        borderColor: borderColorsEntrega,
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barThickness: 20 
-                    }] 
-                },
-                options: { 
-                    indexAxis: 'y', 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleFont: { size: 13, family: 'Segoe UI' },
-                            bodyFont: { size: 14, weight: 'bold', family: 'Segoe UI' },
-                            padding: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    return ' Bs ' + context.raw.toLocaleString('es-BO', {minimumFractionDigits: 2});
-                                }
-                            }
-                        }
-                    }, 
-                    scales: { 
-                        x: { grid: { display: false }, ticks: { font: {size: 11, family: 'Segoe UI'}, color: '#64748b' } }, 
-                        y: { grid: { display: false }, ticks: { font: {size: 11, weight: '600', family: 'Segoe UI'}, color: '#334155' } } 
-                    } 
-                }
+                data: { labels: topDivisiones.map(p => p[0].substring(0, 30)), datasets: [{ label: 'Costo (Bs)', data: topDivisiones.map(p => p[1]), backgroundColor: topDivisiones.map((_, i) => i === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)'), borderRadius: 6, barThickness: 20 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } }
             });
 
             if (dataTableEntrega) dataTableEntrega.destroy();
             setTimeout(() => {
                 dataTableEntrega = $('#tablaEntrega').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ 
-                        extend: 'excelHtml5', 
-                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
-                        title: 'Notas_Entrega', 
-                        className: 'dt-button',
-                        exportOptions: {
-                            format: {
-                                body: function ( data, row, column, node ) {
-                                    let textoLimpio = data;
-                                    if (textoLimpio.indexOf('<') !== -1) {
-                                        textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
-                                    }
-                                    if (column === 6) {
-                                        return textoLimpio.replace(/Bs\s?/g, '').trim();
-                                    }
-                                    return textoLimpio.trim();
-                                }
-                            }
-                        }
-                    }],
+                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Notas_Entrega', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 6) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
-                        var intVal = function ( i ) {
-                            if (typeof i === 'string') {
-                                return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
-                            }
-                            return typeof i === 'number' ? i : 0;
-                        };
-
+                        var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
                         var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
                         
-                        $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}) );
-                        
+                        $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}) );
                         $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
-
-                        var datosVisibles = api.rows({ search: 'applied' }).data();
-                        if (datosVisibles.length > 0) {
-                            let fechas = [];
-                            for (let i = 0; i < datosVisibles.length; i++) {
-                                let fechaStr = datosVisibles[i][0]; 
-                                if (fechaStr && fechaStr.includes('/')) {
-                                    let p = fechaStr.split(' ')[0].split('/');
-                                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
-                                }
-                            }
-                            if (fechas.length > 0) {
-                                fechas.sort((a, b) => b - a);
-                                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                                $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', opciones));
-                            } else {
-                                $('#kpi-entrega-actualizacion').html('--/--/----');
-                            }
-                        } else {
-                            $('#kpi-entrega-actualizacion').html('--/--/----');
-                        }
                     }
                 });
             }, 100);
         }
 
-        // --- FILTROS COBRANZAS ---
-        function aplicarFiltrosGlobalesCobranza() {
-            const fIni = document.getElementById('filtro-fecha-ini').value; 
-            const fFin = document.getElementById('filtro-fecha-fin').value; 
-            const desc = document.getElementById('filtro-descripcion').value; 
-
-            filtrosCobranza = { fechaIni: fIni, fechaFin: fFin, descripcion: desc };
-
-            $.fn.dataTable.ext.search.pop();
-
-            $.fn.dataTable.ext.search.push(
-                function(settings, data, dataIndex) {
-                    if (settings.nTable.id !== 'tablaCobranza') return true;
-
-                    let cF = true, cD = true;
-                    let fechaStr = data[0]; 
-                    let descStr = data[3];  
-
-                    if (fIni || fFin) {
-                        if (fechaStr && fechaStr.includes('/')) {
-                            let p = fechaStr.split(' ')[0].split('/');
-                            let fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-                            if (fIni && fechaItemStr < fIni) cF = false;
-                            if (fFin && fechaItemStr > fFin) cF = false;
-                        } else {
-                            cF = false;
-                        }
-                    }
-                    if (desc && descStr !== desc) cD = false;
-                    return cF && cD;
-                }
-            );
-
-            if (dataTableCobranza) {
-                dataTableCobranza.draw();
-            }
-            
-            const filtrados = datosGlobales.filter(item => {
-                let cF = true, cD = true;
-                if (fIni || fFin) {
-                    if(item.fecha && item.fecha.includes('/')) {
-                        const fechaLimpia = item.fecha.split(' ')[0]; 
-                        const p = fechaLimpia.split('/'); 
-                        const fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-                        if (fIni && fechaItemStr < fIni) cF = false;
-                        if (fFin && fechaItemStr > fFin) cF = false;
-                    } else cF = false;
-                }
-                if (desc) cD = item.descripcion === desc;
-                return cF && cD;
-            });
-            
-            let utilidadPorProducto = {};
-            filtrados.forEach(item => {
-                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
-            });
-            const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 10);
-            
-            if (chartUtilidad) {
-                chartUtilidad.data.labels = topProductos.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
-                chartUtilidad.data.datasets[0].data = topProductos.map(p => p[1]);
-                chartUtilidad.update();
-            }
-        }
-
-        function limpiarFiltrosGlobalesCobranza() {
-            document.getElementById('filtro-fecha-ini').value = '';
-            document.getElementById('filtro-fecha-fin').value = '';
-            document.getElementById('filtro-descripcion').value = '';
-            filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' }; 
-            
-            $.fn.dataTable.ext.search.pop(); 
-            if (dataTableCobranza) dataTableCobranza.draw(); 
-            
-            let utilidadPorProducto = {};
-            datosGlobales.forEach(item => {
-                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
-            });
-            const topProductos = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 10);
-            if (chartUtilidad) {
-                chartUtilidad.data.labels = topProductos.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
-                chartUtilidad.data.datasets[0].data = topProductos.map(p => p[1]);
-                chartUtilidad.update();
-            }
-        }
-
-        // --- FILTROS ENTREGA ---
         function aplicarFiltrosGlobalesEntrega() {
             const fIni = document.getElementById('filtro-entrega-fecha-ini').value; 
             const fFin = document.getElementById('filtro-entrega-fecha-fin').value; 
             const div = document.getElementById('filtro-entrega-division').value; 
 
             filtrosEntrega = { fechaIni: fIni, fechaFin: fFin, division: div };
-
             $.fn.dataTable.ext.search.pop();
 
             $.fn.dataTable.ext.search.push(
                 function(settings, data, dataIndex) {
                     if (settings.nTable.id !== 'tablaEntrega') return true;
-
                     let cF = true, cD = true;
                     let fechaStr = data[0]; 
                     let divStr = data[5];   
-
                     if (fIni || fFin) {
                         if (fechaStr && fechaStr.includes('/')) {
                             let p = fechaStr.split(' ')[0].split('/');
                             let fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
                             if (fIni && fechaItemStr < fIni) cF = false;
                             if (fFin && fechaItemStr > fFin) cF = false;
-                        } else {
-                            cF = false;
-                        }
+                        } else cF = false;
                     }
                     if (div && divStr !== div) cD = false;
                     return cF && cD;
                 }
             );
-
-            if (dataTableEntrega) {
-                dataTableEntrega.draw();
-            }
-            
-            const filtrados = datosEntrega.filter(item => {
-                let cF = true, cD = true;
-                if (fIni || fFin) {
-                    if(item.fecha && item.fecha.includes('/')) {
-                        const fechaLimpia = item.fecha.split(' ')[0]; 
-                        const p = fechaLimpia.split('/'); 
-                        const fechaItemStr = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-                        if (fIni && fechaItemStr < fIni) cF = false;
-                        if (fFin && fechaItemStr > fFin) cF = false;
-                    } else cF = false;
-                }
-                if (div) cD = item.division === div;
-                return cF && cD;
-            });
-            
-            let costoPorDivision = {};
-            filtrados.forEach(item => {
-                costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
-            });
-            const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
-            
-            if (chartEntregaDivisiones) {
-                chartEntregaDivisiones.data.labels = topDivisiones.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
-                chartEntregaDivisiones.data.datasets[0].data = topDivisiones.map(p => p[1]);
-                chartEntregaDivisiones.update();
-            }
+            if (dataTableEntrega) dataTableEntrega.draw();
         }
 
         function limpiarFiltrosGlobalesEntrega() {
@@ -1217,20 +1147,8 @@
             document.getElementById('filtro-entrega-fecha-fin').value = '';
             document.getElementById('filtro-entrega-division').value = '';
             filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' }; 
-            
             $.fn.dataTable.ext.search.pop();
             if (dataTableEntrega) dataTableEntrega.draw();
-            
-            let costoPorDivision = {};
-            datosEntrega.forEach(item => {
-                costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
-            });
-            const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a);
-            if (chartEntregaDivisiones) {
-                chartEntregaDivisiones.data.labels = topDivisiones.map(p => p[0].substring(0, 30) + (p[0].length > 30 ? '...' : ''));
-                chartEntregaDivisiones.data.datasets[0].data = topDivisiones.map(p => p[1]);
-                chartEntregaDivisiones.update();
-            }
         }
 
         // --- INICIO DE LA APLICACIÓN ---
