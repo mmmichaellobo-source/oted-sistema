@@ -57,7 +57,6 @@
     <header class="bg-[#0f172a] text-white shadow-md z-20">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
             
-            <!-- Lado Izquierdo: Botón Volver + Logo -->
             <div class="flex items-center gap-4">
                 <a href="home.html" class="bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-3 rounded transition flex items-center gap-2 border border-gray-700">
                     <i class="fas fa-arrow-left"></i> Volver
@@ -73,7 +72,6 @@
                 </div>
             </div>
             
-            <!-- Lado Derecho: Usuario + Acciones -->
             <div class="flex items-center gap-4">
                 <input type="file" id="excelConsolidado" accept=".xlsx, .xls" class="hidden">
                 <input type="file" id="excelCajaChica" accept=".xlsx, .xls" class="hidden">
@@ -88,7 +86,6 @@
                     <i class="fas fa-cog text-lg"></i>
                 </a>
                 
-                <!-- Perfil de Usuario -->
                 <div class="flex items-center gap-3 border-l border-gray-700 pl-4 ml-2">
                     <div class="text-right hidden sm:block">
                         <p id="user-name-display" class="text-sm font-bold text-white">Cargando...</p>
@@ -124,7 +121,6 @@
             
             <!-- PESTAÑA 0: RESUMEN GENERAL -->
             <div id="tab-resumen" class="hidden">
-                <!-- Acordeón Filtros Resumen -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-resumen')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros Globales de Resumen</span>
@@ -161,7 +157,6 @@
                     </div>
                 </div>
 
-                <!-- KPIs Resumen -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Post Venta</p>
@@ -181,7 +176,6 @@
                     </div>
                 </div>
 
-                <!-- Gráficos Resumen -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-4 w-full lg:w-2/3 mx-auto">
                     <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">COMPRAS: POST VENTA VS FÁBRICA</h3>
                     <div class="chart-container-large"><canvas id="res_torta"></canvas></div>
@@ -223,7 +217,6 @@
 
             <!-- PESTAÑA 1: COMPRAS -->
             <div id="tab-compras" class="block">
-                <!-- Acordeón Filtros -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-compras')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Compras)</span>
@@ -264,7 +257,6 @@
                     </div>
                 </div>
 
-                <!-- KPIs -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo POST VENTA</p>
@@ -284,7 +276,6 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN DE GRÁFICOS -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                     <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">RELACIÓN POST VENTA VS FÁBRICA (Porcentaje)</h3>
@@ -318,7 +309,6 @@
                     </div>
                 </div>
 
-                <!-- Tabla de Compras -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-3">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Compras (Recepciones)</h2>
@@ -353,7 +343,6 @@
 
             <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
-                <!-- Acordeón Filtros Cobranzas -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-cobranza')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Cobranzas)</span>
@@ -422,6 +411,7 @@
                                     <th>Nombre Docto</th>
                                     <th>Código Persona</th>
                                     <th>Nombre Descripción</th>
+                                    <th>División</th> <!-- COLUMNA AGREGADA -->
                                     <th class="text-right">Costo (+)</th>
                                     <th class="text-right">Precio BS</th>
                                     <th class="text-right">Utilidad BS</th>
@@ -430,7 +420,7 @@
                             <tbody id="tabla-cobranza-body"></tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="4" class="text-right py-3 px-2">TOTALES:</th>
+                                    <th colspan="5" class="text-right py-3 px-2">TOTALES:</th> <!-- COLSPAN AJUSTADO A 5 -->
                                     <th id="total-costo" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-venta" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-utilidad" class="text-right py-3 px-2 text-green-600">Bs 0.00</th>
@@ -443,7 +433,6 @@
 
             <!-- PESTAÑA 3: NOTA DE ENTREGA -->
             <div id="tab-entrega" class="hidden">
-                <!-- Acordeón Filtros Entrega -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-entrega')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
                         <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Nota de Entrega)</span>
@@ -1005,7 +994,7 @@
                             docto: item.NOMBRE_DOCTO || '', 
                             codigo: codigo,
                             descripcion: item.NOMBRE_DESCRIPCION || 'SIN NOMBRE',
-                            division: divisionCruzada, // <--- ESTO FALTA O ESTÁ MAL ESCRITO
+                            division: divisionCruzada, // <-- ESTO SE AGREGÓ
                             costo: costoPositivo, 
                             venta: precioVenta, 
                             utilidad: utilidad
@@ -1032,20 +1021,20 @@
             tablaBody.innerHTML = '';
 
             if (datos.length === 0) {
-                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
+                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
             } else {
                 datos.forEach(item => {
-                    datos.forEach(item => {
+                    // AHORA TIENE LAS 8 COLUMNAS QUE EXIGE EL THEAD
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-2 px-4">${item.fecha}</td>
-                        <td class="py-2 px-4 font-medium">${item.docto}</td>
-                        <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
-                        <td class="py-2 px-4">${item.descripcion}</td>
-                        <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division || 'SIN DIVISION'}</span></td> <!-- FALTABA ESTA -->
-                        <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
-                        <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
-                        <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
+                            <td class="py-2 px-4">${item.fecha}</td>
+                            <td class="py-2 px-4 font-medium">${item.docto}</td>
+                            <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
+                            <td class="py-2 px-4">${item.descripcion}</td>
+                            <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division || 'SIN DIVISION'}</span></td>
+                            <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -1055,21 +1044,20 @@
             setTimeout(() => {
                 dataTableCobranza = $('#tablaCobranza').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 4 || column === 5 || column === 6) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
+                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 5 || column === 6 || column === 7) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
                         var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
-                        var totalCosto = api.column(4, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalVenta = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalUtilidad = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalRegistros = api.rows({ search: 'applied' }).count();
 
                         $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         
-                        // ACTUALIZACIÓN DINÁMICA DE KPIs
                         $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#kpi-registros').html(totalRegistros);
 
@@ -1203,10 +1191,8 @@
                     let codigoLimpio = String(item.PERSONA_LINEA_PRODUCCION || '').trim();
                     if (codigoLimpio.includes('.')) codigoLimpio = codigoLimpio.split('.')[0]; 
 
-                    // REGLA MODIFICADA: Si no existe, es DENTRO DE GARANTIA
                     const divisionCruzada = mapaDivisiones[codigoLimpio] || 'DENTRO DE GARANTIA';
                     
-                    // Filtro para no mostrar los que son FABRICA
                     if (divisionCruzada.toUpperCase().includes('FABRICA')) return; 
 
                     const costoOriginal = Number(item.COSTO) || 0;
@@ -1314,7 +1300,6 @@
                         
                         $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}) );
                         
-                        // ACTUALIZACIÓN DINÁMICA DE KPIs
                         $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
                         $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
