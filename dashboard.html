@@ -431,11 +431,9 @@
         let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
         let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
         
-        // Variables para gráficos
         let datosComprasGlobales = [];
         let g1_torta = null, g2_post_prov = null, g3_fab_prov = null, g4_post_prod = null, g5_fab_prod = null;
 
-        // --- FUNCIÓN ACORDEÓN ---
         function toggleAccordion(id) {
             const content = document.getElementById(id);
             const icon = document.getElementById('icon-' + id);
@@ -547,7 +545,6 @@
                     const numeroLimpio = soloNumeros ? String(Number(soloNumeros)) : ''; 
                     const unidadNegocioCruzada = mapaDivisiones[numeroLimpio] || 'FABRICA'; 
 
-                    // Aseguramos que COSTO sea número puro
                     const costoOriginal = parseFloat(String(item.COSTO).replace(',', '.')) || 0;
                     const costoPositivo = Math.abs(costoOriginal);
                     const cantidadItem = Number(item.CANTIDAD) || 0;
@@ -565,7 +562,6 @@
                 });
             }
 
-            // Llenar los dropdowns únicos
             const selectProd = document.getElementById('filtro-compra-producto');
             const selectProv = document.getElementById('filtro-compra-proveedor');
             
@@ -705,7 +701,7 @@
             }, 100);
         }
 
-        // --- GRÁFICOS DE COMPRAS CORREGIDOS ---
+        // --- GRÁFICOS DE COMPRAS (CORREGIDOS) ---
         function renderizarGraficosCompras(datos) {
             if (g1_torta) g1_torta.destroy();
             if (g2_post_prov) g2_post_prov.destroy();
@@ -746,6 +742,7 @@
                 }
             });
 
+            // Función para agrupar y guardar datos para el Tooltip
             function agruparDatos(filtroUnidad, campoAgrupar) {
                 let agrupado = {};
                 datos.forEach(item => {
@@ -758,130 +755,65 @@
                 return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
             }
 
-            // LA SOLUCIÓN AL TOOLTIP: Usamos las etiquetas para guardar el objeto y luego parsearlo
-            const opcionesBarras = {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                // Como el label es un JSON (ver abajo), lo parseamos de vuelta
-                                let item = JSON.parse(context.label);
-                                return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`;
+            // Opciones comunes de gráficos de barras con arreglo para tooltip limpio
+            const crearConfiguracionBarras = (labels, values, tooltipData, color) => {
+                return {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        // Leemos del arreglo tooltipData usando el índice
+                                        const item = tooltipData[context.dataIndex];
+                                        return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`;
+                                    }
+                                }
                             }
+                        },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
                         }
                     }
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                }
+                };
             };
 
             // 2. Post Venta: Proveedores
             const dataPostProv = agruparDatos('POST VENTA', 'proveedor').slice(0, 10);
-            g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), {
-                type: 'bar',
-                data: {
-                    // Usamos un JSON como label para que viaje oculto en el tooltip
-                    labels: dataPostProv.map(d => JSON.stringify({ nombre: d[0].substring(0, 20) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
-                    datasets: [{ data: dataPostProv.map(d => d[1].costo), backgroundColor: '#10b981' }]
-                },
-                options: {
-                    ...opcionesBarras,
-                    scales: {
-                        ...opcionesBarras.scales,
-                        y: {
-                            ...opcionesBarras.scales.y,
-                            ticks: {
-                                callback: function(value) {
-                                    // Mostramos solo el nombre en el eje Y
-                                    let label = this.getLabelForValue(value);
-                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            const labelsPostProv = dataPostProv.map(d => d[0].substring(0, 20) + '...');
+            const valuesPostProv = dataPostProv.map(d => d[1].costo);
+            const tooltipPostProv = dataPostProv.map(d => d[1]);
+            g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), crearConfiguracionBarras(labelsPostProv, valuesPostProv, tooltipPostProv, '#10b981'));
 
             // 3. Fabrica: Proveedores
             const dataFabProv = agruparDatos('FABRICA', 'proveedor').slice(0, 10);
-            g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), {
-                type: 'bar',
-                data: {
-                    labels: dataFabProv.map(d => JSON.stringify({ nombre: d[0].substring(0, 20) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
-                    datasets: [{ data: dataFabProv.map(d => d[1].costo), backgroundColor: '#3b82f6' }]
-                },
-                options: {
-                    ...opcionesBarras,
-                    scales: {
-                        ...opcionesBarras.scales,
-                        y: {
-                            ...opcionesBarras.scales.y,
-                            ticks: {
-                                callback: function(value) {
-                                    let label = this.getLabelForValue(value);
-                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            const labelsFabProv = dataFabProv.map(d => d[0].substring(0, 20) + '...');
+            const valuesFabProv = dataFabProv.map(d => d[1].costo);
+            const tooltipFabProv = dataFabProv.map(d => d[1]);
+            g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), crearConfiguracionBarras(labelsFabProv, valuesFabProv, tooltipFabProv, '#3b82f6'));
 
             // 4. Post Venta: Productos
             const dataPostProd = agruparDatos('POST VENTA', 'producto').slice(0, 10);
-            g4_post_prod = new Chart(document.getElementById('g4_post_producto'), {
-                type: 'bar',
-                data: {
-                    labels: dataPostProd.map(d => JSON.stringify({ nombre: d[0].substring(0, 25) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
-                    datasets: [{ data: dataPostProd.map(d => d[1].costo), backgroundColor: '#10b981' }]
-                },
-                options: {
-                    ...opcionesBarras,
-                    scales: {
-                        ...opcionesBarras.scales,
-                        y: {
-                            ...opcionesBarras.scales.y,
-                            ticks: {
-                                callback: function(value) {
-                                    let label = this.getLabelForValue(value);
-                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            const labelsPostProd = dataPostProd.map(d => d[0].substring(0, 25) + '...');
+            const valuesPostProd = dataPostProd.map(d => d[1].costo);
+            const tooltipPostProd = dataPostProd.map(d => d[1]);
+            g4_post_prod = new Chart(document.getElementById('g4_post_producto'), crearConfiguracionBarras(labelsPostProd, valuesPostProd, tooltipPostProd, '#10b981'));
 
             // 5. Fabrica: Productos
             const dataFabProd = agruparDatos('FABRICA', 'producto').slice(0, 10);
-            g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), {
-                type: 'bar',
-                data: {
-                    labels: dataFabProd.map(d => JSON.stringify({ nombre: d[0].substring(0, 25) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
-                    datasets: [{ data: dataFabProd.map(d => d[1].costo), backgroundColor: '#3b82f6' }]
-                },
-                options: {
-                    ...opcionesBarras,
-                    scales: {
-                        ...opcionesBarras.scales,
-                        y: {
-                            ...opcionesBarras.scales.y,
-                            ticks: {
-                                callback: function(value) {
-                                    let label = this.getLabelForValue(value);
-                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            const labelsFabProd = dataFabProd.map(d => d[0].substring(0, 25) + '...');
+            const valuesFabProd = dataFabProd.map(d => d[1].costo);
+            const tooltipFabProd = dataFabProd.map(d => d[1]);
+            g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), crearConfiguracionBarras(labelsFabProd, valuesFabProd, tooltipFabProd, '#3b82f6'));
         }
 
         // --- LÓGICA DE COBRANZAS ---
