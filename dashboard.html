@@ -41,6 +41,9 @@
         table.dataTable thead th { background-color: #f8fafc; font-size: 0.75rem; color: #64748b; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; }
         table.dataTable tbody td { font-size: 0.875rem; padding: 10px 8px; color: #334155; }
         tfoot th { background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0; color: #1e293b; }
+
+        /* Contenedor de gráficos para altura fija */
+        .chart-container { position: relative; height: 350px; width: 100%; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -89,7 +92,9 @@
             
             <!-- PESTAÑA 1: COMPRAS -->
             <div id="tab-compras" class="block">
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                
+                <!-- Tabla de Compras -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold text-slate-800">Detalle de Compras (Recepciones)</h2>
                     </div>
@@ -104,14 +109,13 @@
                                     <th>Nombre Producto</th>
                                     <th>Proveedor</th>
                                     <th>Unidad Negocio</th>
-                                    <th class="text-right">CANTIDAD</th> <!-- NUEVA COLUMNA -->
+                                    <th class="text-right">CANTIDAD</th>
                                     <th class="text-right">Costo (+)</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-compras-body"></tbody>
                             <tfoot>
                                 <tr>
-                                    <!-- Colspan ajustado a 7 para que el total quede en la última columna -->
                                     <th colspan="7" class="text-right py-3 px-2">TOTAL COSTO:</th>
                                     <th id="total-costo-compras" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
                                 </tr>
@@ -119,10 +123,56 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- SECCIÓN DE GRÁFICOS -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Gráfico 1: Torta (Post Venta vs Fabrica) -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA (Registros)</h3>
+                        <div class="chart-container max-w-sm mx-auto">
+                            <canvas id="g1_torta"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico 2: Post Venta - Proveedores por Costo -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PROVEEDORES POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g2_post_proveedor"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico 3: Fabrica - Proveedores por Costo -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PROVEEDORES POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g3_fab_proveedor"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico 4: Post Venta - Top 10 Productos por Costo -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP 10 PRODUCTOS POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g4_post_producto"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico 5: Fabrica - Top 10 Productos por Costo -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP 10 PRODUCTOS POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g5_fab_producto"></canvas>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
             <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
+                <!-- ... (El código de cobranzas se mantiene igual) ... -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
                     <div class="flex-1 min-w-[150px]">
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
@@ -204,7 +254,7 @@
 
             <!-- PESTAÑA 3: NOTA DE ENTREGA -->
             <div id="tab-entrega" class="hidden">
-                
+                <!-- ... (El código de entrega se mantiene igual) ... -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6 flex flex-wrap items-end gap-4">
                     <div class="flex-1 min-w-[150px]">
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
@@ -303,6 +353,10 @@
         let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
         let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
 
+        // Variables globales para gráficos de compras
+        let datosComprasGlobales = [];
+        let g1_torta = null, g2_post_prov = null, g3_fab_prov = null, g4_post_prod = null, g5_fab_prod = null;
+
         function openTab(tabName) {
             document.getElementById('tab-compras').classList.add('hidden');
             document.getElementById('tab-cobranza').classList.add('hidden');
@@ -362,16 +416,14 @@
         let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
 
-        // --- LÓGICA DE COMPRAS (CON CANTIDAD Y CRUCE CORREGIDO) ---
+        // --- LÓGICA DE COMPRAS (CON GRÁFICOS) ---
         async function cargarCompras() {
-            // 1. Consulta al consolidado (Incluimos CANTIDAD)
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, ID_ALMACEN, NOMBRE_DOCTO, NOMBRE_PRODUCTO, NOMBRE_DESCRIPCION, COSTO, NRO_DOC_FTE_CA, CANTIDAD') 
                 .in('ID_ALMACEN', ['121002', '121007'])
                 .ilike('NOMBRE_DOCTO', '%Recepcion%');
 
-            // 2. Consulta a caja_chica
             const { data: cajaChica, error: err2 } = await supabaseClient
                 .from('caja_chica') 
                 .select('N, UNIDAD_NEGOCIO')
@@ -382,7 +434,6 @@
                 return; 
             }
 
-            // 3. Creamos el mapa de caja_chica
             const mapaDivisiones = {};
             if (cajaChica) {
                 cajaChica.forEach(d => {
@@ -392,42 +443,34 @@
                 });
             }
 
-            const datosCompras = [];
+            datosComprasGlobales = [];
 
-            // 4. Cruzamos los datos limpiando letras y ceros a la izquierda
             if (consolidado && consolidado.length > 0) {
                 consolidado.forEach(item => {
                     const docOriginal = String(item.NRO_DOC_FTE_CA || '').trim();
-                    
-                    // PASO 1: Quitamos letras, guiones y puntos (deja solo números)
                     const soloNumeros = docOriginal.replace(/\D/g, ''); 
-                    
-                    // PASO 2: Quitamos los ceros a la izquierda (ej. "0296" se vuelve "296")
                     const numeroLimpio = soloNumeros ? String(Number(soloNumeros)) : ''; 
-                    
                     const unidadNegocioCruzada = mapaDivisiones[numeroLimpio] || 'FABRICA'; 
 
                     const costoOriginal = Number(item.COSTO) || 0;
                     const costoPositivo = Math.abs(costoOriginal);
-                    const cantidadItem = Number(item.CANTIDAD) || 0; // Extraemos la cantidad
+                    const cantidadItem = Number(item.CANTIDAD) || 0;
 
-                    datosCompras.push({
+                    datosComprasGlobales.push({
                         fecha: item.FECHA || '',
                         id_almacen: item.ID_ALMACEN || '',
                         docto: item.NOMBRE_DOCTO || '',
-                        producto: item.NOMBRE_PRODUCTO || '',
-                        proveedor: item.NOMBRE_DESCRIPCION || '',
+                        producto: item.NOMBRE_PRODUCTO || 'SIN NOMBRE',
+                        proveedor: item.NOMBRE_DESCRIPCION || 'SIN PROVEEDOR',
                         unidad_negocio: unidadNegocioCruzada,
-                        cantidad: cantidadItem, // Agregamos al objeto
+                        cantidad: cantidadItem,
                         costo: costoPositivo
                     });
                 });
-            } else {
-                console.warn("No se encontraron registros en consolidado_repuestos con esos filtros.");
             }
 
-            // 5. Renderizamos la tabla
-            renderizarTablaCompras(datosCompras);
+            renderizarTablaCompras(datosComprasGlobales);
+            renderizarGraficosCompras();
         }
 
         function renderizarTablaCompras(datos) {
@@ -450,7 +493,7 @@
                                     ${item.unidad_negocio}
                                 </span>
                             </td>
-                            <td class="py-2 px-4 text-right font-medium text-slate-700">${item.cantidad}</td> <!-- Nueva celda -->
+                            <td class="py-2 px-4 text-right font-medium text-slate-700">${item.cantidad}</td>
                             <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
                         </tr>
                     `;
@@ -475,12 +518,144 @@
                             if (typeof i === 'string') return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
                             return typeof i === 'number' ? i : 0;
                         };
-                        // El costo ahora está en la columna 7 (índice 7) debido a la nueva columna
                         var totalCosto = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         $('#total-costo-compras').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                     }
                 });
             }, 100);
+        }
+
+        // --- LÓGICA DE LOS 5 GRÁFICOS DE COMPRAS ---
+        function renderizarGraficosCompras() {
+            if (g1_torta) g1_torta.destroy();
+            if (g2_post_prov) g2_post_prov.destroy();
+            if (g3_fab_prov) g3_fab_prov.destroy();
+            if (g4_post_prod) g4_post_prod.destroy();
+            if (g5_fab_prod) g5_fab_prod.destroy();
+
+            // 1. Gráfico de Torta: Post Venta vs Fabrica
+            let countPostVenta = 0;
+            let countFabrica = 0;
+            
+            datosComprasGlobales.forEach(item => {
+                if (item.unidad_negocio === 'POST VENTA') {
+                    countPostVenta++;
+                } else {
+                    countFabrica++;
+                }
+            });
+
+            g1_torta = new Chart(document.getElementById('g1_torta'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['POST VENTA', 'FÁBRICA'],
+                    datasets: [{
+                        data: [countPostVenta, countFabrica],
+                        backgroundColor: ['#10b981', '#3b82f6'], // Verde y Azul
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Función auxiliar para agrupar datos
+            function agruparDatos(filtroUnidad, campoAgrupar) {
+                let agrupado = {};
+                datosComprasGlobales.forEach(item => {
+                    if (item.unidad_negocio === filtroUnidad) {
+                        if (!agrupado[item[campoAgrupar]]) {
+                            agrupado[item[campoAgrupar]] = { costo: 0, cantidad: 0 };
+                        }
+                        agrupado[item[campoAgrupar]].costo += item.costo;
+                        agrupado[item[campoAgrupar]].cantidad += item.cantidad;
+                    }
+                });
+                return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); // Ordenar de mayor a menor
+            }
+
+            // Configuración común para gráficos de barras horizontales
+            const opcionesBarras = (titulo) => ({
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let item = context.raw;
+                                return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+            });
+
+            // 2. Post Venta: Top Proveedores por Costo
+            const dataPostProv = agruparDatos('POST VENTA', 'proveedor').slice(0, 10); // Top 10
+            g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), {
+                type: 'bar',
+                data: {
+                    labels: dataPostProv.map(d => d[0].substring(0, 25) + '...'),
+                    datasets: [{
+                        data: dataPostProv.map(d => d[1]),
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: opcionesBarras('Post Venta Proveedores')
+            });
+
+            // 3. Fabrica: Top Proveedores por Costo
+            const dataFabProv = agruparDatos('FABRICA', 'proveedor').slice(0, 10);
+            g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), {
+                type: 'bar',
+                data: {
+                    labels: dataFabProv.map(d => d[0].substring(0, 25) + '...'),
+                    datasets: [{
+                        data: dataFabProv.map(d => d[1]),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: opcionesBarras('Fabrica Proveedores')
+            });
+
+            // 4. Post Venta: Top 10 Productos por Costo
+            const dataPostProd = agruparDatos('POST VENTA', 'producto').slice(0, 10);
+            g4_post_prod = new Chart(document.getElementById('g4_post_producto'), {
+                type: 'bar',
+                data: {
+                    labels: dataPostProd.map(d => d[0].substring(0, 30) + '...'),
+                    datasets: [{
+                        data: dataPostProd.map(d => d[1]),
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: opcionesBarras('Post Venta Productos')
+            });
+
+            // 5. Fabrica: Top 10 Productos por Costo
+            const dataFabProd = agruparDatos('FABRICA', 'producto').slice(0, 10);
+            g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), {
+                type: 'bar',
+                data: {
+                    labels: dataFabProd.map(d => d[0].substring(0, 30) + '...'),
+                    datasets: [{
+                        data: dataFabProd.map(d => d[1]),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: opcionesBarras('Fabrica Productos')
+            });
         }
 
         // --- LÓGICA DE COBRANZAS ---
