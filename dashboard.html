@@ -44,6 +44,9 @@
 
         /* Contenedor de gráficos para altura fija */
         .chart-container { position: relative; height: 350px; width: 100%; }
+        
+        /* Animación del acordeón */
+        .rotate-180 { transform: rotate(180deg); }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -505,8 +508,8 @@
         let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
         
-        let datosComprasOriginales = []; // Guarda todos los datos sin filtrar
-        let datosComprasFiltrados = [];  // Guarda los datos filtrados actuales
+        let datosComprasOriginales = []; 
+        let datosComprasFiltrados = [];  
 
         // --- LÓGICA DE COMPRAS ---
         async function cargarCompras() {
@@ -575,7 +578,6 @@
             selectProv.innerHTML = '<option value="">Todos los proveedores...</option>';
             proveedoresUnicos.forEach(p => { if(p !== 'SIN PROVEEDOR') selectProv.innerHTML += `<option value="${p}">${p}</option>`; });
 
-            // Al cargar por primera vez, aplicar filtros (sin filtros reales)
             aplicarFiltrosCompras();
         }
 
@@ -588,7 +590,6 @@
             datosComprasFiltrados = datosComprasOriginales.filter(item => {
                 let cumple = true;
                 
-                // Filtro Fecha
                 if (fIni || fFin) {
                     if (item.fecha && item.fecha.includes('/')) {
                         const p = item.fecha.split(' ')[0].split('/');
@@ -600,10 +601,7 @@
                     } else { cumple = false; }
                 }
                 
-                // Filtro Producto
                 if (prod && item.producto !== prod) cumple = false;
-                
-                // Filtro Proveedor
                 if (prov && item.proveedor !== prov) cumple = false;
 
                 return cumple;
@@ -629,12 +627,6 @@
         }
 
         function calcularKPIsCompras(datos) {
-            let utilidadPost = 0;
-            let utilidadFab = 0;
-            
-            // En compras, no hay "utilidad" como tal, pero usaremos el Costo 
-            // para llenar los KPIs según lo solicitado, o podemos adaptarlo.
-            // Asumiremos que el KPI de "Utilidad" aquí se refiere al Costo Total.
             let costoPost = 0;
             let costoFab = 0;
 
@@ -713,7 +705,7 @@
             }, 100);
         }
 
-        // --- GRÁFICOS DE COMPRAS ---
+        // --- GRÁFICOS DE COMPRAS CORREGIDOS ---
         function renderizarGraficosCompras(datos) {
             if (g1_torta) g1_torta.destroy();
             if (g2_post_prov) g2_post_prov.destroy();
@@ -766,6 +758,7 @@
                 return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
             }
 
+            // LA SOLUCIÓN AL TOOLTIP: Usamos las etiquetas para guardar el objeto y luego parsearlo
             const opcionesBarras = {
                 indexAxis: 'y',
                 responsive: true,
@@ -775,7 +768,8 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                let item = context.raw;
+                                // Como el label es un JSON (ver abajo), lo parseamos de vuelta
+                                let item = JSON.parse(context.label);
                                 return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`;
                             }
                         }
@@ -792,10 +786,26 @@
             g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), {
                 type: 'bar',
                 data: {
-                    labels: dataPostProv.map(d => d[0].substring(0, 20) + '...'),
+                    // Usamos un JSON como label para que viaje oculto en el tooltip
+                    labels: dataPostProv.map(d => JSON.stringify({ nombre: d[0].substring(0, 20) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
                     datasets: [{ data: dataPostProv.map(d => d[1].costo), backgroundColor: '#10b981' }]
                 },
-                options: opcionesBarras
+                options: {
+                    ...opcionesBarras,
+                    scales: {
+                        ...opcionesBarras.scales,
+                        y: {
+                            ...opcionesBarras.scales.y,
+                            ticks: {
+                                callback: function(value) {
+                                    // Mostramos solo el nombre en el eje Y
+                                    let label = this.getLabelForValue(value);
+                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
             // 3. Fabrica: Proveedores
@@ -803,10 +813,24 @@
             g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), {
                 type: 'bar',
                 data: {
-                    labels: dataFabProv.map(d => d[0].substring(0, 20) + '...'),
+                    labels: dataFabProv.map(d => JSON.stringify({ nombre: d[0].substring(0, 20) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
                     datasets: [{ data: dataFabProv.map(d => d[1].costo), backgroundColor: '#3b82f6' }]
                 },
-                options: opcionesBarras
+                options: {
+                    ...opcionesBarras,
+                    scales: {
+                        ...opcionesBarras.scales,
+                        y: {
+                            ...opcionesBarras.scales.y,
+                            ticks: {
+                                callback: function(value) {
+                                    let label = this.getLabelForValue(value);
+                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
             // 4. Post Venta: Productos
@@ -814,10 +838,24 @@
             g4_post_prod = new Chart(document.getElementById('g4_post_producto'), {
                 type: 'bar',
                 data: {
-                    labels: dataPostProd.map(d => d[0].substring(0, 25) + '...'),
+                    labels: dataPostProd.map(d => JSON.stringify({ nombre: d[0].substring(0, 25) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
                     datasets: [{ data: dataPostProd.map(d => d[1].costo), backgroundColor: '#10b981' }]
                 },
-                options: opcionesBarras
+                options: {
+                    ...opcionesBarras,
+                    scales: {
+                        ...opcionesBarras.scales,
+                        y: {
+                            ...opcionesBarras.scales.y,
+                            ticks: {
+                                callback: function(value) {
+                                    let label = this.getLabelForValue(value);
+                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
             // 5. Fabrica: Productos
@@ -825,10 +863,24 @@
             g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), {
                 type: 'bar',
                 data: {
-                    labels: dataFabProd.map(d => d[0].substring(0, 25) + '...'),
+                    labels: dataFabProd.map(d => JSON.stringify({ nombre: d[0].substring(0, 25) + '...', costo: d[1].costo, cantidad: d[1].cantidad })),
                     datasets: [{ data: dataFabProd.map(d => d[1].costo), backgroundColor: '#3b82f6' }]
                 },
-                options: opcionesBarras
+                options: {
+                    ...opcionesBarras,
+                    scales: {
+                        ...opcionesBarras.scales,
+                        y: {
+                            ...opcionesBarras.scales.y,
+                            ticks: {
+                                callback: function(value) {
+                                    let label = this.getLabelForValue(value);
+                                    try { return JSON.parse(label).nombre; } catch(e) { return label; }
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
 
