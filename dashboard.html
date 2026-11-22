@@ -104,13 +104,15 @@
                                     <th>Nombre Producto</th>
                                     <th>Proveedor</th>
                                     <th>Unidad Negocio</th>
+                                    <th class="text-right">CANTIDAD</th> <!-- NUEVA COLUMNA -->
                                     <th class="text-right">Costo (+)</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-compras-body"></tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="6" class="text-right py-3 px-2">TOTAL COSTO:</th>
+                                    <!-- Colspan ajustado a 7 para que el total quede en la última columna -->
+                                    <th colspan="7" class="text-right py-3 px-2">TOTAL COSTO:</th>
                                     <th id="total-costo-compras" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
                                 </tr>
                             </tfoot>
@@ -360,12 +362,12 @@
         let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
 
-        // --- LÓGICA DE COMPRAS (CON CRUCE CORREGIDO Y CEROS A LA IZQUIERDA) ---
+        // --- LÓGICA DE COMPRAS (CON CANTIDAD Y CRUCE CORREGIDO) ---
         async function cargarCompras() {
-            // 1. Consulta al consolidado
+            // 1. Consulta al consolidado (Incluimos CANTIDAD)
             const { data: consolidado, error: err1 } = await supabaseClient
                 .from('consolidado_repuestos')
-                .select('FECHA, ID_ALMACEN, NOMBRE_DOCTO, NOMBRE_PRODUCTO, NOMBRE_DESCRIPCION, COSTO, NRO_DOC_FTE_CA')
+                .select('FECHA, ID_ALMACEN, NOMBRE_DOCTO, NOMBRE_PRODUCTO, NOMBRE_DESCRIPCION, COSTO, NRO_DOC_FTE_CA, CANTIDAD') 
                 .in('ID_ALMACEN', ['121002', '121007'])
                 .ilike('NOMBRE_DOCTO', '%Recepcion%');
 
@@ -385,7 +387,6 @@
             if (cajaChica) {
                 cajaChica.forEach(d => {
                     if (d.N) {
-                        // Limpiamos la N por si tiene espacios
                         mapaDivisiones[String(d.N).trim()] = d.UNIDAD_NEGOCIO;
                     }
                 });
@@ -404,11 +405,11 @@
                     // PASO 2: Quitamos los ceros a la izquierda (ej. "0296" se vuelve "296")
                     const numeroLimpio = soloNumeros ? String(Number(soloNumeros)) : ''; 
                     
-                    // Buscamos el número limpio en el mapa. Si no lo encuentra, pone 'FABRICA' por defecto.
                     const unidadNegocioCruzada = mapaDivisiones[numeroLimpio] || 'FABRICA'; 
 
                     const costoOriginal = Number(item.COSTO) || 0;
                     const costoPositivo = Math.abs(costoOriginal);
+                    const cantidadItem = Number(item.CANTIDAD) || 0; // Extraemos la cantidad
 
                     datosCompras.push({
                         fecha: item.FECHA || '',
@@ -417,6 +418,7 @@
                         producto: item.NOMBRE_PRODUCTO || '',
                         proveedor: item.NOMBRE_DESCRIPCION || '',
                         unidad_negocio: unidadNegocioCruzada,
+                        cantidad: cantidadItem, // Agregamos al objeto
                         costo: costoPositivo
                     });
                 });
@@ -433,7 +435,7 @@
             tablaBody.innerHTML = '';
 
             if (datos.length === 0) {
-                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay registros de compras para esos almacenes.</td></tr>';
+                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay registros de compras para esos almacenes.</td></tr>';
             } else {
                 datos.forEach(item => {
                     tablaBody.innerHTML += `
@@ -448,6 +450,7 @@
                                     ${item.unidad_negocio}
                                 </span>
                             </td>
+                            <td class="py-2 px-4 text-right font-medium text-slate-700">${item.cantidad}</td> <!-- Nueva celda -->
                             <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
                         </tr>
                     `;
@@ -472,7 +475,8 @@
                             if (typeof i === 'string') return parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0;
                             return typeof i === 'number' ? i : 0;
                         };
-                        var totalCosto = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        // El costo ahora está en la columna 7 (índice 7) debido a la nueva columna
+                        var totalCosto = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         $('#total-costo-compras').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                     }
                 });
