@@ -411,7 +411,6 @@
                                     <th>Nombre Docto</th>
                                     <th>Código Persona</th>
                                     <th>Nombre Descripción</th>
-                                    <th>División</th> <!-- AGREGADO -->
                                     <th class="text-right">Costo (+)</th>
                                     <th class="text-right">Precio BS</th>
                                     <th class="text-right">Utilidad BS</th>
@@ -420,7 +419,7 @@
                             <tbody id="tabla-cobranza-body"></tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="5" class="text-right py-3 px-2">TOTALES:</th> <!-- COLSPAN A 5 -->
+                                    <th colspan="4" class="text-right py-3 px-2">TOTALES:</th>
                                     <th id="total-costo" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-venta" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-utilidad" class="text-right py-3 px-2 text-green-600">Bs 0.00</th>
@@ -960,46 +959,37 @@
             if (filtrosCobranza.fechaIni) document.getElementById('filtro-fecha-ini').value = filtrosCobranza.fechaIni;
             if (filtrosCobranza.fechaFin) document.getElementById('filtro-fecha-fin').value = filtrosCobranza.fechaFin;
 
-            const { data: consolidado, error: err1 } = await supabaseClient
+            // Cobranzas se obtiene exclusivamente de consolidado_repuestos.
+            const { data: consolidado, error } = await supabaseClient
                 .from('consolidado_repuestos')
                 .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
-                .or(`NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%`)
+                .or('NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%')
                 .limit(10000);
 
-            const { data: divisiones, error: err2 } = await supabaseClient
-                .from('vendedores_division')
-                .select('PERSONA_LINEA_PRODUCCION, DIVISION')
-                .limit(10000);
+            if (error) {
+                console.error('Error al cargar Cobranzas desde consolidado_repuestos:', error);
+                alert('No se pudieron cargar los datos de Cobranzas. Revisa la conexión o los permisos de Supabase.');
+                return;
+            }
 
-            if (err1 || err2) { console.error(err1 || err2); return; }
-
-            const mapaDivisiones = {};
-            if (divisiones) divisiones.forEach(d => { if (d.PERSONA_LINEA_PRODUCCION) mapaDivisiones[String(d.PERSONA_LINEA_PRODUCCION).trim()] = d.DIVISION; });
-
-            datosGlobales = []; 
+            datosGlobales = [];
 
             if (consolidado && consolidado.length > 0) {
                 consolidado.forEach(item => {
-                    const codigo = String(item.PERSONA_LINEA_PRODUCCION || '').trim();
-                    const divisionCruzada = mapaDivisiones[codigo] || '';
-                    
-                    if (divisionCruzada.toUpperCase().includes('DENTRO DE GARANTIA')) {
-                        const costoOriginal = Number(item.COSTO) || 0;
-                        const costoPositivo = Math.abs(costoOriginal); 
-                        const precioVenta = Number(item.PRECIO_BS) || 0;
-                        const utilidad = precioVenta - costoPositivo;
+                    const costoOriginal = Number(item.COSTO) || 0;
+                    const costoPositivo = Math.abs(costoOriginal);
+                    const precioVenta = Number(item.PRECIO_BS) || 0;
+                    const utilidad = precioVenta - costoPositivo;
 
-                        datosGlobales.push({
-                            fecha: item.FECHA || '', 
-                            docto: item.NOMBRE_DOCTO || '', 
-                            codigo: codigo,
-                            descripcion: item.NOMBRE_DESCRIPCION || 'SIN NOMBRE',
-                            division: divisionCruzada, // <-- SE AGREGÓ
-                            costo: costoPositivo, 
-                            venta: precioVenta, 
-                            utilidad: utilidad
-                        });
-                    }
+                    datosGlobales.push({
+                        fecha: item.FECHA || '',
+                        docto: item.NOMBRE_DOCTO || '',
+                        codigo: String(item.PERSONA_LINEA_PRODUCCION || '').trim(),
+                        descripcion: item.NOMBRE_DESCRIPCION || 'SIN NOMBRE',
+                        costo: costoPositivo,
+                        venta: precioVenta,
+                        utilidad: utilidad
+                    });
                 });
             }
 
@@ -1020,18 +1010,14 @@
             const tablaBody = document.getElementById('tabla-cobranza-body');
             tablaBody.innerHTML = '';
 
-            if (datos.length === 0) {
-                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
-            } else {
+            if (datos.length > 0) {
                 datos.forEach(item => {
-                    // AHORA TIENE LAS 8 COLUMNAS QUE EXIGE EL THEAD
                     tablaBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="py-2 px-4">${item.fecha}</td>
                             <td class="py-2 px-4 font-medium">${item.docto}</td>
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
-                            <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division || 'SIN DIVISION'}</span></td>
                             <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
                             <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
                             <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
@@ -1041,17 +1027,16 @@
             }
 
             if (dataTableCobranza) dataTableCobranza.destroy();
-            setTimeout(() => {
-                dataTableCobranza = $('#tablaCobranza').DataTable({
+            dataTableCobranza = $('#tablaCobranza').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 5 || column === 6 || column === 7) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
-                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
+                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 4 || column === 5 || column === 6) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros", "emptyTable": "No hay datos." },
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
                         var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
-                        var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalCosto = api.column(4, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalVenta = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalUtilidad = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalRegistros = api.rows({ search: 'applied' }).count();
 
                         $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
@@ -1078,7 +1063,6 @@
                         } else $('#kpi-actualizacion').html('--/--/----');
                     }
                 });
-            }, 100);
 
             let utilidadPorProducto = {};
             datos.forEach(item => { utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad; });
