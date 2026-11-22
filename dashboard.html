@@ -122,9 +122,8 @@
 
         <div class="max-w-7xl mx-auto p-4 md:p-5">
             
-            <!-- PESTAÑA 0: RESUMEN GENERAL (CASCADA COMPACTA) -->
+            <!-- PESTAÑA 0: RESUMEN GENERAL -->
             <div id="tab-resumen" class="hidden">
-                
                 <!-- Acordeón Filtros Resumen -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-resumen')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
@@ -162,7 +161,7 @@
                     </div>
                 </div>
 
-                <!-- Fila 1: Tarjetas KPI Ejecutivas -->
+                <!-- KPIs Resumen -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Post Venta</p>
@@ -182,15 +181,12 @@
                     </div>
                 </div>
 
-                <!-- Fila 2: Gráfico de Torta -->
+                <!-- Gráficos Resumen -->
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-4 w-full lg:w-2/3 mx-auto">
                     <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">COMPRAS: POST VENTA VS FÁBRICA</h3>
-                    <div class="chart-container-large">
-                        <canvas id="res_torta"></canvas>
-                    </div>
+                    <div class="chart-container-large"><canvas id="res_torta"></canvas></div>
                 </div>
 
-                <!-- Fila 3: Proveedores -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TODOS LOS PROVEEDORES</h3>
@@ -202,7 +198,6 @@
                     </div>
                 </div>
 
-                <!-- Fila 4: Productos -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TOP 10 PRODUCTOS (COSTO UNIT.)</h3>
@@ -214,7 +209,6 @@
                     </div>
                 </div>
 
-                <!-- Fila 5: Cobranzas y Entrega -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">COBRANZAS: TOP UTILIDAD</h3>
@@ -229,7 +223,6 @@
 
             <!-- PESTAÑA 1: COMPRAS -->
             <div id="tab-compras" class="block">
-                
                 <!-- Acordeón Filtros -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-compras')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
@@ -360,7 +353,6 @@
 
             <!-- PESTAÑA 2: COBRANZAS -->
             <div id="tab-cobranza" class="hidden">
-                
                 <!-- Acordeón Filtros Cobranzas -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-cobranza')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
@@ -430,7 +422,6 @@
                                     <th>Nombre Docto</th>
                                     <th>Código Persona</th>
                                     <th>Nombre Descripción</th>
-                                    <th>División</th>
                                     <th class="text-right">Costo (+)</th>
                                     <th class="text-right">Precio BS</th>
                                     <th class="text-right">Utilidad BS</th>
@@ -439,7 +430,7 @@
                             <tbody id="tabla-cobranza-body"></tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="5" class="text-right py-3 px-2">TOTALES:</th>
+                                    <th colspan="4" class="text-right py-3 px-2">TOTALES:</th>
                                     <th id="total-costo" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-venta" class="text-right py-3 px-2">Bs 0.00</th>
                                     <th id="total-utilidad" class="text-right py-3 px-2 text-green-600">Bs 0.00</th>
@@ -452,7 +443,6 @@
 
             <!-- PESTAÑA 3: NOTA DE ENTREGA -->
             <div id="tab-entrega" class="hidden">
-                
                 <!-- Acordeón Filtros Entrega -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
                     <button onclick="toggleAccordion('filtros-entrega')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
@@ -558,7 +548,6 @@
             window.location.href = 'login.html';
         }
 
-        // Cargar datos del usuario
         function cargarDatosUsuario() {
             const userData = JSON.parse(localStorage.getItem('oted_session'));
             if (userData && userData.user) {
@@ -851,7 +840,26 @@
             setTimeout(() => {
                 dataTableCompras = $('#tablaCompras').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Compras', className: 'dt-button' }],
+                    buttons: [{ 
+                        extend: 'excelHtml5', 
+                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
+                        title: 'Compras', 
+                        className: 'dt-button',
+                        exportOptions: {
+                            format: {
+                                body: function ( data, row, column, node ) {
+                                    let textoLimpio = data;
+                                    if (textoLimpio.indexOf('<') !== -1) {
+                                        textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
+                                    }
+                                    if (column === 7 || column === 8) {
+                                        return textoLimpio.replace(/Bs\s?/g, '').trim();
+                                    }
+                                    return textoLimpio.trim();
+                                }
+                            }
+                        }
+                    }],
                     "pageLength": 10, 
                     "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
@@ -864,7 +872,6 @@
             }, 100);
         }
 
-        // --- GRÁFICOS DE COMPRAS ---
         function renderizarGraficosCompras(datos) {
             if (g1_torta) g1_torta.destroy();
             if (g2_post_prov) g2_post_prov.destroy();
@@ -995,7 +1002,7 @@
 
                         datosGlobales.push({
                             fecha: item.FECHA || '', docto: item.NOMBRE_DOCTO || '', codigo: codigo,
-                            descripcion: item.NOMBRE_DESCRIPCION || 'SIN NOMBRE', division: divisionCruzada,
+                            descripcion: item.NOMBRE_DESCRIPCION || 'SIN NOMBRE',
                             costo: costoPositivo, venta: precioVenta, utilidad: utilidad
                         });
                     }
@@ -1020,7 +1027,7 @@
             tablaBody.innerHTML = '';
 
             if (datos.length === 0) {
-                tablaBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
+                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay datos.</td></tr>';
             } else {
                 datos.forEach(item => {
                     tablaBody.innerHTML += `
@@ -1029,7 +1036,6 @@
                             <td class="py-2 px-4 font-medium">${item.docto}</td>
                             <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
                             <td class="py-2 px-4">${item.descripcion}</td>
-                            <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
                             <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
                             <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
                             <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
@@ -1042,19 +1048,21 @@
             setTimeout(() => {
                 dataTableCobranza = $('#tablaCobranza').DataTable({
                     dom: 'Bfrtip',
-                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 5 || column === 6 || column === 7) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
+                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 4 || column === 5 || column === 6) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
                         var api = this.api();
                         var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
-                        var totalCosto = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalVenta = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
-                        var totalUtilidad = api.column(7, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalCosto = api.column(4, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalVenta = api.column(5, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        var totalUtilidad = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
                         var totalRegistros = api.rows({ search: 'applied' }).count();
 
                         $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        
+                        // ACTUALIZACIÓN DINÁMICA DE KPIs
                         $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
                         $('#kpi-registros').html(totalRegistros);
 
@@ -1188,7 +1196,10 @@
                     let codigoLimpio = String(item.PERSONA_LINEA_PRODUCCION || '').trim();
                     if (codigoLimpio.includes('.')) codigoLimpio = codigoLimpio.split('.')[0]; 
 
-                    const divisionCruzada = mapaDivisiones[codigoLimpio] || 'SIN DIVISION';
+                    // REGLA MODIFICADA: Si no existe, es DENTRO DE GARANTIA
+                    const divisionCruzada = mapaDivisiones[codigoLimpio] || 'DENTRO DE GARANTIA';
+                    
+                    // Filtro para no mostrar los que son FABRICA
                     if (divisionCruzada.toUpperCase().includes('FABRICA')) return; 
 
                     const costoOriginal = Number(item.COSTO) || 0;
@@ -1293,7 +1304,29 @@
                         var api = this.api();
                         var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
                         var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        
                         $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}) );
+                        
+                        // ACTUALIZACIÓN DINÁMICA DE KPIs
+                        $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
+                        $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
+
+                        var datosVisibles = api.rows({ search: 'applied' }).data();
+                        if (datosVisibles.length > 0) {
+                            let fechas = [];
+                            for (let i = 0; i < datosVisibles.length; i++) {
+                                let fechaStr = datosVisibles[i][0]; 
+                                if (fechaStr && fechaStr.includes('/')) {
+                                    let p = fechaStr.split(' ')[0].split('/');
+                                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                                }
+                            }
+                            if (fechas.length > 0) {
+                                fechas.sort((a, b) => b - a);
+                                $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+                            } else $('#kpi-entrega-actualizacion').html('--/--/----');
+                        } else $('#kpi-entrega-actualizacion').html('--/--/----');
                     }
                 });
             }, 100);
