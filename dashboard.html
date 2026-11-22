@@ -360,7 +360,7 @@
         let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
 
-        // --- LÓGICA DE COMPRAS (CON CRUCE CORREGIDO) ---
+        // --- LÓGICA DE COMPRAS (CON CRUCE CORREGIDO Y CEROS A LA IZQUIERDA) ---
         async function cargarCompras() {
             // 1. Consulta al consolidado
             const { data: consolidado, error: err1 } = await supabaseClient
@@ -369,7 +369,7 @@
                 .in('ID_ALMACEN', ['121002', '121007'])
                 .ilike('NOMBRE_DOCTO', '%Recepcion%');
 
-            // 2. Consulta a caja_chica (buscando la columna N y UNIDAD_NEGOCIO)
+            // 2. Consulta a caja_chica
             const { data: cajaChica, error: err2 } = await supabaseClient
                 .from('caja_chica') 
                 .select('N, UNIDAD_NEGOCIO')
@@ -385,6 +385,7 @@
             if (cajaChica) {
                 cajaChica.forEach(d => {
                     if (d.N) {
+                        // Limpiamos la N por si tiene espacios
                         mapaDivisiones[String(d.N).trim()] = d.UNIDAD_NEGOCIO;
                     }
                 });
@@ -392,16 +393,19 @@
 
             const datosCompras = [];
 
-            // 4. Cruzamos los datos aplicando magia para limpiar el texto
+            // 4. Cruzamos los datos limpiando letras y ceros a la izquierda
             if (consolidado && consolidado.length > 0) {
                 consolidado.forEach(item => {
                     const docOriginal = String(item.NRO_DOC_FTE_CA || '').trim();
                     
-                    // Esta línea usa una expresión regular para dejar solo dígitos (quita N.V-, FAC-, etc.)
+                    // PASO 1: Quitamos letras, guiones y puntos (deja solo números)
                     const soloNumeros = docOriginal.replace(/\D/g, ''); 
                     
-                    // Buscamos "2577" en el mapa. Si no lo encuentra, pone 'FABRICA' por defecto.
-                    const unidadNegocioCruzada = mapaDivisiones[soloNumeros] || 'FABRICA'; 
+                    // PASO 2: Quitamos los ceros a la izquierda (ej. "0296" se vuelve "296")
+                    const numeroLimpio = soloNumeros ? String(Number(soloNumeros)) : ''; 
+                    
+                    // Buscamos el número limpio en el mapa. Si no lo encuentra, pone 'FABRICA' por defecto.
+                    const unidadNegocioCruzada = mapaDivisiones[numeroLimpio] || 'FABRICA'; 
 
                     const costoOriginal = Number(item.COSTO) || 0;
                     const costoPositivo = Math.abs(costoOriginal);
@@ -1050,7 +1054,7 @@
             }
         }
 
-        // --- INICIO DE LA APLICACIÓN CORREGIDO ---
+        // --- INICIO DE LA APLICACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
             const savedTab = localStorage.getItem('galval_active_tab') || 'compras';
             openTab(savedTab);
