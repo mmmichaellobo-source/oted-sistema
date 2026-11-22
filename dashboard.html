@@ -85,6 +85,7 @@
         <!-- Pestañas -->
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="max-w-7xl mx-auto flex px-4 overflow-x-auto">
+                <button onclick="openTab('resumen')" id="btn-resumen" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Resumen General</button>
                 <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Compras</button>
                 <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Cobranzas</button>
                 <button onclick="openTab('entrega')" id="btn-entrega" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Nota de Entrega</button>
@@ -93,6 +94,85 @@
 
         <div class="max-w-7xl mx-auto p-4 md:p-6">
             
+            <!-- PESTAÑA 0: RESUMEN GENERAL -->
+            <div id="tab-resumen" class="hidden">
+                <!-- Acordeón Filtros Resumen -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-resumen')" class="w-full flex justify-between items-center px-6 py-4 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros Globales de Resumen</span>
+                        <i id="icon-filtros-resumen" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="filtros-resumen" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-res-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-res-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Unidad de Negocio</label>
+                                <select id="filtro-res-unidad" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todas las unidades...</option>
+                                    <option value="POST VENTA">POST VENTA</option>
+                                    <option value="FABRICA">FÁBRICA</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosResumen()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosResumen()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos de Resumen -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Torta -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">RELACIÓN POST VENTA VS FÁBRICA</h3>
+                        <div class="chart-container max-w-sm mx-auto"><canvas id="res_torta"></canvas></div>
+                    </div>
+                    <!-- Compras: Post Venta Proveedores -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PROVEEDORES</h3>
+                        <div class="chart-container"><canvas id="res_g2_post_prov"></canvas></div>
+                    </div>
+                    <!-- Compras: Fabrica Proveedores -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PROVEEDORES</h3>
+                        <div class="chart-container"><canvas id="res_g3_fab_prov"></canvas></div>
+                    </div>
+                    <!-- Compras: Post Venta Productos -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">POST VENTA: TOP PRODUCTOS</h3>
+                        <div class="chart-container"><canvas id="res_g4_post_prod"></canvas></div>
+                    </div>
+                    <!-- Compras: Fabrica Productos -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">FÁBRICA: TOP PRODUCTOS</h3>
+                        <div class="chart-container"><canvas id="res_g5_fab_prod"></canvas></div>
+                    </div>
+                    <!-- Cobranzas: Utilidad Productos -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">COBRANZAS: TOP UTILIDAD</h3>
+                        <div class="chart-container"><canvas id="res_cobranza"></canvas></div>
+                    </div>
+                    <!-- Entrega: Divisiones -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 lg:col-span-2 lg:col-start-2">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">ENTREGA: COSTO POR DIVISIÓN</h3>
+                        <div class="chart-container"><canvas id="res_entrega"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- PESTAÑA 1: COMPRAS -->
             <div id="tab-compras" class="block">
                 
@@ -431,8 +511,11 @@
         let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
         let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
         
+        // Variables globales para gráficos
         let datosComprasGlobales = [];
         let g1_torta = null, g2_post_prov = null, g3_fab_prov = null, g4_post_prod = null, g5_fab_prod = null;
+        // Variables para gráficos de resumen
+        let res_torta = null, res_g2_post_prov = null, res_g3_fab_prov = null, res_g4_post_prod = null, res_g5_fab_prod = null, res_cobranza = null, res_entrega = null;
 
         function toggleAccordion(id) {
             const content = document.getElementById(id);
@@ -448,10 +531,12 @@
         }
 
         function openTab(tabName) {
+            document.getElementById('tab-resumen').classList.add('hidden');
             document.getElementById('tab-compras').classList.add('hidden');
             document.getElementById('tab-cobranza').classList.add('hidden');
             document.getElementById('tab-entrega').classList.add('hidden');
             
+            document.getElementById('btn-resumen').classList.remove('active');
             document.getElementById('btn-compras').classList.remove('active');
             document.getElementById('btn-cobranza').classList.remove('active');
             document.getElementById('btn-entrega').classList.remove('active');
@@ -461,7 +546,9 @@
             
             localStorage.setItem('galval_active_tab', tabName);
 
-            if(tabName === 'compras') {
+            if(tabName === 'resumen') {
+                cargarDatosResumen();
+            } else if(tabName === 'compras') {
                 cargarCompras();
             } else if(tabName === 'cobranza') {
                 cargarCobranza();
@@ -502,7 +589,7 @@
             if (e.target.files[0]) { subirArchivo(e.target.files[0], 'caja_chica'); e.target.value = ''; }
         });
 
-        let chartDona = null, chartBarras = null, chartUtilidad = null, chartEntregaDivisiones = null;
+        let chartUtilidad = null, chartEntregaDivisiones = null;
         let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
         let datosGlobales = [], datosEntrega = [];
         
@@ -742,7 +829,6 @@
                 }
             });
 
-            // Función para agrupar y guardar datos para el Tooltip
             function agruparDatos(filtroUnidad, campoAgrupar) {
                 let agrupado = {};
                 datos.forEach(item => {
@@ -755,7 +841,6 @@
                 return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
             }
 
-            // Opciones comunes de gráficos de barras con arreglo para tooltip limpio
             const crearConfiguracionBarras = (labels, values, tooltipData, color) => {
                 return {
                     type: 'bar',
@@ -786,33 +871,17 @@
                 };
             };
 
-            // 2. Post Venta: Proveedores
             const dataPostProv = agruparDatos('POST VENTA', 'proveedor').slice(0, 10);
-            const labelsPostProv = dataPostProv.map(d => d[0].substring(0, 20) + '...');
-            const valuesPostProv = dataPostProv.map(d => d[1].costo);
-            const tooltipPostProv = dataPostProv.map(d => d[1]);
-            g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), crearConfiguracionBarras(labelsPostProv, valuesPostProv, tooltipPostProv, '#10b981'));
+            g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), crearConfiguracionBarras(dataPostProv.map(d => d[0].substring(0, 20) + '...'), dataPostProv.map(d => d[1].costo), dataPostProv.map(d => d[1]), '#10b981'));
 
-            // 3. Fabrica: Proveedores
             const dataFabProv = agruparDatos('FABRICA', 'proveedor').slice(0, 10);
-            const labelsFabProv = dataFabProv.map(d => d[0].substring(0, 20) + '...');
-            const valuesFabProv = dataFabProv.map(d => d[1].costo);
-            const tooltipFabProv = dataFabProv.map(d => d[1]);
-            g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), crearConfiguracionBarras(labelsFabProv, valuesFabProv, tooltipFabProv, '#3b82f6'));
+            g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), crearConfiguracionBarras(dataFabProv.map(d => d[0].substring(0, 20) + '...'), dataFabProv.map(d => d[1].costo), dataFabProv.map(d => d[1]), '#3b82f6'));
 
-            // 4. Post Venta: Productos
             const dataPostProd = agruparDatos('POST VENTA', 'producto').slice(0, 10);
-            const labelsPostProd = dataPostProd.map(d => d[0].substring(0, 25) + '...');
-            const valuesPostProd = dataPostProd.map(d => d[1].costo);
-            const tooltipPostProd = dataPostProd.map(d => d[1]);
-            g4_post_prod = new Chart(document.getElementById('g4_post_producto'), crearConfiguracionBarras(labelsPostProd, valuesPostProd, tooltipPostProd, '#10b981'));
+            g4_post_prod = new Chart(document.getElementById('g4_post_producto'), crearConfiguracionBarras(dataPostProd.map(d => d[0].substring(0, 25) + '...'), dataPostProd.map(d => d[1].costo), dataPostProd.map(d => d[1]), '#10b981'));
 
-            // 5. Fabrica: Productos
             const dataFabProd = agruparDatos('FABRICA', 'producto').slice(0, 10);
-            const labelsFabProd = dataFabProd.map(d => d[0].substring(0, 25) + '...');
-            const valuesFabProd = dataFabProd.map(d => d[1].costo);
-            const tooltipFabProd = dataFabProd.map(d => d[1]);
-            g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), crearConfiguracionBarras(labelsFabProd, valuesFabProd, tooltipFabProd, '#3b82f6'));
+            g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), crearConfiguracionBarras(dataFabProd.map(d => d[0].substring(0, 25) + '...'), dataFabProd.map(d => d[1].costo), dataFabProd.map(d => d[1]), '#3b82f6'));
         }
 
         // --- LÓGICA DE COBRANZAS ---
@@ -1067,7 +1136,6 @@
                 });
             }
 
-            // CORRECCIÓN: Calcular KPIs directamente sobre el arreglo de datos brutos, no en la tabla
             let costoTotal = 0;
             let fechas = [];
             datos.forEach(item => {
@@ -1104,7 +1172,6 @@
                     buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Notas_Entrega', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 6) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
                     "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
                     "footerCallback": function ( row, data, start, end, display ) {
-                        // El footer callback de la tabla se deja para el total de la tabla visual, pero los KPIs de arriba ya están calculados.
                         var api = this.api();
                         var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
                         var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
@@ -1150,6 +1217,160 @@
             filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' }; 
             $.fn.dataTable.ext.search.pop();
             if (dataTableEntrega) dataTableEntrega.draw();
+        }
+
+        // --- LÓGICA DE LA PESTAÑA RESUMEN ---
+        async function cargarDatosResumen() {
+            // Nota: Para no saturar la base de datos, el resumen usará los datos ya cargados.
+            // Si no se han cargado (porque el usuario entra directo a Resumen), hacemos las consultas.
+            if (datosComprasOriginales.length === 0) await cargarCompras();
+            if (datosGlobales.length === 0) await cargarCobranza();
+            if (datosEntrega.length === 0) await cargarEntrega();
+
+            aplicarFiltrosResumen();
+        }
+
+        function aplicarFiltrosResumen() {
+            const fIni = document.getElementById('filtro-res-fecha-ini').value;
+            const fFin = document.getElementById('filtro-res-fecha-fin').value;
+            const unidad = document.getElementById('filtro-res-unidad').value;
+
+            // Filtrar datos de Compras
+            let comprasFiltradas = datosComprasOriginales.filter(item => {
+                let cF = true, cU = true;
+                if (fIni || fFin) {
+                    if (item.fecha && item.fecha.includes('/')) {
+                        const p = item.fecha.split(' ')[0].split('/');
+                        const fechaItem = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        if (fIni && fechaItem < fIni) cF = false;
+                        if (fFin && fechaItem > fFin) cF = false;
+                    } else cF = false;
+                }
+                if (unidad && item.unidad_negocio !== unidad) cU = false;
+                return cF && cU;
+            });
+
+            // Filtrar datos de Cobranzas
+            let cobranzasFiltradas = datosGlobales.filter(item => {
+                let cF = true;
+                if (fIni || fFin) {
+                    if (item.fecha && item.fecha.includes('/')) {
+                        const p = item.fecha.split(' ')[0].split('/');
+                        const fechaItem = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        if (fIni && fechaItem < fIni) cF = false;
+                        if (fFin && fechaItem > fFin) cF = false;
+                    } else cF = false;
+                }
+                // Cobranzas no tiene campo unidad_negocio directo en este arreglo, se maneja por división
+                return cF;
+            });
+
+            // Filtrar datos de Entrega
+            let entregaFiltrada = datosEntrega.filter(item => {
+                let cF = true;
+                if (fIni || fFin) {
+                    if (item.fecha && item.fecha.includes('/')) {
+                        const p = item.fecha.split(' ')[0].split('/');
+                        const fechaItem = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        if (fIni && fechaItem < fIni) cF = false;
+                        if (fFin && fechaItem > fFin) cF = false;
+                    } else cF = false;
+                }
+                return cF;
+            });
+
+            // Renderizar gráficos de resumen
+            renderizarGraficosResumen(comprasFiltradas, cobranzasFiltradas, entregaFiltrada);
+        }
+
+        function renderizarGraficosResumen(compras, cobranzas, entrega) {
+            // Destruir anteriores
+            if (res_torta) res_torta.destroy();
+            if (res_g2_post_prov) res_g2_post_prov.destroy();
+            if (res_g3_fab_prov) res_g3_fab_prov.destroy();
+            if (res_g4_post_prod) res_g4_post_prod.destroy();
+            if (res_g5_fab_prod) res_g5_fab_prod.destroy();
+            if (res_cobranza) res_cobranza.destroy();
+            if (res_entrega) res_entrega.destroy();
+
+            // 1. Torta Resumen
+            let countPostVenta = compras.filter(d => d.unidad_negocio === 'POST VENTA').length;
+            let countFabrica = compras.filter(d => d.unidad_negocio === 'FABRICA').length;
+
+            res_torta = new Chart(document.getElementById('res_torta'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['POST VENTA', 'FÁBRICA'],
+                    datasets: [{ data: [countPostVenta, countFabrica], backgroundColor: ['#10b981', '#3b82f6'], hoverOffset: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Función auxiliar para agrupar
+            function agrupar(datos, filtroUnidad, campoAgrupar) {
+                let agrupado = {};
+                datos.forEach(item => {
+                    if (item.unidad_negocio === filtroUnidad) {
+                        if (!agrupado[item[campoAgrupar]]) agrupado[item[campoAgrupar]] = { costo: 0, cantidad: 0 };
+                        agrupado[item[campoAgrupar]].costo += item.costo;
+                        agrupado[item[campoAgrupar]].cantidad += item.cantidad;
+                    }
+                });
+                return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
+            }
+
+            // 2,3,4,5. Barras de Compras
+            const configBarras = (labels, values, tooltipData, color) => ({
+                type: 'bar',
+                data: { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }] },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: function(context) { const item = tooltipData[context.dataIndex]; return ` Costo: Bs ${item.costo.toLocaleString('es-BO')} | Cant: ${item.cantidad}`; } } }
+                    },
+                    scales: { x: { grid: { display: false } }, y: { grid: { display: false } } }
+                }
+            });
+
+            const dataPostProv = agrupar(compras, 'POST VENTA', 'proveedor').slice(0, 5);
+            res_g2_post_prov = new Chart(document.getElementById('res_g2_post_prov'), configBarras(dataPostProv.map(d => d[0].substring(0, 15) + '...'), dataPostProv.map(d => d[1].costo), dataPostProv.map(d => d[1]), '#10b981'));
+
+            const dataFabProv = agrupar(compras, 'FABRICA', 'proveedor').slice(0, 5);
+            res_g3_fab_prov = new Chart(document.getElementById('res_g3_fab_prov'), configBarras(dataFabProv.map(d => d[0].substring(0, 15) + '...'), dataFabProv.map(d => d[1].costo), dataFabProv.map(d => d[1]), '#3b82f6'));
+
+            const dataPostProd = agrupar(compras, 'POST VENTA', 'producto').slice(0, 5);
+            res_g4_post_prod = new Chart(document.getElementById('res_g4_post_prod'), configBarras(dataPostProd.map(d => d[0].substring(0, 20) + '...'), dataPostProd.map(d => d[1].costo), dataPostProd.map(d => d[1]), '#10b981'));
+
+            const dataFabProd = agrupar(compras, 'FABRICA', 'producto').slice(0, 5);
+            res_g5_fab_prod = new Chart(document.getElementById('res_g5_fab_prod'), configBarras(dataFabProd.map(d => d[0].substring(0, 20) + '...'), dataFabProd.map(d => d[1].costo), dataFabProd.map(d => d[1]), '#3b82f6'));
+
+            // 6. Cobranzas: Utilidad
+            let utilidadPorProducto = {};
+            cobranzas.forEach(item => { utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad; });
+            const topUtilidad = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 5);
+            res_cobranza = new Chart(document.getElementById('res_cobranza'), {
+                type: 'bar',
+                data: { labels: topUtilidad.map(p => p[0].substring(0, 20) + '...'), datasets: [{ label: 'Utilidad', data: topUtilidad.map(p => p[1]), backgroundColor: '#10b981', borderRadius: 4 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } }
+            });
+
+            // 7. Entrega: Divisiones
+            let costoPorDivision = {};
+            entrega.forEach(item => { costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo; });
+            const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a).slice(0, 5);
+            res_entrega = new Chart(document.getElementById('res_entrega'), {
+                type: 'bar',
+                data: { labels: topDivisiones.map(p => p[0].substring(0, 20)), datasets: [{ label: 'Costo', data: topDivisiones.map(p => p[1]), backgroundColor: '#3b82f6', borderRadius: 4 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false } } } }
+            });
+        }
+
+        function limpiarFiltrosResumen() {
+            document.getElementById('filtro-res-fecha-ini').value = '';
+            document.getElementById('filtro-res-fecha-fin').value = '';
+            document.getElementById('filtro-res-unidad').value = '';
+            aplicarFiltrosResumen();
         }
 
         // --- INICIO DE LA APLICACIÓN ---
