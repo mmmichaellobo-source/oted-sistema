@@ -45,23 +45,35 @@
 
     <!-- Contenido Principal -->
     <main class="flex-1 flex flex-col">
-        <header class="h-16 bg-white shadow-sm flex items-center px-8 border-b border-gray-200">
+        <!-- Header -->
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 border-b border-gray-200">
             <h2 class="text-xl font-bold text-gray-800">Resumen General</h2>
+            
+            <!-- Nombre y Puesto del Usuario -->
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <p id="user-name-display" class="text-sm font-bold text-gray-800">Cargando...</p>
+                    <p id="user-role-display" class="text-xs text-gray-500 uppercase tracking-wider">Administrador</p>
+                </div>
+                <div class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </div>
+            </div>
         </header>
 
         <div class="flex-1 p-8 overflow-y-auto">
             <div class="max-w-4xl mx-auto">
-                <!-- Saludo -->
+                <!-- Saludo Dinámico -->
                 <div class="text-center mb-12 mt-4">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">¡Hola de nuevo! 👋</h2>
+                    <h2 id="saludo-dinamico" class="text-3xl font-bold text-gray-800 mb-2">¡Hola de nuevo! 👋</h2>
                     <p class="text-gray-500">¿Qué módulo deseas abrir hoy?</p>
                 </div>
 
-                <!-- Tarjetas de Módulos -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Tarjetas de Módulos (Centrado) -->
+                <div class="flex justify-center">
                     
                     <!-- Tarjeta 1: Dashboard -->
-                    <a href="dashboard.html" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group text-center flex flex-col items-center">
+                    <a href="dashboard.html" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group text-center flex flex-col items-center max-w-md w-full">
                         <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                             <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
                         </div>
@@ -69,16 +81,6 @@
                         <p class="text-sm text-gray-500 mb-6">Visualiza los gráficos, KPIs y tendencias de tus compras semanales.</p>
                         <span class="text-red-600 font-semibold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Ingresar al módulo &rarr;</span>
                     </a>
-
-                    <!-- Tarjeta 2: Subir Excel -->
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group text-center flex flex-col items-center opacity-70 cursor-not-allowed">
-                        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-2 uppercase tracking-wide">Subir Excel</h3>
-                        <p class="text-sm text-gray-500 mb-6">Carga las planillas semanales para actualizar la base de datos (Próximamente).</p>
-                        <span class="text-gray-400 font-semibold text-sm">En desarrollo</span>
-                    </div>
 
                 </div>
             </div>
@@ -96,11 +98,57 @@
             window.location.href = 'login.html';
         }
 
+        // --- LÓGICA DEL SALUDO DINÁMICO ---
+        function actualizarSaludo() {
+            const hora = new Date().getHours();
+            let saludo = "";
+            
+            if (hora >= 0 && hora < 12) {
+                saludo = "¡Buenos días, colaboradores de GALVAL! ☀️";
+            } else if (hora >= 12 && hora < 19) {
+                saludo = "¡Buenas tardes, colaboradores de GALVAL! 🌤️";
+            } else {
+                saludo = "¡Buenas noches, colaboradores de GALVAL! 🌙";
+            }
+            
+            document.getElementById('saludo-dinamico').innerText = saludo;
+        }
+
+        // --- LÓGICA PARA MOSTRAR NOMBRE Y PUESTO ---
+        function cargarDatosUsuario() {
+            // Intentamos leer el nombre del localStorage (guardado en el registro o login)
+            const userData = JSON.parse(localStorage.getItem('oted_session'));
+            
+            let nombre = "Usuario";
+            // Si Supabase guardó el nombre en la metadata, lo usamos
+            if (userData && userData.user && userData.user.user_metadata && userData.user.user_metadata.full_name) {
+                nombre = userData.user.user_metadata.full_name;
+            } else {
+                // Si no hay nombre, usamos la primera parte del correo como respaldo
+                const email = userData?.user?.email || "";
+                if (email) {
+                    nombre = email.split('@')[0];
+                }
+            }
+
+            // Puesto por defecto (luego se puede conectar a la base de datos si tienen una tabla de roles)
+            const puesto = "Administrador"; 
+
+            document.getElementById('user-name-display').innerText = nombre;
+            document.getElementById('user-role-display').innerText = puesto;
+        }
+
         async function logout() {
             await supabaseClient.auth.signOut();
             localStorage.removeItem('oted_session');
             window.location.href = 'login.html';
         }
+
+        // Ejecutar al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            actualizarSaludo();
+            cargarDatosUsuario();
+        });
     </script>
 </body>
 </html>
