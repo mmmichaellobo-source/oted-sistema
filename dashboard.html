@@ -3,193 +3,631 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GALVAL | DASHBOARD</title>
+    <title>GALVAL | Dashboard</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jQuery y DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-      *{box-sizing:border-box} body{font-family:'Plus Jakarta Sans',sans-serif;background:#f1f5f9;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
-      .sidebar{background:linear-gradient(180deg,#071326 0%,#0b1d3a 58%,#102b55 100%);box-shadow:8px 0 28px rgba(2,12,30,.16)}
-      .nav-link{display:flex;align-items:center;padding:13px 20px;margin:5px 12px;border-radius:14px;color:#cbd5e1;transition:all .22s ease;text-transform:uppercase;letter-spacing:.035em}
-      .sidebar button{text-transform:uppercase;letter-spacing:.035em;transition:background .22s ease,transform .22s ease,box-shadow .22s ease}
-      .sidebar button[onclick="logout()"]:hover{background:#e11d48!important;color:#fff!important;transform:translateY(-2px);box-shadow:0 8px 22px rgba(225,29,72,.38)}
-      .nav-link:hover{background:rgba(59,130,246,.20);color:#fff;transform:translateX(5px);box-shadow:inset 3px 0 0 #60a5fa}
-      .nav-link.active{background:linear-gradient(100deg,#1769e8,#287cf0);color:white;box-shadow:0 8px 24px rgba(23,105,232,.38),inset 0 1px 0 rgba(255,255,255,.16)}
-      .module-card{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:32px;box-shadow:0 8px 25px rgba(15,23,42,.07);transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,border-color .28s,background .28s;cursor:pointer;will-change:transform}
-      .module-card:before{content:"";position:absolute;width:190px;height:190px;border-radius:50%;right:-90px;top:-110px;background:var(--tint);transition:transform .3s}
-      .module-card:hover{transform:translateY(-11px) scale(1.018);box-shadow:0 24px 48px rgba(15,23,42,.19),0 0 0 2px color-mix(in srgb,var(--accent) 24%,transparent);border-color:var(--accent)}
-      .module-card:hover:before{transform:scale(1.5)} .module-icon{transition:transform .28s,box-shadow .28s}.module-card:hover .module-icon{transform:scale(1.13) rotate(-5deg);box-shadow:0 10px 22px color-mix(in srgb,var(--accent) 25%,transparent)} .module-card:focus-visible{outline:3px solid var(--accent);outline-offset:4px} .module-card .module-action{transition:gap .22s,letter-spacing .22s} .module-card:hover .module-action{gap:12px;letter-spacing:.01em} .module-card .module-action-arrow{display:inline-block;transition:transform .22s} .module-card:hover .module-action-arrow{transform:translateX(6px)}
-      .theme-toggle{transition:all .2s}.theme-toggle:hover{transform:rotate(12deg) scale(1.06)}
-      .mobile-logout{transition:background .2s ease,color .2s ease,transform .2s ease,box-shadow .2s ease}
-      .mobile-logout:hover,.mobile-logout:active{background:#e11d48!important;color:#fff!important;transform:translateY(-2px);box-shadow:0 7px 18px rgba(225,29,72,.28)}
-      body.dark .mobile-logout{background:#3a2030;color:#fda4af}
-      body.dark{background:#0b1220;color:#e5edf8} body.dark .main-area{background:#0b1220}
-      body.dark .topbar{background:#111c30;border-color:#293a55} body.dark .topbar-title,body.dark .greeting-title,body.dark .section-title{color:#f1f5f9}
-      body.dark .muted{color:#a6b5ca!important} body.dark .welcome-panel{background:linear-gradient(110deg,#172b4d,#1e293b);border-color:#334766}
-      body.dark .module-card{--card:#142139;--line:#293b56;color:#e5edf8;box-shadow:0 8px 25px #0003} body.dark .module-card:hover{box-shadow:0 24px 48px rgba(0,0,0,.48),0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
-      body.dark .module-card h3{color:#f8fafc} body.dark .module-card p{color:#b5c2d4}
-      body.dark .avatar-wrap{background:#263750;border-color:#40516b} body.dark .theme-toggle{background:#263750;color:#facc15}
-      @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .tab-btn.active { background-color: white; color: #dc2626; font-weight: bold; border-bottom: 2px solid #dc2626; }
+        
+        /* Estilos DataTables */
+        .dataTables_wrapper .dataTables_filter input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem 0.5rem; outline: none; margin-left: 0.5rem;}
+        .dataTables_wrapper .dataTables_length select { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem; outline: none; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: #2563eb !important; color: white !important; border: none; border-radius: 4px; }
+        
+        /* Botón de Excel Corporativo */
+        .dt-buttons button.dt-button { 
+            background-color: #0f766e; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.875rem; font-weight: 600; margin-bottom: 15px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s;
+        }
+        .dt-buttons button.dt-button:hover { background-color: #115e59; }
+        
+        table.dataTable thead th { background-color: #f8fafc; font-size: 0.75rem; color: #64748b; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; }
+        table.dataTable tbody td { font-size: 0.875rem; padding: 10px 8px; color: #334155; }
+        tfoot th { background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0; color: #1e293b; }
+
+        /* Contenedores de gráficos ajustados */
+        .chart-container { position: relative; height: 280px; width: 100%; }
+        .chart-container-large { position: relative; height: 320px; width: 100%; max-width: 450px; margin: 0 auto; }
+        .chart-container-tall { position: relative; height: 500px; width: 100%; }
+        
+        /* Animación del acordeón */
+        .rotate-180 { transform: rotate(180deg); }
+
+        /* Interacciones y microanimaciones del dashboard */
+        #themeToggle {
+            width: 52px; height: 48px; padding: 0; border-radius: 15px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(148,163,184,.10); border: 1px solid rgba(148,163,184,.28);
+            color: #fbbf24; transition: transform .22s ease, background .22s ease,
+                box-shadow .22s ease, border-color .22s ease, color .22s ease;
+        }
+        #themeToggle i { font-size: 20px; transition: transform .35s ease; }
+        #themeToggle span { display: none; }
+        #themeToggle:hover {
+            transform: translateY(-3px) scale(1.06); background: rgba(148,163,184,.23);
+            border-color: rgba(250,204,21,.65); box-shadow: 0 8px 20px rgba(0,0,0,.22);
+        }
+        #themeToggle:hover i { transform: rotate(-18deg) scale(1.12); }
+        #themeToggle:active { transform: translateY(0) scale(.96); }
+        body.dark-mode #themeToggle { color: #facc15; background: rgba(99,102,241,.20); border-color: rgba(129,140,248,.45); }
+        body.dark-mode #themeToggle:hover { background: rgba(99,102,241,.34); box-shadow: 0 8px 22px rgba(0,0,0,.32); }
+
+        @media (hover: hover) and (pointer: fine) {
+            main .bg-white.rounded-xl {
+                transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+                will-change: transform;
+            }
+            main .bg-white.rounded-xl:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 28px rgba(15,23,42,.12);
+            }
+            body.dark-mode main .bg-white.rounded-xl:hover {
+                box-shadow: 0 14px 30px rgba(0,0,0,.28);
+                border-color: #475569;
+            }
+            .chart-container, .chart-container-large, .chart-container-tall,
+            main canvas { transition: filter .2s ease; }
+            main .bg-white.rounded-xl:hover canvas { filter: saturate(1.08); }
+            table.dataTable tbody tr { transition: background-color .16s ease; }
+            table.dataTable tbody tr:hover td { background: #eff6ff !important; }
+            body.dark-mode table.dataTable tbody tr:hover td { background: #263b58 !important; }
+            button:not(#themeToggle), .tab-btn, a { transition: filter .18s ease, transform .18s ease, box-shadow .18s ease; }
+            button:not(#themeToggle):hover, .tab-btn:hover { filter: brightness(1.08); }
+            button:not(#themeToggle):active, .tab-btn:active { transform: scale(.98); }
+        }
+        .tab-btn { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+        }
+
+        /* Tema oscuro */
+        body.dark-mode { background-color: #0b1120 !important; color: #e2e8f0; }
+        body.dark-mode main { background-color: #0b1120 !important; }
+        body.dark-mode .bg-white { background-color: #172033 !important; }
+        body.dark-mode .bg-slate-50,
+        body.dark-mode .bg-gray-50 { background-color: #202c40 !important; }
+        body.dark-mode .bg-slate-100,
+        body.dark-mode .bg-gray-100 { background-color: #263449 !important; }
+        body.dark-mode .hover\\:bg-slate-50:hover { background-color: #263449 !important; }
+        body.dark-mode .hover\\:bg-slate-100:hover { background-color: #334155 !important; }
+        body.dark-mode .text-slate-800,
+        body.dark-mode .text-slate-700,
+        body.dark-mode .text-slate-600,
+        body.dark-mode .text-gray-800,
+        body.dark-mode .text-gray-700,
+        body.dark-mode .text-gray-600 { color: #e2e8f0 !important; }
+        body.dark-mode .text-slate-500,
+        body.dark-mode .text-slate-400,
+        body.dark-mode .text-gray-500 { color: #a8b4c7 !important; }
+        body.dark-mode .border-gray-100,
+        body.dark-mode .border-gray-200,
+        body.dark-mode .border-slate-100,
+        body.dark-mode .border-slate-200,
+        body.dark-mode .border-slate-300 { border-color: #334155 !important; }
+        body.dark-mode input:not([type="file"]),
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background-color: #202c40 !important;
+            color: #e2e8f0 !important;
+            border-color: #475569 !important;
+            color-scheme: dark;
+        }
+        body.dark-mode input::placeholder { color: #94a3b8; }
+        body.dark-mode .tab-btn.active { background-color: #172033 !important; color: #f87171 !important; }
+        body.dark-mode table.dataTable thead th,
+        body.dark-mode tfoot th { background-color: #202c40 !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+        body.dark-mode table.dataTable tbody td { color: #e2e8f0 !important; border-color: #334155 !important; }
+        body.dark-mode .dataTables_wrapper,
+        body.dark-mode .dataTables_info,
+        body.dark-mode .dataTables_length,
+        body.dark-mode .dataTables_filter,
+        body.dark-mode .dataTables_paginate { color: #cbd5e1 !important; }
+        body.dark-mode .dataTables_wrapper .dataTables_filter input,
+        body.dark-mode .dataTables_wrapper .dataTables_length select { background: #202c40 !important; color: #e2e8f0 !important; border-color: #475569 !important; }
+        body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button { color: #cbd5e1 !important; }
+        body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button.current { color: white !important; }
+        body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button:hover { background: #334155 !important; border-color: #475569 !important; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden">
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <!-- Sidebar (Menú Lateral) -->
-    <aside class="sidebar w-64 text-white flex-shrink-0 flex flex-col hidden md:flex">
-        <div class="h-16 flex items-center px-6 border-b border-gray-800">
-            <!-- Aquí irá el logo dinámico en el futuro -->
-            <div class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-            </div>
-            <div>
-                <h1 class="text-lg font-black tracking-widest uppercase">GALVAL</h1>
-                <p class="text-[10px] text-gray-400 tracking-wider">CONTROL DE OPERACIONES</p>
-            </div>
-        </div>
-        
-        <nav class="flex-1 py-4">
-            <a href="home.html" class="nav-link active">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span class="font-semibold text-sm">Inicio</span>
-            </a>
-            <a href="dashboard.html" class="nav-link">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
-                <span class="font-semibold text-sm">Dashboard</span>
-            </a>
-            <!-- NUEVO BOTÓN DE CONFIGURACIÓN -->
-            <a href="configuracion.html" class="nav-link">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span class="font-semibold text-sm">Configuración</span>
-            </a>
-        </nav>
-
-        <div class="p-4">
-            <button onclick="logout()" class="w-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                Cerrar Sesión
-            </button>
-        </div>
-    </aside>
-
-    <!-- Contenido Principal -->
-    <main class="main-area flex-1 flex flex-col min-w-0 overflow-hidden">
-        <!-- Header -->
-        <header class="topbar h-20 bg-white shadow-sm flex items-center justify-between px-5 md:px-8 border-b border-gray-200">
-            <h2 class="topbar-title text-xl font-extrabold text-slate-800">Resumen General</h2>
-            <button id="theme-toggle" class="theme-toggle ml-auto mr-4 p-3 rounded-xl bg-slate-100 text-slate-700" type="button" title="Cambiar apariencia" aria-label="Cambiar entre modo claro y oscuro">
-              <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-            </button>
+    <!-- Header Oscuro -->
+    <header class="bg-[#0f172a] text-white shadow-md z-20">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
             
-            <!-- Botón móvil para cerrar sesión -->
-            <button id="mobile-logout" type="button" onclick="logout()"
-                class="mobile-logout md:hidden ml-1 p-3 rounded-xl bg-rose-50 text-rose-600"
-                title="Cerrar sesión" aria-label="Cerrar sesión">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                </svg>
-            </button>
-
-            <!-- Nombre, Puesto y Foto del Usuario -->
-            <div class="flex items-center gap-3">
-                <div class="text-right hidden sm:block">
-                    <p id="user-name-display" class="text-sm font-bold text-gray-800">Cargando...</p>
-                    <p id="user-role-display" class="text-xs text-gray-500 uppercase tracking-wider">Cargando...</p>
-                </div>
-                <!-- Contenedor de Foto de Perfil -->
-                <div class="avatar-wrap w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center border border-gray-300 overflow-hidden">
-                    <img id="user-avatar" src="" alt="Perfil" class="w-full h-full object-cover hidden">
-                    <!-- Icono por defecto si no hay foto -->
-                    <svg id="user-avatar-icon" class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <div class="flex items-center gap-4">
+                <a href="home.html" class="bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-3 rounded transition flex items-center gap-2 border border-gray-700">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <div class="flex items-center gap-3 border-l border-gray-700 pl-4">
+                    <div class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center border border-gray-600">
+                        <h1 class="text-red-500 font-black">G</h1>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-black tracking-widest uppercase">GALVAL</h1>
+                        <p class="text-[10px] text-slate-400">Control de Operaciones</p>
+                    </div>
                 </div>
             </div>
-        </header>
+            
+            <div class="flex items-center gap-4">
+                <input type="file" id="excelConsolidado" accept=".xlsx, .xls" class="hidden">
+                <input type="file" id="excelCajaChica" accept=".xlsx, .xls" class="hidden">
 
-        <div class="flex-1 p-4 md:p-8 overflow-y-auto">
-            <div class="max-w-6xl mx-auto">
-                <!-- Saludo Dinámico -->
-                <div class="welcome-panel rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-7 md:p-9 mb-9 mt-2">
-                    <h2 id="saludo-dinamico" class="greeting-title text-3xl md:text-4xl font-extrabold text-slate-800 mb-3">¡Hola de nuevo! 👋</h2>
-                    <p class="muted text-slate-500">¿Qué módulo deseas abrir hoy?</p>
+                <button onclick="document.getElementById('excelConsolidado').click()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-2 px-3 rounded transition flex items-center gap-2">
+                    Subir Consolidado
+                </button>
+                <button onclick="document.getElementById('excelCajaChica').click()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 px-3 rounded transition shadow-lg shadow-red-900/50 flex items-center gap-2">
+                    Subir Caja Chica
+                </button>
+                <button id="themeToggle" type="button" onclick="toggleTheme()" title="Cambiar a tema oscuro" aria-label="Cambiar a tema oscuro" aria-pressed="false">
+                    <i id="themeToggleIcon" class="fas fa-sun" aria-hidden="true"></i>
+                    <span id="themeToggleText">Oscuro</span>
+                </button>
+                <a href="configuracion.html" class="text-slate-400 hover:text-white transition ml-2" title="Configuración">
+                    <i class="fas fa-cog text-lg"></i>
+                </a>
+                
+                <div class="flex items-center gap-3 border-l border-gray-700 pl-4 ml-2">
+                    <div class="text-right hidden sm:block">
+                        <p id="user-name-display" class="text-sm font-bold text-white">Cargando...</p>
+                        <p id="user-role-display" class="text-[10px] text-slate-400 uppercase tracking-wider">Administrador</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-600">
+                        <img id="user-avatar" src="" class="w-full h-full object-cover hidden">
+                        <i id="user-avatar-icon" class="fas fa-user text-slate-300"></i>
+                    </div>
                 </div>
 
-                <!-- Tarjetas de módulos -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                <button onclick="logout()" class="text-slate-400 hover:text-red-500 text-sm font-semibold ml-2" title="Salir">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido -->
+    <main class="flex-1 overflow-y-auto bg-[#f8fafc]">
+        
+        <!-- Pestañas -->
+        <div class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto flex px-4 overflow-x-auto">
+                <button onclick="openTab('resumen')" id="btn-resumen" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Resumen General</button>
+                <button onclick="openTab('compras')" id="btn-compras" class="tab-btn active px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Compras</button>
+                <button onclick="openTab('cobranza')" id="btn-cobranza" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Cobranzas</button>
+                <button onclick="openTab('entrega')" id="btn-entrega" class="tab-btn px-6 py-3 text-sm text-slate-500 hover:text-red-600 transition whitespace-nowrap">Nota de Entrega</button>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto p-4 md:p-5">
+            
+            <!-- PESTAÑA 0: RESUMEN GENERAL -->
+            <div id="tab-resumen" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-resumen')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros Globales de Resumen</span>
+                        <i id="icon-filtros-resumen" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
                     
-                    <!-- Tarjeta 1: Dashboard -->
-                    <a href="dashboard.html" class="module-card group text-center flex flex-col items-center w-full" style="--accent:#f97316;--tint:#ffedd5;--card:#fff;--line:#e2e8f0">
-                        <div class="module-icon w-16 h-16 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                            <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                    <div id="filtros-resumen" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-res-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-res-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Unidad de Negocio</label>
+                                <select id="filtro-res-unidad" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todas las unidades...</option>
+                                    <option value="POST VENTA">POST VENTA</option>
+                                    <option value="FABRICA">FÁBRICA</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosResumen()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosResumen()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
                         </div>
-                        <h3 class="text-lg font-extrabold text-slate-800 mb-2 uppercase tracking-wide">Dashboard</h3>
-                        <p class="muted text-sm text-slate-500 mb-6">Visualiza los gráficos, KPIs y tendencias de tus compras semanales.</p>
-                        <span class="text-orange-600 font-bold text-sm flex items-center gap-2 group-hover:gap-3 transition-all">Ingresar al módulo &rarr;</span>
-                    </a>
+                    </div>
+                </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Post Venta</p>
+                        <p id="res-kpi-post" class="text-2xl font-black text-green-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Fábrica</p>
+                        <p id="res-kpi-fab" class="text-2xl font-black text-blue-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-teal-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Cobranzas</p>
+                        <p id="res-kpi-cobranza" class="text-2xl font-black text-teal-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-gray-700">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Entrega</p>
+                        <p id="res-kpi-entrega" class="text-2xl font-black text-gray-800">Bs 0.00</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-4 w-full lg:w-2/3 mx-auto">
+                    <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">COMPRAS: POST VENTA VS FÁBRICA</h3>
+                    <div class="chart-container-large"><canvas id="res_torta"></canvas></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TODOS LOS PROVEEDORES</h3>
+                        <div class="chart-container-tall"><canvas id="res_g2_post_prov"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TODOS LOS PROVEEDORES</h3>
+                        <div class="chart-container-tall"><canvas id="res_g3_fab_prov"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TOP 10 PRODUCTOS (COSTO UNIT.)</h3>
+                        <div class="chart-container"><canvas id="res_g4_post_prod"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TOP 10 PRODUCTOS (COSTO UNIT.)</h3>
+                        <div class="chart-container"><canvas id="res_g5_fab_prod"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">COBRANZAS: TOP UTILIDAD</h3>
+                        <div class="chart-container"><canvas id="res_cobranza"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">ENTREGA: COSTO POR DIVISIÓN</h3>
+                        <div class="chart-container"><canvas id="res_entrega"></canvas></div>
+                    </div>
                 </div>
             </div>
+
+            <!-- PESTAÑA 1: COMPRAS -->
+            <div id="tab-compras" class="block">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-compras')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Compras)</span>
+                        <i id="icon-filtros-compras" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="filtros-compras" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-compra-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-compra-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Producto</label>
+                                <select id="filtro-compra-producto" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todos los productos...</option>
+                                </select>
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Proveedor</label>
+                                <select id="filtro-compra-proveedor" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todos los proveedores...</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosCompras()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosCompras()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo POST VENTA</p>
+                        <p id="kpi-utilidad-post" class="text-2xl font-black text-green-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo FÁBRICA</p>
+                        <p id="kpi-utilidad-fab" class="text-2xl font-black text-blue-600">Bs 0.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-gray-700">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
+                        <p id="kpi-compras-registros" class="text-2xl font-black text-gray-800">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-slate-400">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
+                        <p id="kpi-compras-fecha" class="text-xl font-bold text-slate-700">--/--/----</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">RELACIÓN POST VENTA VS FÁBRICA (Porcentaje)</h3>
+                        <div class="chart-container max-w-sm mx-auto">
+                            <canvas id="g1_torta"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TOP PROVEEDORES POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g2_post_proveedor"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TOP PROVEEDORES POR COSTO</h3>
+                        <div class="chart-container">
+                            <canvas id="g3_fab_proveedor"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">POST VENTA: TOP 10 PRODUCTOS (COSTO UNIT.)</h3>
+                        <div class="chart-container">
+                            <canvas id="g4_post_producto"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 text-center">FÁBRICA: TOP 10 PRODUCTOS (COSTO UNIT.)</h3>
+                        <div class="chart-container">
+                            <canvas id="g5_fab_producto"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-800">Detalle de Compras (Recepciones)</h2>
+                    </div>
+                    
+                    <div class="w-full overflow-x-auto">
+                        <table id="tablaCompras" class="w-full text-left border-collapse display">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>ID Almacén</th>
+                                    <th>Nombre Docto</th>
+                                    <th>Nombre Producto</th>
+                                    <th>Proveedor</th>
+                                    <th>Unidad Negocio</th>
+                                    <th class="text-right">CANTIDAD</th>
+                                    <th class="text-right">Costo Unitario</th>
+                                    <th class="text-right">Costo (+)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-compras-body"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="8" class="text-right py-3 px-2">TOTAL COSTO:</th>
+                                    <th id="total-costo-compras" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESTAÑA 2: COBRANZAS -->
+            <div id="tab-cobranza" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-cobranza')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Cobranzas)</span>
+                        <i id="icon-filtros-cobranza" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="filtros-cobranza" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Descripción (Producto)</label>
+                                <select id="filtro-descripcion" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todos los productos...</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosGlobalesCobranza()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosGlobalesCobranza()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                    <div class="flex flex-col gap-3">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Utilidad Total (Bs)</p>
+                            <p id="kpi-utilidad-total" class="text-2xl font-black text-green-600">Bs 0.00</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
+                            <p id="kpi-registros" class="text-2xl font-black text-blue-600">0</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-slate-400">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
+                            <p id="kpi-actualizacion" class="text-xl font-bold text-slate-700">--/--/----</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 lg:col-span-2">
+                        <h2 class="text-sm font-bold text-slate-700 mb-3 text-center">TOP PRODUCTOS CON MAYOR UTILIDAD</h2>
+                        <div class="relative w-full h-64 md:h-72"><canvas id="graficoUtilidad"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-800">Detalle de Cobranzas (Garantías)</h2>
+                    </div>
+                    <div class="w-full overflow-x-auto">
+                        <table id="tablaCobranza" class="w-full text-left border-collapse display">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Nombre Docto</th>
+                                    <th>Código Persona</th>
+                                    <th>Nombre Descripción</th>
+                                    <th class="text-right">Costo (+)</th>
+                                    <th class="text-right">Precio BS</th>
+                                    <th class="text-right">Utilidad BS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-cobranza-body"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="4" class="text-right py-3 px-2">TOTALES:</th>
+                                    <th id="total-costo" class="text-right py-3 px-2">Bs 0.00</th>
+                                    <th id="total-venta" class="text-right py-3 px-2">Bs 0.00</th>
+                                    <th id="total-utilidad" class="text-right py-3 px-2 text-green-600">Bs 0.00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESTAÑA 3: NOTA DE ENTREGA -->
+            <div id="tab-entrega" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+                    <button onclick="toggleAccordion('filtros-entrega')" class="w-full flex justify-between items-center px-6 py-3 bg-slate-50 hover:bg-slate-100 transition text-left">
+                        <span class="font-bold text-slate-700"><i class="fas fa-filter text-blue-500 mr-2"></i> Filtros de Búsqueda (Nota de Entrega)</span>
+                        <i id="icon-filtros-entrega" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="filtros-entrega" class="hidden px-6 py-4 border-t border-gray-100">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Inicial</label>
+                                <input type="date" id="filtro-entrega-fecha-ini" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Fecha Final</label>
+                                <input type="date" id="filtro-entrega-fecha-fin" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">División</label>
+                                <select id="filtro-entrega-division" class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+                                    <option value="">Todas las divisiones...</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aplicarFiltrosGlobalesEntrega()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-sm flex items-center gap-2 shadow-md">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button onclick="limpiarFiltrosGlobalesEntrega()" class="bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200 font-semibold py-2 px-4 rounded-lg transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                    <div class="flex flex-col gap-3">
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-gray-700">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Costo Total (Bs)</p>
+                            <p id="kpi-entrega-costo" class="text-2xl font-black text-gray-800">Bs 0.00</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Registros Encontrados</p>
+                            <p id="kpi-entrega-registros" class="text-2xl font-black text-blue-600">0</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-slate-400">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Última Actualización</p>
+                            <p id="kpi-entrega-actualizacion" class="text-xl font-bold text-slate-700">--/--/----</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 lg:col-span-2">
+                        <h2 class="text-sm font-bold text-slate-700 mb-3 text-center">TODAS LAS DIVISIONES POR COSTO</h2>
+                        <div class="relative w-full h-64 md:h-72"><canvas id="graficoEntregaDivisiones"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-800">Detalle de Notas de Entrega (Almacén Repuestos TSG)</h2>
+                    </div>
+                    
+                    <div class="w-full overflow-x-auto">
+                        <table id="tablaEntrega" class="w-full text-left border-collapse display">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Almacén</th> 
+                                    <th>Nombre Docto</th>
+                                    <th>Código Persona</th>
+                                    <th>Nombre Descripción</th>
+                                    <th>División</th>
+                                    <th class="text-right">Costo (+)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-entrega-body"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="6" class="text-right py-3 px-2">TOTAL COSTO:</th>
+                                    <th id="total-costo-entrega" class="text-right py-3 px-2 text-gray-800">Bs 0.00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
+    <div id="mensaje-alerta" class="hidden fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 text-white font-semibold text-sm transition-all duration-300"></div>
+
     <script>
         const SUPABASE_URL = 'https://himmqcgvhfdqlkslbfej.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L';
+        const SUPABASE_KEY = 'sb_publishable_ktqwZndOgJERsjdKXOtldQ_o0r0bo2L'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Verificar sesión
         const session = localStorage.getItem('oted_session');
-        if (!session) {
-            window.location.href = 'login.html';
-        }
-
-        // --- LÓGICA DEL SALUDO DINÁMICO ---
-        function actualizarSaludo() {
-            const hora = new Date().getHours();
-            let saludo = "";
-            
-            if (hora >= 0 && hora < 12) {
-                saludo = "¡Buenos días, colaboradores de GALVAL! ☀️";
-            } else if (hora >= 12 && hora < 19) {
-                saludo = "¡Buenas tardes, colaboradores de GALVAL! 🌤️";
-            } else {
-                saludo = "¡Buenas noches, colaboradores de GALVAL! 🌙";
-            }
-            
-            document.getElementById('saludo-dinamico').innerText = saludo;
-        }
-
-        // --- LÓGICA PARA MOSTRAR NOMBRE Y PUESTO ---
-        function cargarDatosUsuario() {
-            const userData = JSON.parse(localStorage.getItem('oted_session'));
-            
-            let nombre = "Usuario de GALVAL";
-            let fotoUrl = null;
-            
-            // Buscar el nombre en los metadatos de Supabase
-            if (userData && userData.user && userData.user.user_metadata) {
-                if (userData.user.user_metadata.full_name) {
-                    nombre = userData.user.user_metadata.full_name;
-                }
-                if (userData.user.user_metadata.avatar_url) {
-                    fotoUrl = userData.user.user_metadata.avatar_url;
-                }
-            }
-
-            // Puesto por defecto (luego se puede conectar a la base de datos)
-            const puesto = "Administrador"; 
-
-            document.getElementById('user-name-display').innerText = nombre;
-            document.getElementById('user-role-display').innerText = puesto;
-
-            // Si hay foto de perfil, mostrarla
-            if (fotoUrl) {
-                const imgElement = document.getElementById('user-avatar');
-                imgElement.src = fotoUrl;
-                imgElement.classList.remove('hidden');
-                document.getElementById('user-avatar-icon').classList.add('hidden');
-            }
-        }
+        if (!session) { window.location.href = 'login.html'; }
 
         async function logout() {
             await supabaseClient.auth.signOut();
@@ -197,29 +635,1184 @@
             window.location.href = 'login.html';
         }
 
+        // --- TEMA CLARO / OSCURO ---
+        function aplicarTema(tema) {
+            const oscuro = tema === 'dark';
+            document.body.classList.toggle('dark-mode', oscuro);
+            const icono = document.getElementById('themeToggleIcon');
+            const texto = document.getElementById('themeToggleText');
+            if (icono) icono.className = oscuro ? 'fas fa-sun' : 'fas fa-moon';
+            if (texto) texto.textContent = oscuro ? 'Normal' : 'Oscuro';
+            const botonTema = document.getElementById('themeToggle');
+            if (botonTema) {
+                botonTema.title = oscuro ? 'Cambiar a tema normal' : 'Cambiar a tema oscuro';
+                botonTema.setAttribute('aria-label', botonTema.title);
+                botonTema.setAttribute('aria-pressed', oscuro ? 'true' : 'false');
+            }
+            localStorage.setItem('galval_theme', oscuro ? 'dark' : 'light');
 
-        // Preferencia visual independiente de la sesión: claro por defecto, oscuro opcional.
-        function aplicarTemaOTED(tema) {
-            document.body.classList.toggle('dark', tema === 'dark');
-            localStorage.setItem('galval_home_theme', tema);
-            const icono = document.getElementById('theme-icon');
-            if (icono) {
-                icono.innerHTML = tema === 'dark'
-                    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.5 15.5A8.5 8.5 0 018.5 3.5 8.5 8.5 0 1020.5 15.5z"/>'
-                    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+            // Adaptar textos y cuadrículas de los gráficos existentes.
+            if (window.Chart) {
+                Chart.defaults.color = oscuro ? '#cbd5e1' : '#666';
+                Chart.defaults.hover.animationDuration = 180;
+                Chart.defaults.plugins.tooltip.enabled = true;
+                Chart.defaults.plugins.tooltip.backgroundColor = oscuro ? '#0f172a' : '#1e293b';
+                Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
+                Chart.defaults.plugins.tooltip.bodyColor = '#f8fafc';
+                Chart.defaults.plugins.tooltip.padding = 12;
+                Chart.defaults.plugins.tooltip.cornerRadius = 8;
+                Chart.defaults.borderColor = oscuro ? '#334155' : '#e2e8f0';
+                Object.values(Chart.instances || {}).forEach(chart => {
+                    if (chart.options && chart.options.scales) {
+                        Object.values(chart.options.scales).forEach(scale => {
+                            if (scale.ticks) scale.ticks.color = oscuro ? '#cbd5e1' : '#666';
+                            if (scale.grid && scale.grid.display !== false) scale.grid.color = oscuro ? '#334155' : '#e2e8f0';
+                        });
+                    }
+                    if (chart.options && chart.options.plugins && chart.options.plugins.legend) {
+                        chart.options.plugins.legend.labels = chart.options.plugins.legend.labels || {};
+                        chart.options.plugins.legend.labels.color = oscuro ? '#cbd5e1' : '#666';
+                    }
+                    chart.update('none');
+                });
             }
         }
-        document.addEventListener('DOMContentLoaded', () => {
-            aplicarTemaOTED(localStorage.getItem('galval_home_theme') || 'light');
-            document.getElementById('theme-toggle')?.addEventListener('click', () => {
-                aplicarTemaOTED(document.body.classList.contains('dark') ? 'light' : 'dark');
-            });
+
+        function toggleTheme() {
+            aplicarTema(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
+        }
+
+        function cargarDatosUsuario() {
+            const userData = JSON.parse(localStorage.getItem('oted_session'));
+            if (userData && userData.user) {
+                let nombre = "Usuario";
+                if (userData.user.user_metadata && userData.user.user_metadata.full_name) {
+                    nombre = userData.user.user_metadata.full_name;
+                }
+                const puesto = localStorage.getItem('user_puesto') || "Administrador";
+                const fotoUrl = localStorage.getItem('user_avatar');
+
+                document.getElementById('user-name-display').innerText = nombre;
+                document.getElementById('user-role-display').innerText = puesto;
+
+                if (fotoUrl) {
+                    const img = document.getElementById('user-avatar');
+                    img.src = fotoUrl;
+                    img.classList.remove('hidden');
+                    document.getElementById('user-avatar-icon').classList.add('hidden');
+                }
+            }
+        }
+
+        let filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
+        let filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
+        
+        let datosComprasGlobales = [];
+        let g1_torta = null, g2_post_prov = null, g3_fab_prov = null, g4_post_prod = null, g5_fab_prod = null;
+        
+        let res_torta = null, res_g2_post_prov = null, res_g3_fab_prov = null, res_g4_post_prod = null, res_g5_fab_prod = null, res_cobranza = null, res_entrega = null;
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function openTab(tabName) {
+            document.getElementById('tab-resumen').classList.add('hidden');
+            document.getElementById('tab-compras').classList.add('hidden');
+            document.getElementById('tab-cobranza').classList.add('hidden');
+            document.getElementById('tab-entrega').classList.add('hidden');
+            
+            document.getElementById('btn-resumen').classList.remove('active');
+            document.getElementById('btn-compras').classList.remove('active');
+            document.getElementById('btn-cobranza').classList.remove('active');
+            document.getElementById('btn-entrega').classList.remove('active');
+            
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            document.getElementById('btn-' + tabName).classList.add('active');
+            
+            localStorage.setItem('galval_active_tab', tabName);
+
+            if(tabName === 'resumen') {
+                cargarDatosResumen();
+            } else if(tabName === 'compras') {
+                cargarCompras();
+            } else if(tabName === 'cobranza') {
+                cargarCobranza();
+            } else if(tabName === 'entrega') {
+                cargarEntrega();
+            }
+        }
+
+        async function subirArchivo(file, tipoExcel) {
+            const formData = new FormData();
+            formData.append('excelFile', file);
+            formData.append('tipoExcel', tipoExcel);
+            const alerta = document.getElementById('mensaje-alerta');
+            alerta.innerText = "Subiendo...";
+            alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-blue-600 text-white font-semibold text-sm block";
+            try {
+                const response = await fetch('/api/upload', { method: 'POST', body: formData });
+                const result = await response.json();
+                if (response.ok) {
+                    alerta.innerText = result.mensaje;
+                    alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-green-600 text-white font-semibold text-sm block";
+                    cargarCompras();
+                } else {
+                    alerta.innerText = "Error: " + result.error;
+                    alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
+                }
+            } catch (error) {
+                alerta.innerText = "Error de conexión.";
+                alerta.className = "fixed top-24 right-4 px-6 py-3 rounded-lg shadow-xl z-50 bg-red-600 text-white font-semibold text-sm block";
+            }
+            setTimeout(() => { alerta.classList.add('hidden'); }, 4000);
+        }
+
+        document.getElementById('excelConsolidado').addEventListener('change', function(e) {
+            if (e.target.files[0]) { subirArchivo(e.target.files[0], 'consolidado'); e.target.value = ''; }
+        });
+        document.getElementById('excelCajaChica').addEventListener('change', function(e) {
+            if (e.target.files[0]) { subirArchivo(e.target.files[0], 'caja_chica'); e.target.value = ''; }
         });
 
-        // Ejecutar al cargar la página
+        let chartUtilidad = null, chartEntregaDivisiones = null;
+        let dataTableCobranza = null, dataTableEntrega = null, dataTableCompras = null;
+        let datosGlobales = [], datosEntrega = [];
+        
+        let datosComprasOriginales = []; 
+        let datosComprasFiltrados = [];  
+
+        // --- LÓGICA DE COMPRAS ---
+        async function cargarCompras() {
+            const { data: consolidado, error: err1 } = await supabaseClient
+                .from('consolidado_repuestos')
+                .select('FECHA, ID_ALMACEN, NOMBRE_DOCTO, NOMBRE_PRODUCTO, NOMBRE_DESCRIPCION, COSTO, NRO_DOC_FTE_CA, CANTIDAD') 
+                .in('ID_ALMACEN', ['121002', '121007'])
+                .ilike('NOMBRE_DOCTO', '%Recepcion%');
+
+            const { data: cajaChica, error: err2 } = await supabaseClient
+                .from('caja_chica') 
+                .select('N, UNIDAD_NEGOCIO')
+                .limit(10000);
+
+            if (err1 || err2) { 
+                console.error("Error en Supabase:", err1 || err2); 
+                return; 
+            }
+
+            const mapaDivisiones = {};
+            if (cajaChica) {
+                cajaChica.forEach(d => {
+                    if (d.N) {
+                        mapaDivisiones[String(d.N).trim()] = d.UNIDAD_NEGOCIO;
+                    }
+                });
+            }
+
+            datosComprasOriginales = [];
+
+            if (consolidado && consolidado.length > 0) {
+                consolidado.forEach(item => {
+                    const docOriginal = String(item.NRO_DOC_FTE_CA || '').trim();
+                    const soloNumeros = docOriginal.replace(/\D/g, ''); 
+                    const numeroLimpio = soloNumeros ? String(Number(soloNumeros)) : ''; 
+                    const unidadNegocioCruzada = mapaDivisiones[numeroLimpio] || 'FABRICA'; 
+
+                    const costoOriginal = parseFloat(String(item.COSTO).replace(',', '.')) || 0;
+                    const costoPositivo = Math.abs(costoOriginal);
+                    const cantidadItem = Number(item.CANTIDAD) || 0;
+                    
+                    const costoUnitario = cantidadItem > 0 ? (costoPositivo / cantidadItem) : 0;
+
+                    datosComprasOriginales.push({
+                        fecha: item.FECHA || '',
+                        id_almacen: item.ID_ALMACEN || '',
+                        docto: item.NOMBRE_DOCTO || '',
+                        producto: item.NOMBRE_PRODUCTO || 'SIN NOMBRE',
+                        proveedor: item.NOMBRE_DESCRIPCION || 'SIN PROVEEDOR',
+                        unidad_negocio: unidadNegocioCruzada,
+                        cantidad: cantidadItem,
+                        costo_unitario: costoUnitario,
+                        costo: costoPositivo
+                    });
+                });
+            }
+
+            const selectProd = document.getElementById('filtro-compra-producto');
+            const selectProv = document.getElementById('filtro-compra-proveedor');
+            
+            const productosUnicos = [...new Set(datosComprasOriginales.map(i => i.producto))].sort();
+            const proveedoresUnicos = [...new Set(datosComprasOriginales.map(i => i.proveedor))].sort();
+
+            selectProd.innerHTML = '<option value="">Todos los productos...</option>';
+            productosUnicos.forEach(p => { if(p !== 'SIN NOMBRE') selectProd.innerHTML += `<option value="${p}">${p}</option>`; });
+
+            selectProv.innerHTML = '<option value="">Todos los proveedores...</option>';
+            proveedoresUnicos.forEach(p => { if(p !== 'SIN PROVEEDOR') selectProv.innerHTML += `<option value="${p}">${p}</option>`; });
+
+            aplicarFiltrosCompras();
+        }
+
+        // Normaliza fechas de Supabase (DD/MM/AAAA, DD-MM-AAAA o ISO) para compararlas.
+        function normalizarFechaCompra(valor) {
+            if (valor === null || valor === undefined || valor === '') return '';
+            const texto = String(valor).trim().split('T')[0].split(' ')[0];
+            let partes = texto.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+            if (partes) return `${partes[3]}-${partes[2].padStart(2, '0')}-${partes[1].padStart(2, '0')}`;
+            partes = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+            if (partes) return `${partes[1]}-${partes[2].padStart(2, '0')}-${partes[3].padStart(2, '0')}`;
+            const fecha = new Date(valor);
+            if (!Number.isNaN(fecha.getTime())) {
+                return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+            }
+            return '';
+        }
+
+        function aplicarFiltrosCompras() {
+            const fIni = document.getElementById('filtro-compra-fecha-ini').value;
+            const fFin = document.getElementById('filtro-compra-fecha-fin').value;
+            const prod = document.getElementById('filtro-compra-producto').value;
+            const prov = document.getElementById('filtro-compra-proveedor').value;
+
+            datosComprasFiltrados = datosComprasOriginales.filter(item => {
+                const fechaItem = normalizarFechaCompra(item.fecha);
+                if ((fIni || fFin) && !fechaItem) return false;
+                if (fIni && fechaItem < fIni) return false;
+                if (fFin && fechaItem > fFin) return false;
+
+                const productoItem = String(item.producto || '').trim().toLocaleLowerCase('es');
+                const proveedorItem = String(item.proveedor || '').trim().toLocaleLowerCase('es');
+                if (prod && productoItem !== String(prod).trim().toLocaleLowerCase('es')) return false;
+                if (prov && proveedorItem !== String(prov).trim().toLocaleLowerCase('es')) return false;
+                return true;
+            });
+
+            actualizarVistasCompras();
+        }
+
+        function limpiarFiltrosCompras() {
+            document.getElementById('filtro-compra-fecha-ini').value = '';
+            document.getElementById('filtro-compra-fecha-fin').value = '';
+            document.getElementById('filtro-compra-producto').value = '';
+            document.getElementById('filtro-compra-proveedor').value = '';
+            
+            datosComprasFiltrados = [...datosComprasOriginales];
+            actualizarVistasCompras();
+        }
+
+        function actualizarVistasCompras() {
+            renderizarTablaCompras(datosComprasFiltrados);
+            renderizarGraficosCompras(datosComprasFiltrados);
+            calcularKPIsCompras(datosComprasFiltrados);
+        }
+
+        function calcularKPIsCompras(datos) {
+            let costoPost = 0;
+            let costoFab = 0;
+
+            datos.forEach(item => {
+                if (item.unidad_negocio === 'POST VENTA') {
+                    costoPost += item.costo;
+                } else {
+                    costoFab += item.costo;
+                }
+            });
+
+            document.getElementById('kpi-utilidad-post').innerText = 'Bs ' + costoPost.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-utilidad-fab').innerText = 'Bs ' + costoFab.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-compras-registros').innerText = datos.length;
+
+            if (datos.length > 0) {
+                let fechas = [];
+                datos.forEach(d => {
+                    if (d.fecha && d.fecha.includes('/')) {
+                        let p = d.fecha.split(' ')[0].split('/');
+                        if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                    }
+                });
+                if (fechas.length > 0) {
+                    fechas.sort((a, b) => b - a);
+                    document.getElementById('kpi-compras-fecha').innerText = fechas[0].toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                } else {
+                    document.getElementById('kpi-compras-fecha').innerText = '--/--/----';
+                }
+            } else {
+                document.getElementById('kpi-compras-fecha').innerText = '--/--/----';
+            }
+        }
+
+        function renderizarTablaCompras(datos) {
+            // Primero destruir DataTables para que no borre las filas recién renderizadas.
+            if ($.fn.DataTable.isDataTable('#tablaCompras')) {
+                $('#tablaCompras').DataTable().destroy();
+            }
+            const tablaBody = document.getElementById('tabla-compras-body');
+            tablaBody.innerHTML = '';
+
+            if (datos.length === 0) {
+                tablaBody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">No hay registros con estos filtros.</td></tr>';
+            } else {
+                datos.forEach(item => {
+                    tablaBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="py-2 px-4">${item.fecha}</td>
+                            <td class="py-2 px-4 text-slate-600">${item.id_almacen}</td>
+                            <td class="py-2 px-4 font-medium">${item.docto}</td>
+                            <td class="py-2 px-4">${item.producto}</td>
+                            <td class="py-2 px-4 text-slate-700">${item.proveedor}</td>
+                            <td class="py-2 px-4">
+                                <span class="py-1 px-2 rounded text-xs font-bold ${item.unidad_negocio === 'POST VENTA' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}">
+                                    ${item.unidad_negocio}
+                                </span>
+                            </td>
+                            <td class="py-2 px-4 text-right font-medium text-slate-700">${item.cantidad}</td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo_unitario.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            dataTableCompras = $('#tablaCompras').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [{ 
+                        extend: 'excelHtml5', 
+                        text: '<i class="fas fa-file-excel"></i> Descargar Excel', 
+                        title: 'Compras', 
+                        className: 'dt-button',
+                        exportOptions: {
+                            format: {
+                                body: function ( data, row, column, node ) {
+                                    let textoLimpio = data;
+                                    if (textoLimpio.indexOf('<') !== -1) {
+                                        textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, '');
+                                    }
+                                    if (column === 7 || column === 8) {
+                                        return textoLimpio.replace(/Bs\s?/g, '').trim();
+                                    }
+                                    return textoLimpio.trim();
+                                }
+                            }
+                        }
+                    }],
+                    "pageLength": 10, 
+                    "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU_ registros" },
+                    "footerCallback": function ( row, data, start, end, display ) {
+                        var api = this.api();
+                        var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
+                        var totalCosto = api.column(8, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        $('#total-costo-compras').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    }
+                });
+        }
+
+        function renderizarGraficosCompras(datos) {
+            if (g1_torta) g1_torta.destroy();
+            if (g2_post_prov) g2_post_prov.destroy();
+            if (g3_fab_prov) g3_fab_prov.destroy();
+            if (g4_post_prod) g4_post_prod.destroy();
+            if (g5_fab_prod) g5_fab_prod.destroy();
+
+            let countPostVenta = datos.filter(d => d.unidad_negocio === 'POST VENTA').length;
+            let countFabrica = datos.filter(d => d.unidad_negocio === 'FABRICA').length;
+
+            g1_torta = new Chart(document.getElementById('g1_torta'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['POST VENTA', 'FÁBRICA'],
+                    datasets: [{ data: [countPostVenta, countFabrica], backgroundColor: ['#10b981', '#3b82f6'], hoverOffset: 4 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let valor = context.raw;
+                                    let porcentaje = total > 0 ? ((valor / total) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${porcentaje}% (${valor} reg.)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            function agruparDatos(filtroUnidad, campoAgrupar) {
+                let agrupado = {};
+                datos.forEach(item => {
+                    if (item.unidad_negocio === filtroUnidad) {
+                        if (!agrupado[item[campoAgrupar]]) agrupado[item[campoAgrupar]] = { costo: 0, cantidad: 0, costo_unitario: 0, count: 0 };
+                        agrupado[item[campoAgrupar]].costo += item.costo;
+                        agrupado[item[campoAgrupar]].cantidad += item.cantidad;
+                        agrupado[item[campoAgrupar]].costo_unitario += item.costo_unitario;
+                        agrupado[item[campoAgrupar]].count += 1;
+                    }
+                });
+                return Object.entries(agrupado).sort((a, b) => (b[1].costo_unitario/b[1].count) - (a[1].costo_unitario/a[1].count)); 
+            }
+
+            const configBarras = (labels, values, tooltipData, color, tipoTooltip) => {
+                return {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }] },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { 
+                                callbacks: { 
+                                    label: function(context) { 
+                                        const item = tooltipData[context.dataIndex];
+                                        if (tipoTooltip === 'producto') {
+                                            return ` Costo Unitario: Bs ${item.costo_unitario.toLocaleString('es-BO', {minimumFractionDigits: 2})}`;
+                                        } else {
+                                            return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`; 
+                                        }
+                                    } 
+                                } 
+                            }
+                        },
+                        scales: { 
+                            x: { grid: { display: false } }, 
+                            y: { 
+                                grid: { display: false }, 
+                                ticks: { font: { size: 10 }, autoSkip: false },
+                                afterFit: function(scaleInstance) { scaleInstance.width = 220; }
+                            } 
+                        }
+                    }
+                };
+            };
+
+            const dataPostProv = agruparDatos('POST VENTA', 'proveedor').slice(0, 10);
+            g2_post_prov = new Chart(document.getElementById('g2_post_proveedor'), configBarras(dataPostProv.map(d => d[0]), dataPostProv.map(d => d[1].costo), dataPostProv.map(d => d[1]), '#10b981', 'proveedor'));
+
+            const dataFabProv = agruparDatos('FABRICA', 'proveedor').slice(0, 10);
+            g3_fab_prov = new Chart(document.getElementById('g3_fab_proveedor'), configBarras(dataFabProv.map(d => d[0]), dataFabProv.map(d => d[1].costo), dataFabProv.map(d => d[1]), '#3b82f6', 'proveedor'));
+
+            const dataPostProd = agruparDatos('POST VENTA', 'producto').slice(0, 10);
+            g4_post_prod = new Chart(document.getElementById('g4_post_producto'), configBarras(dataPostProd.map(d => d[0]), dataPostProd.map(d => d[1].costo_unitario / d[1].count), dataPostProd.map(d => ({costo_unitario: d[1].costo_unitario / d[1].count})), '#10b981', 'producto'));
+
+            const dataFabProd = agruparDatos('FABRICA', 'producto').slice(0, 10);
+            g5_fab_prod = new Chart(document.getElementById('g5_fab_producto'), configBarras(dataFabProd.map(d => d[0]), dataFabProd.map(d => d[1].costo_unitario / d[1].count), dataFabProd.map(d => ({costo_unitario: d[1].costo_unitario / d[1].count})), '#3b82f6', 'producto'));
+        }
+
+        // --- LÓGICA DE COBRANZAS ---
+        async function cargarCobranza() {
+            if (filtrosCobranza.fechaIni) document.getElementById('filtro-fecha-ini').value = filtrosCobranza.fechaIni;
+            if (filtrosCobranza.fechaFin) document.getElementById('filtro-fecha-fin').value = filtrosCobranza.fechaFin;
+
+            // Cobranzas obtiene toda su información únicamente de consolidado_repuestos.
+            const { data: consolidado, error } = await supabaseClient
+                .from('consolidado_repuestos')
+                .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, PRECIO_BS')
+                .or('NOMBRE_DOCTO.ilike.%REMISION%,NOMBRE_DOCTO.ilike.%REMISIÓN%')
+                .limit(10000);
+
+            if (error) {
+                console.error('Error al cargar Cobranzas:', error);
+                alert('No se pudieron cargar los datos de Cobranzas. Revisa la consola o la conexión con Supabase.');
+                return;
+            }
+
+            datosGlobales = (consolidado || []).map(item => {
+                const costo = Math.abs(Number(item.COSTO) || 0);
+                const venta = Number(item.PRECIO_BS) || 0;
+                return {
+                    fecha: item.FECHA || '',
+                    docto: item.NOMBRE_DOCTO || '',
+                    codigo: String(item.PERSONA_LINEA_PRODUCCION || '').trim(),
+                    descripcion: item.NOMBRE_DESCRIPCION || 'SIN NOMBRE',
+                    costo,
+                    venta,
+                    utilidad: venta - costo
+                };
+            });
+
+            const selectDesc = document.getElementById('filtro-descripcion');
+            const descripcionSeleccionada = filtrosCobranza.descripcion;
+            const descripcionesUnicas = [...new Set(datosGlobales.map(item => item.descripcion))].sort();
+            selectDesc.innerHTML = '<option value="">Todos los productos...</option>';
+            descripcionesUnicas.forEach(desc => {
+                const option = document.createElement('option');
+                option.value = desc;
+                option.textContent = desc;
+                selectDesc.appendChild(option);
+            });
+            selectDesc.value = descripcionSeleccionada || '';
+
+            const datosFiltrados = obtenerDatosFiltradosCobranza();
+            renderizarTablaCobranza(datosFiltrados);
+        }
+
+        function convertirFechaFiltro(fechaTexto) {
+            if (!fechaTexto) return '';
+            const texto = String(fechaTexto).trim().split(' ')[0];
+            // Formato mostrado habitualmente: DD/MM/AAAA.
+            if (texto.includes('/')) {
+                const partes = texto.split('/');
+                if (partes.length === 3) return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+            }
+            // También admite fechas ISO: AAAA-MM-DD.
+            if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto;
+            return '';
+        }
+
+        function estaDentroDeFechas(fechaTexto, fechaInicio, fechaFin) {
+            if (!fechaInicio && !fechaFin) return true;
+            const fecha = convertirFechaFiltro(fechaTexto);
+            if (!fecha) return false;
+            return (!fechaInicio || fecha >= fechaInicio) && (!fechaFin || fecha <= fechaFin);
+        }
+
+        function obtenerDatosFiltradosCobranza() {
+            const fIni = document.getElementById('filtro-fecha-ini').value;
+            const fFin = document.getElementById('filtro-fecha-fin').value;
+            const desc = document.getElementById('filtro-descripcion').value;
+            return datosGlobales.filter(item =>
+                estaDentroDeFechas(item.fecha, fIni, fFin) && (!desc || item.descripcion === desc)
+            );
+        }
+
+        function actualizarGraficoCobranza(datos) {
+            const utilidadPorProducto = {};
+            datos.forEach(item => {
+                utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad;
+            });
+            const topProductos = Object.entries(utilidadPorProducto).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            if (chartUtilidad) chartUtilidad.destroy();
+            chartUtilidad = new Chart(document.getElementById('graficoUtilidad'), {
+                type: 'bar',
+                data: {
+                    labels: topProductos.map(p => p[0]),
+                    datasets: [{ label: 'Utilidad (Bs)', data: topProductos.map(p => p[1]), backgroundColor: topProductos.map((_, i) => i === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)'), borderRadius: 6, barThickness: 20 }]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: function(context) {
+                            const producto = topProductos[context.dataIndex][0];
+                            const filas = datos.filter(d => d.descripcion === producto);
+                            const costo = filas.reduce((s, d) => s + d.costo, 0);
+                            const venta = filas.reduce((s, d) => s + d.venta, 0);
+                            const utilidad = filas.reduce((s, d) => s + d.utilidad, 0);
+                            return [
+                                ` Costo: Bs ${costo.toLocaleString('es-BO', {minimumFractionDigits: 2})}`,
+                                ` Precio: Bs ${venta.toLocaleString('es-BO', {minimumFractionDigits: 2})}`,
+                                ` Utilidad: Bs ${utilidad.toLocaleString('es-BO', {minimumFractionDigits: 2})}`
+                            ];
+                        } } }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: false }, afterFit: scale => { scale.width = 200; } }
+                    }
+                }
+            });
+        }
+
+        function renderizarTablaCobranza(datos) {
+            const tablaBody = document.getElementById('tabla-cobranza-body');
+            tablaBody.innerHTML = '';
+            if (datos.length === 0) {
+                // El cuerpo queda vacío para que DataTables controle su mensaje de tabla vacía.
+            } else {
+                datos.forEach(item => {
+                    tablaBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="py-2 px-4">${item.fecha}</td>
+                            <td class="py-2 px-4 font-medium">${item.docto}</td>
+                            <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
+                            <td class="py-2 px-4">${item.descripcion}</td>
+                            <td class="py-2 px-4 text-right text-slate-500">Bs ${item.costo.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right">Bs ${item.venta.toFixed(2)}</td>
+                            <td class="py-2 px-4 text-right font-bold ${item.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}">Bs ${item.utilidad.toFixed(2)}</td>
+                        </tr>`;
+                });
+            }
+
+            if (dataTableCobranza) dataTableCobranza.destroy();
+            dataTableCobranza = $('#tablaCobranza').DataTable({
+                dom: 'Bfrtip',
+                buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Cobranzas', className: 'dt-button', exportOptions: { format: { body: function(data, row, column) {
+                    let limpio = String(data);
+                    if (limpio.indexOf('<') !== -1) limpio = limpio.replace(/<[^>]*>?/gm, '');
+                    if (column >= 4 && column <= 6) return limpio.replace(/Bs\s?/g, '').trim();
+                    return limpio.trim();
+                } } } }],
+                pageLength: 10,
+                language: { search: 'Buscar en tabla:', lengthMenu: 'Mostrar _MENU_ registros', emptyTable: 'No hay datos.', zeroRecords: 'No se encontraron coincidencias.' },
+                footerCallback: function() {
+                    const api = this.api();
+                    const aNumero = valor => typeof valor === 'string' ? (parseFloat(valor.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0) : (Number(valor) || 0);
+                    const totalCosto = api.column(4, {search: 'applied'}).data().reduce((a, b) => a + aNumero(b), 0);
+                    const totalVenta = api.column(5, {search: 'applied'}).data().reduce((a, b) => a + aNumero(b), 0);
+                    const totalUtilidad = api.column(6, {search: 'applied'}).data().reduce((a, b) => a + aNumero(b), 0);
+                    const totalRegistros = api.rows({search: 'applied'}).count();
+                    $('#total-costo').html('Bs ' + totalCosto.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#total-venta').html('Bs ' + totalVenta.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#total-utilidad').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#kpi-utilidad-total').html('Bs ' + totalUtilidad.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                    $('#kpi-registros').html(totalRegistros);
+                    const fechas = [];
+                    api.rows({search: 'applied'}).data().each(fila => {
+                        const fecha = convertirFechaFiltro(fila[0]);
+                        if (fecha) fechas.push(new Date(fecha + 'T00:00:00'));
+                    });
+                    fechas.sort((a, b) => b - a);
+                    $('#kpi-actualizacion').html(fechas.length ? fechas[0].toLocaleDateString('es-BO', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '--/--/----');
+                }
+            });
+            actualizarGraficoCobranza(datos);
+        }
+
+        function aplicarFiltrosGlobalesCobranza() {
+            const fIni = document.getElementById('filtro-fecha-ini').value;
+            const fFin = document.getElementById('filtro-fecha-fin').value;
+            const desc = document.getElementById('filtro-descripcion').value;
+            filtrosCobranza = { fechaIni: fIni, fechaFin: fFin, descripcion: desc };
+            if (dataTableCobranza) {
+                dataTableCobranza.column(0).search('').draw(false);
+                // La tabla se filtra por el mismo conjunto de datos usado por el gráfico.
+                const filtrados = obtenerDatosFiltradosCobranza();
+                dataTableCobranza.clear();
+                dataTableCobranza.rows.add(filtrados.map(item => [
+                    item.fecha, item.docto, item.codigo, item.descripcion,
+                    'Bs ' + item.costo.toFixed(2), 'Bs ' + item.venta.toFixed(2), 'Bs ' + item.utilidad.toFixed(2)
+                ])).draw();
+                actualizarGraficoCobranza(filtrados);
+            }
+        }
+
+        function limpiarFiltrosGlobalesCobranza() {
+            document.getElementById('filtro-fecha-ini').value = '';
+            document.getElementById('filtro-fecha-fin').value = '';
+            document.getElementById('filtro-descripcion').value = '';
+            filtrosCobranza = { fechaIni: '', fechaFin: '', descripcion: '' };
+            const todos = datosGlobales;
+            if (dataTableCobranza) {
+                dataTableCobranza.search('').columns().search('');
+                dataTableCobranza.clear();
+                dataTableCobranza.rows.add(todos.map(item => [item.fecha, item.docto, item.codigo, item.descripcion, 'Bs ' + item.costo.toFixed(2), 'Bs ' + item.venta.toFixed(2), 'Bs ' + item.utilidad.toFixed(2)])).draw();
+            }
+            actualizarGraficoCobranza(todos);
+        }
+
+        // --- LÓGICA DE NOTA DE ENTREGA ---
+        async function cargarEntrega() {
+            if (filtrosEntrega.fechaIni) document.getElementById('filtro-entrega-fecha-ini').value = filtrosEntrega.fechaIni;
+            if (filtrosEntrega.fechaFin) document.getElementById('filtro-entrega-fecha-fin').value = filtrosEntrega.fechaFin;
+
+            const { data: consolidado, error: err1 } = await supabaseClient
+                .from('consolidado_repuestos')
+                .select('FECHA, NOMBRE_DOCTO, PERSONA_LINEA_PRODUCCION, NOMBRE_DESCRIPCION, COSTO, NOMBRE_ALMACEN, ID_ALMACEN')
+                .eq('ID_ALMACEN', '101016') 
+                .or(`NOMBRE_DOCTO.ilike.%ENTREGA%`) 
+                .limit(10000); 
+
+            const { data: divisiones, error: err2 } = await supabaseClient
+                .from('vendedores_division')
+                .select('PERSONA_LINEA_PRODUCCION, DIVISION')
+                .limit(10000); 
+
+            if (err1 || err2) { console.error("Error de Supabase:", err1 || err2); return; }
+
+            const mapaDivisiones = {};
+            if (divisiones) divisiones.forEach(d => { if (d.PERSONA_LINEA_PRODUCCION) mapaDivisiones[String(d.PERSONA_LINEA_PRODUCCION).trim()] = d.DIVISION; });
+
+            datosEntrega = []; 
+
+            if (consolidado && consolidado.length > 0) {
+                consolidado.forEach(item => {
+                    let codigoLimpio = String(item.PERSONA_LINEA_PRODUCCION || '').trim();
+                    if (codigoLimpio.includes('.')) codigoLimpio = codigoLimpio.split('.')[0]; 
+
+                    const divisionCruzada = mapaDivisiones[codigoLimpio] || 'DENTRO DE GARANTIA';
+                    
+                    if (divisionCruzada.toUpperCase().includes('FABRICA')) return; 
+
+                    const costoOriginal = Number(item.COSTO) || 0;
+                    const costoPositivo = Math.abs(costoOriginal);
+
+                    datosEntrega.push({
+                        fecha: item.FECHA || '', 
+                        almacen: item.NOMBRE_ALMACEN || 'CEN - ALMACÉN REPUESTOS TSG', 
+                        docto: item.NOMBRE_DOCTO || '', 
+                        codigo: codigoLimpio,
+                        descripcion: item.NOMBRE_DESCRIPCION || 'SIN NOMBRE', 
+                        division: divisionCruzada,
+                        costo: costoPositivo
+                    });
+                });
+            }
+
+            const selectDiv = document.getElementById('filtro-entrega-division');
+            const divisionesUnicas = [...new Set(datosEntrega.map(item => item.division))].sort();
+            selectDiv.innerHTML = '<option value="">Todas las divisiones...</option>';
+            divisionesUnicas.forEach(div => { selectDiv.innerHTML += `<option value="${div}">${div}</option>`; });
+
+            if (filtrosEntrega.division) {
+                selectDiv.value = filtrosEntrega.division;
+                aplicarFiltrosGlobalesEntrega();
+            } else {
+                renderizarTablaEntrega(datosEntrega);
+            }
+        }
+
+        function renderizarTablaEntrega(datos) {
+            const tablaBody = document.getElementById('tabla-entrega-body');
+            tablaBody.innerHTML = '';
+            let costoPorDivision = {};
+
+            if (datos.length === 0) {
+                tablaBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay Notas de Entrega para este almacén.</td></tr>';
+            } else {
+                datos.forEach(item => {
+                    costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo;
+                    tablaBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="py-2 px-4">${item.fecha}</td>
+                            <td class="py-2 px-4 text-slate-600 text-xs">${item.almacen}</td>
+                            <td class="py-2 px-4 font-medium">${item.docto}</td>
+                            <td class="py-2 px-4 text-slate-500">${item.codigo}</td>
+                            <td class="py-2 px-4">${item.descripcion}</td>
+                            <td class="py-2 px-4"><span class="bg-blue-100 text-blue-700 py-1 px-2 rounded text-xs font-bold">${item.division}</span></td>
+                            <td class="py-2 px-4 text-right font-bold text-gray-700">Bs ${item.costo.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            let costoTotal = 0;
+            let fechas = [];
+            datos.forEach(item => {
+                costoTotal += item.costo;
+                if (item.fecha && item.fecha.includes('/')) {
+                    let p = item.fecha.split(' ')[0].split('/');
+                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                }
+            });
+
+            document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + costoTotal.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-entrega-registros').innerText = datos.length;
+            
+            if (fechas.length > 0) {
+                fechas.sort((a, b) => b - a);
+                document.getElementById('kpi-entrega-actualizacion').innerText = fechas[0].toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            } else {
+                document.getElementById('kpi-entrega-actualizacion').innerText = '--/--/----';
+            }
+
+            actualizarGraficoEntrega(datos);
+
+            if (dataTableEntrega) dataTableEntrega.destroy();
+            setTimeout(() => {
+                dataTableEntrega = $('#tablaEntrega').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [{ extend: 'excelHtml5', text: '<i class="fas fa-file-excel"></i> Descargar Excel', title: 'Notas_Entrega', className: 'dt-button', exportOptions: { format: { body: function ( data, row, column, node ) { let textoLimpio = data; if (textoLimpio.indexOf('<') !== -1) textoLimpio = textoLimpio.replace(/<[^>]*>?/gm, ''); if (column === 6) return textoLimpio.replace(/Bs\s?/g, '').trim(); return textoLimpio.trim(); } } } }],
+                    "pageLength": 10, "language": { "search": "Buscar en tabla:", "lengthMenu": "Mostrar _MENU registros" },
+                    "footerCallback": function ( row, data, start, end, display ) {
+                        var api = this.api();
+                        var intVal = function ( i ) { return typeof i === 'string' ? parseFloat(i.replace(/Bs/g, '').replace(/,/g, '').trim()) || 0 : (typeof i === 'number' ? i : 0); };
+                        var totalCostoFiltrado = api.column(6, { search: 'applied' }).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                        
+                        $('#total-costo-entrega').html( 'Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}) );
+                        
+                        $('#kpi-entrega-costo').html('Bs ' + totalCostoFiltrado.toLocaleString('es-BO', {minimumFractionDigits: 2}));
+                        var totalRegistrosFiltrados = api.rows({ search: 'applied' }).count();
+                        $('#kpi-entrega-registros').html(totalRegistrosFiltrados);
+
+                        var datosVisibles = api.rows({ search: 'applied' }).data();
+                        if (datosVisibles.length > 0) {
+                            let fechas = [];
+                            for (let i = 0; i < datosVisibles.length; i++) {
+                                let fechaStr = datosVisibles[i][0]; 
+                                if (fechaStr && fechaStr.includes('/')) {
+                                    let p = fechaStr.split(' ')[0].split('/');
+                                    if (p.length === 3) fechas.push(new Date(`${p[2]}-${p[1]}-${p[0]}`));
+                                }
+                            }
+                            if (fechas.length > 0) {
+                                fechas.sort((a, b) => b - a);
+                                $('#kpi-entrega-actualizacion').html(fechas[0].toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+                            } else $('#kpi-entrega-actualizacion').html('--/--/----');
+                        } else $('#kpi-entrega-actualizacion').html('--/--/----');
+                    }
+                });
+            }, 100);
+        }
+
+        function actualizarGraficoEntrega(datos) {
+            const costoPorDivision = {};
+            datos.forEach(item => { costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo; });
+            const topDivisiones = Object.entries(costoPorDivision).sort((a, b) => b[1] - a[1]);
+            if (chartEntregaDivisiones) chartEntregaDivisiones.destroy();
+            chartEntregaDivisiones = new Chart(document.getElementById('graficoEntregaDivisiones'), {
+                type: 'bar',
+                data: { labels: topDivisiones.map(p => p[0]), datasets: [{ label: 'Costo (Bs)', data: topDivisiones.map(p => p[1]), backgroundColor: topDivisiones.map((_, i) => i === 0 ? 'rgba(15, 23, 42, 0.9)' : 'rgba(37, 99, 235, 0.8)'), borderRadius: 6, barThickness: 20 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: false }, afterFit: scale => { scale.width = 180; } } } }
+            });
+        }
+
+        function obtenerDatosFiltradosEntrega() {
+            const fIni = document.getElementById('filtro-entrega-fecha-ini').value;
+            const fFin = document.getElementById('filtro-entrega-fecha-fin').value;
+            const div = document.getElementById('filtro-entrega-division').value;
+            return datosEntrega.filter(item => estaDentroDeFechas(item.fecha, fIni, fFin) && (!div || item.division === div));
+        }
+
+        function aplicarFiltrosGlobalesEntrega() {
+            const fIni = document.getElementById('filtro-entrega-fecha-ini').value;
+            const fFin = document.getElementById('filtro-entrega-fecha-fin').value;
+            const div = document.getElementById('filtro-entrega-division').value;
+            filtrosEntrega = { fechaIni: fIni, fechaFin: fFin, division: div };
+            const filtrados = obtenerDatosFiltradosEntrega();
+            if (dataTableEntrega) {
+                dataTableEntrega.clear();
+                dataTableEntrega.rows.add(filtrados.map(item => [item.fecha, item.almacen, item.docto, item.codigo, item.descripcion, item.division, 'Bs ' + item.costo.toFixed(2)])).draw();
+            }
+            actualizarGraficoEntrega(filtrados);
+            actualizarKpisEntrega(filtrados);
+        }
+
+        function limpiarFiltrosGlobalesEntrega() {
+            document.getElementById('filtro-entrega-fecha-ini').value = '';
+            document.getElementById('filtro-entrega-fecha-fin').value = '';
+            document.getElementById('filtro-entrega-division').value = '';
+            filtrosEntrega = { fechaIni: '', fechaFin: '', division: '' };
+            const todos = datosEntrega;
+            if (dataTableEntrega) {
+                dataTableEntrega.search('').columns().search('');
+                dataTableEntrega.clear();
+                dataTableEntrega.rows.add(todos.map(item => [item.fecha, item.almacen, item.docto, item.codigo, item.descripcion, item.division, 'Bs ' + item.costo.toFixed(2)])).draw();
+            }
+            actualizarGraficoEntrega(todos);
+            actualizarKpisEntrega(todos);
+        }
+
+        function actualizarKpisEntrega(datos) {
+            const costoTotal = datos.reduce((s, item) => s + item.costo, 0);
+            document.getElementById('kpi-entrega-costo').innerText = 'Bs ' + costoTotal.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('kpi-entrega-registros').innerText = datos.length;
+            const fechas = datos.map(item => convertirFechaFiltro(item.fecha)).filter(Boolean).map(fecha => new Date(fecha + 'T00:00:00')).sort((a, b) => b - a);
+            document.getElementById('kpi-entrega-actualizacion').innerText = fechas.length ? fechas[0].toLocaleDateString('es-BO', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '--/--/----';
+        }
+
+        // --- LÓGICA DE LA PESTAÑA RESUMEN ---
+        async function cargarDatosResumen() {
+            if (datosComprasOriginales.length === 0) await cargarCompras();
+            if (datosGlobales.length === 0) await cargarCobranza();
+            if (datosEntrega.length === 0) await cargarEntrega();
+
+            aplicarFiltrosResumen();
+        }
+
+        function aplicarFiltrosResumen() {
+            const fIni = document.getElementById('filtro-res-fecha-ini').value;
+            const fFin = document.getElementById('filtro-res-fecha-fin').value;
+            const unidad = document.getElementById('filtro-res-unidad').value;
+
+            let comprasFiltradas = datosComprasOriginales.filter(item => {
+                let cF = true, cU = true;
+                if (fIni || fFin) {
+                    if (item.fecha && item.fecha.includes('/')) {
+                        const p = item.fecha.split(' ')[0].split('/');
+                        const fechaItem = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        if (fIni && fechaItem < fIni) cF = false;
+                        if (fFin && fechaItem > fFin) cF = false;
+                    } else cF = false;
+                }
+                if (unidad && item.unidad_negocio !== unidad) cU = false;
+                return cF && cU;
+            });
+
+            let cobranzasFiltradas = datosGlobales.filter(item => {
+                let cF = true;
+                if (fIni || fFin) {
+                    if (item.fecha && item.fecha.includes('/')) {
+                        const p = item.fecha.split(' ')[0].split('/');
+                        const fechaItem = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        if (fIni && fechaItem < fIni) cF = false;
+                        if (fFin && fechaItem > fFin) cF = false;
+                    } else cF = false;
+                }
+                return cF;
+            });
+
+            let entregaFiltrada = datosEntrega.filter(item => {
+                let cF = true;
+                if (fIni || fFin) {
+                    if (item.fecha && item.fecha.includes('/')) {
+                        const p = item.fecha.split(' ')[0].split('/');
+                        const fechaItem = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        if (fIni && fechaItem < fIni) cF = false;
+                        if (fFin && fechaItem > fFin) cF = false;
+                    } else cF = false;
+                }
+                return cF;
+            });
+
+            let costoPost = 0, costoFab = 0;
+            comprasFiltradas.forEach(item => {
+                if (item.unidad_negocio === 'POST VENTA') costoPost += item.costo;
+                else costoFab += item.costo;
+            });
+            document.getElementById('res-kpi-post').innerText = 'Bs ' + costoPost.toLocaleString('es-BO', {minimumFractionDigits: 2});
+            document.getElementById('res-kpi-fab').innerText = 'Bs ' + costoFab.toLocaleString('es-BO', {minimumFractionDigits: 2});
+
+            let utilidadCobranzas = 0;
+            cobranzasFiltradas.forEach(item => { utilidadCobranzas += item.utilidad; });
+            document.getElementById('res-kpi-cobranza').innerText = 'Bs ' + utilidadCobranzas.toLocaleString('es-BO', {minimumFractionDigits: 2});
+
+            let costoEntregaTotal = 0;
+            entregaFiltrada.forEach(item => { costoEntregaTotal += item.costo; });
+            document.getElementById('res-kpi-entrega').innerText = 'Bs ' + costoEntregaTotal.toLocaleString('es-BO', {minimumFractionDigits: 2});
+
+            renderizarGraficosResumen(comprasFiltradas, cobranzasFiltradas, entregaFiltrada);
+        }
+
+        const pluginTotales = {
+            id: 'pluginTotales',
+            afterDraw: (chart, args, options) => {
+                if (!options || !options.texto) return;
+                const { ctx, chartArea: { top, right } } = chart;
+                ctx.save();
+                ctx.font = 'bold 12px "Segoe UI"';
+                ctx.fillStyle = '#475569';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillText(options.texto, right, top - 10);
+                ctx.restore();
+            }
+        };
+
+        const pluginCentroTorta = {
+            id: 'pluginCentroTorta',
+            afterDraw: (chart, args, options) => {
+                if (!options || !options.texto) return;
+                const { ctx, chartArea: { top, bottom, left, right } } = chart;
+                const centerX = (left + right) / 2;
+                const centerY = (top + bottom) / 2;
+                ctx.save();
+                ctx.font = 'bold 16px "Segoe UI"';
+                ctx.fillStyle = '#1e293b';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(options.texto, centerX, centerY);
+                ctx.restore();
+            }
+        };
+
+        function renderizarGraficosResumen(compras, cobranzas, entrega) {
+            if (res_torta) res_torta.destroy();
+            if (res_g2_post_prov) res_g2_post_prov.destroy();
+            if (res_g3_fab_prov) res_g3_fab_prov.destroy();
+            if (res_g4_post_prod) res_g4_post_prod.destroy();
+            if (res_g5_fab_prod) res_g5_fab_prod.destroy();
+            if (res_cobranza) res_cobranza.destroy();
+            if (res_entrega) res_entrega.destroy();
+
+            let countPostVenta = compras.filter(d => d.unidad_negocio === 'POST VENTA').length;
+            let countFabrica = compras.filter(d => d.unidad_negocio === 'FABRICA').length;
+            let totalCostoGlobal = compras.reduce((acc, curr) => acc + curr.costo, 0);
+
+            res_torta = new Chart(document.getElementById('res_torta'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['POST VENTA', 'FÁBRICA'],
+                    datasets: [{ data: [countPostVenta, countFabrica], backgroundColor: ['#10b981', '#3b82f6'], hoverOffset: 4 }]
+                },
+                plugins: [pluginCentroTorta],
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let valor = context.raw;
+                                    let porcentaje = total > 0 ? ((valor / total) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${porcentaje}% (${valor} reg.)`;
+                                }
+                            }
+                        },
+                        pluginCentroTorta: {
+                            texto: 'Total:\nBs ' + totalCostoGlobal.toLocaleString('es-BO', {minimumFractionDigits: 2})
+                        }
+                    }
+                }
+            });
+
+            function agrupar(datos, filtroUnidad, campoAgrupar) {
+                let agrupado = {};
+                datos.forEach(item => {
+                    if (item.unidad_negocio === filtroUnidad) {
+                        if (!agrupado[item[campoAgrupar]]) agrupado[item[campoAgrupar]] = { costo: 0, cantidad: 0, costo_unitario: 0, count: 0 };
+                        agrupado[item[campoAgrupar]].costo += item.costo;
+                        agrupado[item[campoAgrupar]].cantidad += item.cantidad;
+                        agrupado[item[campoAgrupar]].costo_unitario += item.costo_unitario;
+                        agrupado[item[campoAgrupar]].count += 1;
+                    }
+                });
+                return Object.entries(agrupado).sort((a, b) => b[1].costo - a[1].costo); 
+            }
+
+            function agruparProductosUnitario(datos, filtroUnidad, campoAgrupar) {
+                let agrupado = {};
+                datos.forEach(item => {
+                    if (item.unidad_negocio === filtroUnidad) {
+                        if (!agrupado[item[campoAgrupar]]) agrupado[item[campoAgrupar]] = { costo_unitario_total: 0, count: 0 };
+                        agrupado[item[campoAgrupar]].costo_unitario_total += item.costo_unitario;
+                        agrupado[item[campoAgrupar]].count += 1;
+                    }
+                });
+                return Object.entries(agrupado).sort((a, b) => (b[1].costo_unitario_total/b[1].count) - (a[1].costo_unitario_total/a[1].count)); 
+            }
+
+            const configBarras = (labels, values, tooltipData, color, totalTexto, tipoTooltip) => ({
+                type: 'bar',
+                data: { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 4 }] },
+                plugins: [pluginTotales],
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { 
+                            callbacks: { 
+                                label: function(context) { 
+                                    const item = tooltipData[context.dataIndex];
+                                    if (tipoTooltip === 'producto') {
+                                        return ` Costo Unitario: Bs ${item.costo_unitario.toLocaleString('es-BO', {minimumFractionDigits: 2})}`;
+                                    } else {
+                                        return ` Costo: Bs ${item.costo.toLocaleString('es-BO', {minimumFractionDigits: 2})} | Cant: ${item.cantidad}`; 
+                                    }
+                                } 
+                            } 
+                        },
+                        pluginTotales: { texto: totalTexto }
+                    },
+                    scales: { 
+                        x: { grid: { display: false } }, 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { font: { size: 10 }, autoSkip: false },
+                            afterFit: function(scaleInstance) { scaleInstance.width = 200; }
+                        } 
+                    }
+                }
+            });
+
+            const dataPostProv = agrupar(compras, 'POST VENTA', 'proveedor');
+            let totalPostProv = dataPostProv.reduce((acc, curr) => acc + curr[1].costo, 0);
+            res_g2_post_prov = new Chart(document.getElementById('res_g2_post_prov'), configBarras(dataPostProv.map(d => d[0]), dataPostProv.map(d => d[1].costo), dataPostProv.map(d => d[1]), '#10b981', 'Total: Bs ' + totalPostProv.toLocaleString('es-BO', {minimumFractionDigits: 2}), 'proveedor'));
+
+            const dataFabProv = agrupar(compras, 'FABRICA', 'proveedor');
+            let totalFabProv = dataFabProv.reduce((acc, curr) => acc + curr[1].costo, 0);
+            res_g3_fab_prov = new Chart(document.getElementById('res_g3_fab_prov'), configBarras(dataFabProv.map(d => d[0]), dataFabProv.map(d => d[1].costo), dataFabProv.map(d => d[1]), '#3b82f6', 'Total: Bs ' + totalFabProv.toLocaleString('es-BO', {minimumFractionDigits: 2}), 'proveedor'));
+
+            const dataPostProd = agruparProductosUnitario(compras, 'POST VENTA', 'producto').slice(0, 10);
+            let tooltipDataPostProd = dataPostProd.map(d => ({ costo_unitario: d[1].costo_unitario_total / d[1].count }));
+            res_g4_post_prod = new Chart(document.getElementById('res_g4_post_prod'), configBarras(dataPostProd.map(d => d[0]), tooltipDataPostProd.map(d => d.costo_unitario), tooltipDataPostProd, '#10b981', '', 'producto'));
+
+            const dataFabProd = agruparProductosUnitario(compras, 'FABRICA', 'producto').slice(0, 10);
+            let tooltipDataFabProd = dataFabProd.map(d => ({ costo_unitario: d[1].costo_unitario_total / d[1].count }));
+            res_g5_fab_prod = new Chart(document.getElementById('res_g5_fab_prod'), configBarras(dataFabProd.map(d => d[0]), tooltipDataFabProd.map(d => d.costo_unitario), tooltipDataFabProd, '#3b82f6', '', 'producto'));
+
+            let utilidadPorProducto = {};
+            cobranzas.forEach(item => { utilidadPorProducto[item.descripcion] = (utilidadPorProducto[item.descripcion] || 0) + item.utilidad; });
+            const topUtilidad = Object.entries(utilidadPorProducto).sort(([,a], [,b]) => b - a).slice(0, 5);
+            let totalUtilidadCob = cobranzas.reduce((acc, curr) => acc + curr.utilidad, 0);
+            
+            res_cobranza = new Chart(document.getElementById('res_cobranza'), {
+                type: 'bar',
+                data: { labels: topUtilidad.map(p => p[0]), datasets: [{ label: 'Utilidad', data: topUtilidad.map(p => p[1]), backgroundColor: '#10b981', borderRadius: 4 }] },
+                plugins: [pluginTotales],
+                options: { 
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let prodData = cobranzas.filter(d => d.descripcion === topUtilidad[context.dataIndex][0]);
+                                    let costo = prodData.reduce((acc, curr) => acc + curr.costo, 0);
+                                    let venta = prodData.reduce((acc, curr) => acc + curr.venta, 0);
+                                    let utilidad = prodData.reduce((acc, curr) => acc + curr.utilidad, 0);
+                                    return [
+                                        ` Costo: Bs ${costo.toLocaleString('es-BO', {minimumFractionDigits: 2})}`, 
+                                        ` Precio: Bs ${venta.toLocaleString('es-BO', {minimumFractionDigits: 2})}`, 
+                                        ` Utilidad: Bs ${utilidad.toLocaleString('es-BO', {minimumFractionDigits: 2})}`
+                                    ];
+                                }
+                            }
+                        },
+                        pluginTotales: { texto: 'Total: Bs ' + totalUtilidadCob.toLocaleString('es-BO', {minimumFractionDigits: 2}) }
+                    }, 
+                    scales: { 
+                        x: { grid: { display: false } }, 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { font: { size: 10 }, autoSkip: false },
+                            afterFit: function(scaleInstance) { scaleInstance.width = 200; }
+                        } 
+                    } 
+                }
+            });
+
+            let costoPorDivision = {};
+            entrega.forEach(item => { costoPorDivision[item.division] = (costoPorDivision[item.division] || 0) + item.costo; });
+            const topDivisiones = Object.entries(costoPorDivision).sort(([,a], [,b]) => b - a).slice(0, 5);
+            let totalEntrega = entrega.reduce((acc, curr) => acc + curr.costo, 0);
+
+            res_entrega = new Chart(document.getElementById('res_entrega'), {
+                type: 'bar',
+                data: { labels: topDivisiones.map(p => p[0]), datasets: [{ label: 'Costo', data: topDivisiones.map(p => p[1]), backgroundColor: '#3b82f6', borderRadius: 4 }] },
+                plugins: [pluginTotales],
+                options: { 
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        pluginTotales: { texto: 'Total: Bs ' + totalEntrega.toLocaleString('es-BO', {minimumFractionDigits: 2}) }
+                    }, 
+                    scales: { 
+                        x: { grid: { display: false } }, 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { font: { size: 10 }, autoSkip: false },
+                            afterFit: function(scaleInstance) { scaleInstance.width = 180; }
+                        } 
+                    } 
+                }
+            });
+        }
+
+        function limpiarFiltrosResumen() {
+            document.getElementById('filtro-res-fecha-ini').value = '';
+            document.getElementById('filtro-res-fecha-fin').value = '';
+            document.getElementById('filtro-res-unidad').value = '';
+            aplicarFiltrosResumen();
+        }
+
+        // --- INICIO DE LA APLICACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
-            actualizarSaludo();
+            aplicarTema(localStorage.getItem('galval_theme') || 'light');
             cargarDatosUsuario();
+            const savedTab = localStorage.getItem('galval_active_tab') || 'compras';
+            openTab(savedTab);
         });
     </script>
 </body>
